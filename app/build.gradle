@@ -43,4 +43,22 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation 'androidx.core:core-ktx:1.2.0'
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+
+    /**
+     *  glide
+     */
+    kapt 'com.github.bumptech.glide:compiler:4.11.0'
+    api 'com.github.bumptech.glide:glide:4.11.0'
+    implementation 'jp.wasabeef:glide-transformations:3.1.1'
+    /**
+     *  工具集合类
+     */
+    implementation 'com.blankj:utilcode:1.22.10'
+
+    /**
+     *  第三方View
+     */
+    implementation 'com.makeramen:roundedimageview:2.3.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+
 }
