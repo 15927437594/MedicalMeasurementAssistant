@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 public class MeasurementFileUtils {
 
@@ -17,7 +18,7 @@ public class MeasurementFileUtils {
      */
     public synchronized static void saveMeasurementFile(String content) {
         // 保存log到文件
-        String storePath = PathUtils.getMeasurementDataPath() + "/" + new SimpleDateFormat("yyyy-MM-dd");
+        String storePath = PathUtils.getMeasurementDataPath() + "/" + new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE);
         String fileName = "measurement_data" + TimeUtils.getNowString() + ".txt";
         File file = new File(storePath, fileName);
         saveMeasurementFile(file, content);
