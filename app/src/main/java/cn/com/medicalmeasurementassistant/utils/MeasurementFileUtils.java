@@ -12,17 +12,32 @@ public class MeasurementFileUtils {
 
 
     /**
-     *  保存文件
+     * 保存文件
+     *
      * @param content
      */
     public synchronized static void saveMeasurementFile(String content) {
         // 保存log到文件
-        String storePath = PathUtils.getMeasurementDataPath() + "/" + new SimpleDateFormat("yyyy-MM-dd");
-        String fileName = "measurement_data" + TimeUtils.getNowString() + ".txt";
+        String storePath = PathUtils.getMeasurementDataPath() + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd"));
+        String fileName = TimeUtils.getNowString(new SimpleDateFormat("HH_mm_ss")) + ".txt";
+//        boolean orExistsFile = FileUtils.createOrExistsFile(storePath);
         File file = new File(storePath, fileName);
         saveMeasurementFile(file, content);
     }
+
     public synchronized static void saveMeasurementFile(File file, String content) {
+//        if (file == null) {
+//            return;
+//        }
+//        if (file.exists()) {
+//            addTxtToFileWrite(file, content);
+//            return;
+//        }
+//
+//        boolean newFile = file.mkdirs();
+//        if (newFile)
+//            addTxtToFileWrite(file, content);
+//        //
         boolean orExistsFile = FileUtils.createOrExistsFile(file);
         if (orExistsFile) {
             addTxtToFileWrite(file, content);
