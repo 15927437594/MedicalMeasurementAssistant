@@ -67,13 +67,14 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
                 mStack.push(file)
                 updateDirectory(file)
             } else {
-                TestUtil.shareFile(getActivity(),file)
+                TestUtil.shareFile(getActivity(), file)
             }
         }
     }
 
     override fun onBackPressed() {
         if (mStack.empty()) {
+            isCanUpdateList = false
             super.onBackPressed()
             return
         }
@@ -88,7 +89,10 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
     override fun onClick(v: View) {
         when (v.id) {
             R.id.tv_more -> startActivity(Intent(this, FileSearchActivity::class.java))
-            R.id.iv_back -> finish()
+            R.id.iv_back -> {
+                isCanUpdateList = false
+                finish()
+            }
         }
     }
 

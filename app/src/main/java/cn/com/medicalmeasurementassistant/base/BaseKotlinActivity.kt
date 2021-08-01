@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.com.medicalmeasurementassistant.R
 import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.StringUtils
 
 abstract class BaseKotlinActivity : AppCompatActivity() {
     var titleTv: TextView? = null
@@ -44,8 +45,13 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
         BarUtils.setStatusBarLightMode(this, true)
     }
 
+    open fun title(): String {
+        return ""
+    }
+
     open fun initTitleView() {
         titleTv = findViewById(R.id.tv_title)
+        setText(titleTv,title())
         backLayout = findViewById(R.id.iv_back)
         backLayout?.setOnClickListener { finish() }
     }
@@ -58,4 +64,13 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
     fun getActivity(): Activity {
         return this
     }
+
+    companion object {
+        fun setText(tv: TextView?, content: String?) {
+            tv?.text = if (StringUtils.isEmpty(content)) "" else content
+        }
+
+
+    }
+
 }
