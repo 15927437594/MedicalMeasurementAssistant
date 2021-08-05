@@ -1,16 +1,19 @@
 package cn.com.medicalmeasurementassistant.ui
 
-import android.content.Intent
+import android.content.Context
 import android.text.TextUtils
+import android.view.MotionEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.SearchView
-import android.widget.Toast
 import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
 import cn.com.medicalmeasurementassistant.ui.adapter.FileListAdapter
 import cn.com.medicalmeasurementassistant.utils.PathUtils
 import cn.com.medicalmeasurementassistant.utils.TestUtil
+import cn.com.medicalmeasurementassistant.utils.ToastHelper
 import cn.com.medicalmeasurementassistant.utils.spaces_item_decoration.RecyclerViewUtils
 import com.blankj.utilcode.util.FileUtils
 import java.io.FileFilter
@@ -20,7 +23,7 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     private val mSearchView by lazy { findViewById<SearchView>(R.id.search_view) }
     private val mRecyclerView by lazy { findViewById<RecyclerView>(R.id.recycler_view) }
     private val fileListAdapter by lazy { FileListAdapter() }
-    private val mParentDirectoryName: String = PathUtils.getMeasurementDataPath()
+    private var mParentDirectoryName: String = PathUtils.getMeasurementDataPath()
     private var isCanUpdateList: Boolean = true
     override fun getLayoutId(): Int {
         return R.layout.activity_file_selector
@@ -31,6 +34,10 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     }
 
     override fun initView() {
+        intent.getStringExtra("parentPath")?.let {
+            mParentDirectoryName = it
+        }
+
         mSearchView.visibility = View.VISIBLE
         //设置该SearchView默认是否自动缩小为图标
         mSearchView.isIconifiedByDefault = false
@@ -47,8 +54,10 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
         listFilesInDir.sortWith(Comparator { o1, o2 ->
             o1.name.compareTo(o2.name)
         })
-        if (isCanUpdateList)
+        if (isCanUpdateList) {
+            fileListAdapter.mSearchKey = searchKey
             fileListAdapter.datas = listFilesInDir
+        }
     }
 
 
@@ -63,6 +72,14 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
         fileListAdapter.setOnItemClickListener { _, position ->
             val file = fileListAdapter.datas[position]
             TestUtil.shareFile(getActivity(), file)
+        }
+
+        fileListAdapter.setOnItemLongClickListener { _, position ->
+            val file = fileListAdapter.datas[position]
+            val path = file.path.replace("$mParentDirectoryName/","")
+            ToastHelper.showLong(path)
+            true
+
         }
 
 
@@ -101,5 +118,33 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
         }
     }
 
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        if (ev.action == MotionEvent.ACTION_DOWN) {
+            window.decorView.postDelayed({
+                val view = currentFocus
+                if (isShouldHideInput(view, ev)) {
+                    val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                    imm.hideSoftInputFromWindow(view!!.windowToken, 0)
+                    view.clearFocus()
+                }
+            }, 100)
+        }
+        return super.dispatchTouchEvent(ev)
+    }
+
+    private fun isShouldHideInput(v: View?, event: MotionEvent): Boolean {
+        if (v is EditText) {
+            val leftTop = intArrayOf(0, 0)
+
+//获取输入框当前的location位置
+            v.getLocationInWindow(leftTop)
+            val left = leftTop[0]
+            val top = leftTop[1]
+            val bottom = top + v.getHeight()
+            val right = left + v.getWidth()
+            return !(event.rawX > left && event.rawX < right && event.rawY > top && event.rawY < bottom)
+        }
+        return false
+    }
 
 }

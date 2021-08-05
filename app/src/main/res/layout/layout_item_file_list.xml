@@ -28,8 +28,8 @@
     android:ellipsize="start"
     android:gravity="center_horizontal"
     android:maxLines="2"
-    android:textColor="@color/black"
-    android:textSize="15sp"
+    android:textColor="@color/text_color_66"
+    android:textSize="14sp"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@id/iv_file_type" />

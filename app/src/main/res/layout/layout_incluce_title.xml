@@ -27,20 +27,24 @@
 
     <TextView
       android:id="@+id/tv_title"
-      android:layout_width="wrap_content"
+      android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_centerInParent="true"
+      android:layout_marginLeft="60dp"
+      android:layout_marginRight="60dp"
+      android:ellipsize="start"
       android:gravity="center"
       android:text="标题"
-      android:textSize="17sp" />
+      android:textSize="17sp"
+      android:singleLine="true" />
 
     <TextView
       android:id="@+id/tv_more"
       android:layout_width="25dp"
       android:layout_height="25dp"
-      android:visibility="gone"
+      android:layout_alignParentRight="true"
       android:layout_centerVertical="true"
-      android:layout_alignParentRight="true"/>
+      android:visibility="gone" />
 
 
   </RelativeLayout>

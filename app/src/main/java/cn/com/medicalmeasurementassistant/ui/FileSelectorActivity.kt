@@ -41,10 +41,12 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
 
         if (file == null) {
             titleTv?.text = "文件列表"
+            directoryName = mParentDirectoryName
         } else {
-            titleTv?.text = file.name
+            titleTv?.text = file.path.replace("$mParentDirectoryName/","")
+            directoryName = file.path
         }
-        val listFilesInDir = FileUtils.listFilesInDir(if (file == null) directoryName else file.path)
+        val listFilesInDir = FileUtils.listFilesInDir(directoryName)
         listFilesInDir.sortWith(Comparator { o1, o2 ->
             if (o1.isDirectory && o2.isFile) {
                 -1
@@ -88,7 +90,12 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.tv_more -> startActivity(Intent(this, FileSearchActivity::class.java))
+
+            R.id.tv_more -> {
+                val intent = Intent(this, FileSearchActivity::class.java)
+                intent.putExtra("parentPath",directoryName )
+                startActivity(intent)
+            }
             R.id.iv_back -> {
                 isCanUpdateList = false
                 finish()
