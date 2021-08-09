@@ -1,0 +1,129 @@
+package cn.com.medicalmeasurementassistant.utils.communication
+
+import android.content.Context
+import android.net.wifi.WifiManager
+import android.text.format.Formatter
+import android.util.Log
+import android.widget.TextView
+import cn.com.medicalmeasurementassistant.app.ProjectApplication
+import cn.com.medicalmeasurementassistant.utils.StringUtils
+import java.io.IOException
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.ServerSocket
+import java.net.Socket
+
+
+object MyClientSocketManager {
+    //
+//    private static final int PORT = 12345;
+//    private Socket mSocket = null;
+    private var mOutStream: OutputStream? = null
+    private var mInStream: InputStream? = null
+
+    private var clientSocket: Socket? = null
+
+
+    private var textView: TextView? = null
+
+    // 初始化一个ServerSocket
+
+    fun setTextView(textView: TextView) {
+        this.textView = textView
+        linkServerSocket()
+    }
+
+
+    /**
+     *  连接socket
+     */
+    private fun linkServerSocket() {
+        Thread(Runnable {
+            try {
+                clientSocket = Socket(getWifiRouteIPAddress(), MyServerSocketManager.SERVER_SOCKET_PORT)
+                mOutStream = clientSocket?.getOutputStream()
+                mInStream = clientSocket?.getInputStream()
+                readMsg()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }).start()
+    }
+
+
+    //发送数据
+    fun sendMsg(msg: String) {
+        if (StringUtils.isEmpty(msg) || mOutStream == null)
+            return
+        try {   //发送
+            mOutStream?.write(msg.toByteArray())
+            mOutStream?.flush()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    //接收数据
+    private fun readMsg() {
+        Thread(Runnable {
+            try {
+                clientSocket?.let {
+                    while (true) {
+                        if (it.isConnected) {
+                            if (!it.isInputShutdown) {
+                                val byteArray = ByteArray(1024)
+                                //循环执行read，用来接收数据。
+                                // 数据存在buffer中，count为读取到的数据长度。
+                                val count = mInStream?.read(byteArray)
+                                if (count != -1) {
+                                    textView?.text = String(byteArray)
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace();
+            }
+        }).start()
+    }
+
+
+    //关闭Socket
+    fun closeConnection() {
+        try {
+            //关闭输出流
+            mOutStream?.close()
+            mOutStream = null
+            //关闭输入流
+            mInStream?.close()
+            mInStream = null
+            clientSocket?.close()
+            clientSocket = null
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+
+    /**
+     * wifi获取 已连接网络路由  路由ip地址
+     * @param context
+     * @return
+     */
+    private fun getWifiRouteIPAddress(): String? {
+
+        val wifiService = ProjectApplication.getApp().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
+        val dhcpInfo = wifiService.dhcpInfo
+        //        WifiInfo wifiinfo = wifi_service.getConnectionInfo();
+        //        System.out.println("Wifi info----->" + wifiinfo.getIpAddress());
+        //        System.out.println("DHCP info gateway----->" + Formatter.formatIpAddress(dhcpInfo.gateway));
+        //        System.out.println("DHCP info netmask----->" + Formatter.formatIpAddress(dhcpInfo.netmask));
+        //DhcpInfo中的ipAddress是一个int型的变量，通过Formatter将其转化为字符串IP地址
+        val routeIp: String = Formatter.formatIpAddress(dhcpInfo.gateway)
+        Log.i("route ip", "wifi route ip：$routeIp")
+        return routeIp
+    }
+
+
+}
