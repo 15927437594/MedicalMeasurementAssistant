@@ -1,13 +1,12 @@
 package cn.com.medicalmeasurementassistant;
 
-import android.content.Intent;
 import android.view.View;
 import android.widget.TextView;
 
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
-import cn.com.medicalmeasurementassistant.ui.FileSelectorActivity;
-import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.PermissionHelper;
+import cn.com.medicalmeasurementassistant.utils.communication.MyClientSocketManager;
+import cn.com.medicalmeasurementassistant.utils.communication.MyServerSocketManager;
 
 public class MainActivity extends BaseKotlinActivity {
 
@@ -26,29 +25,29 @@ public class MainActivity extends BaseKotlinActivity {
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
-                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
-                startActivity(intent);
+                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
+//                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
+//                startActivity(intent);
             }
         });
 
         findViewById(R.id.tv_add_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                MyServerSocketManager.INSTANCE.setTextView(msgTv);
+                MyServerSocketManager.INSTANCE.setTextView(msgTv);
 
 //                MyWifiManager.INSTANCE.openWifi(getActivity());
 //                NetworkUtils.setWifiEnabled(true);
 
 
-                MeasurementFileUtils.saveMeasurementFile("这是刚刚创建的" + System.currentTimeMillis());
+//                MeasurementFileUtils.saveMeasurementFile("这是刚刚创建的" + System.currentTimeMillis());
             }
         });
 
         findViewById(R.id.tv_go_to_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-//                MyClientSocketManager.INSTANCE.setTextView(msgTv);
+                MyClientSocketManager.INSTANCE.setTextView(msgTv);
 //                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
 //                startActivity(intent);
             }

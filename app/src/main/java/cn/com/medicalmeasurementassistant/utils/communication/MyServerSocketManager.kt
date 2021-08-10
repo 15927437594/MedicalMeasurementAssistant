@@ -1,9 +1,17 @@
 package cn.com.medicalmeasurementassistant.utils.communication
 
+import android.app.Activity
+import android.provider.SyncStateContract
+import android.util.Log
 import android.widget.TextView
 import cn.com.medicalmeasurementassistant.utils.StringUtils
-import java.io.*
+import cn.com.medicalmeasurementassistant.utils.communication.MyClientSocketManager.getWifiRouteIPAddress
+import java.io.BufferedReader
+import java.io.InputStreamReader
+import java.io.OutputStream
+import java.io.PrintWriter
 import java.net.InetAddress
+import java.net.InetSocketAddress
 import java.net.ServerSocket
 import java.net.Socket
 
@@ -29,6 +37,7 @@ object MyServerSocketManager {
     const val GET_MSG = 6
 
     const val SERVER_SOCKET_PORT = 54188
+//    const val SERVER_SOCKET_PORT = 5555
 
     private var textView: TextView? = null
     private var os: OutputStream? = null
@@ -42,21 +51,27 @@ object MyServerSocketManager {
         startServerSocket()
     }
 
+    private fun setText(text: String) {
+        (textView?.context as Activity).runOnUiThread {
+            textView?.text = text
+        }
+    }
+
     private fun startServerSocket() {
 
 
         Thread(Runnable {
             try {
-                serverSocket = ServerSocket(SERVER_SOCKET_PORT,10,InetAddress.getByName ("192.168.100.5"))
+                serverSocket = ServerSocket(SERVER_SOCKET_PORT)
+
                 // 获取本地host
                 val address = InetAddress.getLocalHost()
                 // 获取ip地址
                 val ipAddress = address.hostAddress
-//                var stringIp = String(ipAddress)
-                textView?.text = "当前IP:$ipAddress"
-                // 开启serverSocket,等待连接
+                setText(ipAddress)
                 val accept = serverSocket?.accept()
                 accept ?: return@Runnable
+                setText(accept.inetAddress.hostAddress)
                 paresSocketMsg(accept)
             } catch (e: Exception) {
                 e.printStackTrace()

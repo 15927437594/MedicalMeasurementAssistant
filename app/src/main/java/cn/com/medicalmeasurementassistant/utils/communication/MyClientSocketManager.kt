@@ -1,5 +1,6 @@
 package cn.com.medicalmeasurementassistant.utils.communication
 
+import android.app.Activity
 import android.content.Context
 import android.net.wifi.WifiManager
 import android.text.format.Formatter
@@ -33,6 +34,11 @@ object MyClientSocketManager {
         linkServerSocket()
     }
 
+    private fun setText(text: String) {
+        (textView?.context as Activity).runOnUiThread {
+            textView?.text = text
+        }
+    }
 
     /**
      *  连接socket
@@ -40,7 +46,10 @@ object MyClientSocketManager {
     private fun linkServerSocket() {
         Thread(Runnable {
             try {
-                clientSocket = Socket(getWifiRouteIPAddress(), MyServerSocketManager.SERVER_SOCKET_PORT)
+//                clientSocket = Socket(getWifiRouteIPAddress(), MyServerSocketManager.SERVER_SOCKET_PORT)
+//                clientSocket = Socket("127.0.0.1", MyServerSocketManager.SERVER_SOCKET_PORT)
+                clientSocket = Socket("192.168.10.73", MyServerSocketManager.SERVER_SOCKET_PORT)
+
                 mOutStream = clientSocket?.getOutputStream()
                 mInStream = clientSocket?.getInputStream()
                 readMsg()
@@ -53,14 +62,19 @@ object MyClientSocketManager {
 
     //发送数据
     fun sendMsg(msg: String) {
-        if (StringUtils.isEmpty(msg) || mOutStream == null)
+        if (StringUtils.isEmpty(msg))
             return
-        try {   //发送
-            mOutStream?.write(msg.toByteArray())
-            mOutStream?.flush()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        Thread(Runnable {
+            try {   //发送
+                mOutStream?.write(msg.toByteArray())
+                mOutStream?.flush()
+                clientSocket?.shutdownOutput()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
+        }).start()
+
     }
 
     //接收数据
@@ -76,7 +90,7 @@ object MyClientSocketManager {
                                 // 数据存在buffer中，count为读取到的数据长度。
                                 val count = mInStream?.read(byteArray)
                                 if (count != -1) {
-                                    textView?.text = String(byteArray)
+                                    setText(String(byteArray))
                                 }
                             }
                         }
@@ -111,7 +125,7 @@ object MyClientSocketManager {
      * @param context
      * @return
      */
-    private fun getWifiRouteIPAddress(): String? {
+    fun getWifiRouteIPAddress(): String? {
 
         val wifiService = ProjectApplication.getApp().applicationContext.getSystemService(Context.WIFI_SERVICE) as WifiManager
         val dhcpInfo = wifiService.dhcpInfo
@@ -121,6 +135,7 @@ object MyClientSocketManager {
         //        System.out.println("DHCP info netmask----->" + Formatter.formatIpAddress(dhcpInfo.netmask));
         //DhcpInfo中的ipAddress是一个int型的变量，通过Formatter将其转化为字符串IP地址
         val routeIp: String = Formatter.formatIpAddress(dhcpInfo.gateway)
+
         Log.i("route ip", "wifi route ip：$routeIp")
         return routeIp
     }
