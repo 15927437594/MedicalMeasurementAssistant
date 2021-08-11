@@ -5,8 +5,8 @@ import android.widget.TextView;
 
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.utils.PermissionHelper;
-import cn.com.medicalmeasurementassistant.utils.communication.MyClientSocketManager;
-import cn.com.medicalmeasurementassistant.utils.communication.MyServerSocketManager;
+import cn.com.medicalmeasurementassistant.utils.communijava.ServerSocketJava;
+import cn.com.medicalmeasurementassistant.utils.communijava.SocketJava;
 
 public class MainActivity extends BaseKotlinActivity {
 
@@ -25,7 +25,9 @@ public class MainActivity extends BaseKotlinActivity {
         findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
+                SocketJava.sendMsg(System.currentTimeMillis()+"");
+//                MyServerSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
+//                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
 //                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
 //                startActivity(intent);
             }
@@ -34,8 +36,8 @@ public class MainActivity extends BaseKotlinActivity {
         findViewById(R.id.tv_add_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyServerSocketManager.INSTANCE.setTextView(msgTv);
-
+//                MyServerSocketManager.INSTANCE.setTextView(msgTv);
+                ServerSocketJava.startServerSocket(msgTv);
 //                MyWifiManager.INSTANCE.openWifi(getActivity());
 //                NetworkUtils.setWifiEnabled(true);
 
@@ -47,7 +49,8 @@ public class MainActivity extends BaseKotlinActivity {
         findViewById(R.id.tv_go_to_file).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                MyClientSocketManager.INSTANCE.setTextView(msgTv);
+                SocketJava.startSocket(msgTv);
+//                MyClientSocketManager.INSTANCE.setTextView(msgTv);
 //                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
 //                startActivity(intent);
             }

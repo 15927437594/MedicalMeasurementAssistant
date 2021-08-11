@@ -51,7 +51,7 @@ object MyServerSocketManager {
         startServerSocket()
     }
 
-    private fun setText(text: String) {
+    private fun setText(text: String?) {
         (textView?.context as Activity).runOnUiThread {
             textView?.text = text
         }
@@ -63,18 +63,22 @@ object MyServerSocketManager {
         Thread(Runnable {
             try {
                 serverSocket = ServerSocket(SERVER_SOCKET_PORT)
-
+                var localSocketAddress = serverSocket?.localSocketAddress
+                var toString = localSocketAddress.toString()
                 // 获取本地host
                 val address = InetAddress.getLocalHost()
                 // 获取ip地址
                 val ipAddress = address.hostAddress
                 setText(ipAddress)
+                setText("启动serverSocket,等待连接+$toString")
                 val accept = serverSocket?.accept()
                 accept ?: return@Runnable
+                setText("连接成功，client ip :" + accept.inetAddress?.address)
                 setText(accept.inetAddress.hostAddress)
                 paresSocketMsg(accept)
             } catch (e: Exception) {
                 e.printStackTrace()
+                setText(e.message)
             }
 
         }).start()
@@ -87,25 +91,39 @@ object MyServerSocketManager {
         val isr = InputStreamReader(inputStream, "UTF-8")
         val br = BufferedReader(isr)
         os = accept.getOutputStream()
+        //字节数组
+        val bytes = ByteArray(1024)
+        //字节数组长度
+        var len = 0
+        var i = 1
 
-        var info = br.readLine()
-        //循环读取客户端的信息
-        while (info != null) {
-            textView?.text = "客户端发送过来的信息:$info"
-            info = br.readLine()
+        while (true) {
+            //读取客户端请求信息
+
+            while (inputStream.available() != 0 && inputStream.read(bytes) != -1) {
+                //接收到的消息
+                val s = String(bytes)
+                //这里你可以根据你的实际消息内容做相应的逻辑处理
+                setText("服务端收到客户端消息:$s")
+            }
+            os?.write(("服务端发送消息$i".toByteArray()))
+            i++
+            Thread.sleep(5000)
         }
     }
 
     fun sendMsg(msg: String) {
 
-        if (StringUtils.isEmpty(msg) || os == null)
-            return
-        try {   //发送
-            os?.write(msg.toByteArray())
-            os?.flush()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
+        Thread(Runnable {
+            if (!StringUtils.isEmpty(msg) && os != null){
+                try {   //发送
+                    os?.write(msg.toByteArray())
+                    os?.flush()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }).start()
 
 
     }

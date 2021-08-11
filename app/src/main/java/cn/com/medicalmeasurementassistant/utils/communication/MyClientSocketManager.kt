@@ -48,13 +48,15 @@ object MyClientSocketManager {
             try {
 //                clientSocket = Socket(getWifiRouteIPAddress(), MyServerSocketManager.SERVER_SOCKET_PORT)
 //                clientSocket = Socket("127.0.0.1", MyServerSocketManager.SERVER_SOCKET_PORT)
-                clientSocket = Socket("192.168.10.73", MyServerSocketManager.SERVER_SOCKET_PORT)
-
+                clientSocket = Socket("192.168.43.1", MyServerSocketManager.SERVER_SOCKET_PORT)
+                setText("连接成功")
                 mOutStream = clientSocket?.getOutputStream()
                 mInStream = clientSocket?.getInputStream()
-                readMsg()
+//                readMsg()
+                readMsg2()
             } catch (e: Exception) {
                 e.printStackTrace()
+                setText("错误信息 ${e.message}")
             }
         }).start()
     }
@@ -71,9 +73,29 @@ object MyClientSocketManager {
                 clientSocket?.shutdownOutput()
             } catch (e: Exception) {
                 e.printStackTrace()
+                setText("错误信息 ${e.message}")
             }
 
         }).start()
+
+    }
+
+
+    private fun readMsg2() {
+        setText("开始接收消息")
+        val inputBytes = ByteArray(1024)
+        var len: Int?
+        //监听输入流,持续接收
+//        while (true) {
+        len = mInStream?.read(inputBytes)
+        while (mInStream?.available() != 0 && len != -1) {
+            //消息体
+            val s = String(inputBytes)
+            setText("客户端接收到消息:$s")
+            len = mInStream?.read(inputBytes)
+            //下边可以对接收到的消息进行处理
+        }
+//        }
 
     }
 
