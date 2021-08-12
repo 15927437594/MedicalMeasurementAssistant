@@ -22,10 +22,23 @@ public class MainActivity extends BaseKotlinActivity {
         PermissionHelper.hasPermission(this);
         msgTv = findViewById(R.id.msg_tv);
 
-        findViewById(R.id.send).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.server_send).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                SocketJava.sendMsg(System.currentTimeMillis()+"");
+//                ServerSocketJava.sendMsg(String.valueOf(System.currentTimeMillis()));
+//                MyServerSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
+//                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
+//                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
+//                startActivity(intent);
+            }
+        });
+        findViewById(R.id.client_send).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String s = String.valueOf(System.currentTimeMillis());
+                s += "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+                        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+                SocketJava.sendMsg(s);
 //                MyServerSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
 //                MyClientSocketManager.INSTANCE.sendMsg(System.currentTimeMillis()+"");
 //                Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);

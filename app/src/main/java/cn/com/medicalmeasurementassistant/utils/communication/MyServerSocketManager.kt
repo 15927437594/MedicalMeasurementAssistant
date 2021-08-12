@@ -37,7 +37,7 @@ object MyServerSocketManager {
     const val GET_MSG = 6
 
     const val SERVER_SOCKET_PORT = 54188
-//    const val SERVER_SOCKET_PORT = 5555
+//    const val SERVER_SOCKET_PORT = 5554
 
     private var textView: TextView? = null
     private var os: OutputStream? = null

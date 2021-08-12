@@ -1,12 +1,12 @@
 package cn.com.medicalmeasurementassistant.utils.communijava;
 
 import android.app.Activity;
+import android.util.Log;
 import android.widget.TextView;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 
 import static cn.com.medicalmeasurementassistant.utils.communication.MyServerSocketManager.SERVER_SOCKET_PORT;
 
@@ -18,28 +18,32 @@ public class SocketJava {
     public static void startSocket(TextView textView) {
 
         mTextView = textView;
-        new Thread(()->{
+        new Thread(() -> {
             try {
                 //你的ip，你的端口
                 Socket socket = new Socket("192.168.43.1", SERVER_SOCKET_PORT);
-                setText("连接成功");
+//                Socket socket = new Socket("10.0.2.2", SERVER_SOCKET_PORT);
+//                setText("连接成功");
+                Log.i("SocketJava-- ","连接成功");
                 //获取输出流
                 outputStream = socket.getOutputStream();
                 //发送链接成功的消息
                 sendMsg("客户端链接");
                 //获取输入流
                 is = socket.getInputStream();
-                startThread();
+//                startThread();
             } catch (Exception e) {
+                Log.i("SocketJava-- ","异常"+e.getMessage());
                 setText(e.getMessage());
             }
         }).start();
 
     }
+
     public static synchronized void sendMsg(String string) {
-        new Thread(()->{
+        new Thread(() -> {
             try {
-                byte[] bytes = ( string).getBytes();
+                byte[] bytes = (string).getBytes();
                 outputStream.write(bytes);
                 outputStream.flush();
                 setText(new String(bytes));
@@ -55,12 +59,11 @@ public class SocketJava {
         new Thread(() -> {
             try {
                 byte[] inputBytes = new byte[1024];
-                int len;
                 //监听输入流,持续接收
-                while(true){
-                    while (is.available() != 0 && (len = is.read(inputBytes)) != -1 ) {
+                while (true) {
+                    while (is.available() != 0 && is.read(inputBytes) != -1) {
                         //消息体
-                        String s = new String(inputBytes, StandardCharsets.UTF_8);
+                        String s = new String(inputBytes);
                         setText(s);
                         //下边可以对接收到的消息进行处理
                     }
@@ -87,7 +90,6 @@ public class SocketJava {
         });
 
     }
-
 
 
 }
