@@ -20,9 +20,9 @@ import java.util.Locale;
  * email: jid@hwtc.com.cn
  * description:Log工具,打印当前log方法名和当前行数(LogLevel>=Info时将log写入内置存储中)
  */
-public class LogUtil {
+public class LogUtils {
     // 自定义Tag的前缀，可以是作者名
-    public static String customTagPrefix = "";
+    public static String customTagPrefix = "MedicalMeasurementAssistant";
     // SD卡中的根目录
     public static String LOG_PATH = "";
 
@@ -329,7 +329,7 @@ public class LogUtil {
 
             File file = new File(path);
             if (!file.exists()) {
-                FileUtil.createDipPath(path);
+                FileUtils.createDipPath(path);
             }
             BufferedWriter out = null;
             try {
@@ -365,20 +365,6 @@ public class LogUtil {
             builder.setLength(0);
             return s;
         }
-    }
-
-    private static final ThreadLocal<ReusableFormatter> threadLocalFormatter = new ThreadLocal<ReusableFormatter>() {
-        protected ReusableFormatter initialValue() {
-            return new ReusableFormatter();
-        }
-    };
-
-    public static String format(String msg, Object... args) {
-        ReusableFormatter formatter = threadLocalFormatter.get();
-        if (formatter == null) {
-            return "";
-        }
-        return formatter.format(msg, args);
     }
 
     private static boolean isSDAvailable() {

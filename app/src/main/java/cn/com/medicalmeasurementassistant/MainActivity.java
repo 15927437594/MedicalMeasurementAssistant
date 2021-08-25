@@ -5,6 +5,7 @@ import android.view.View;
 
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.ui.FileSelectorActivity;
+import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.PermissionHelper;
 
@@ -18,7 +19,6 @@ public class MainActivity extends BaseKotlinActivity {
     @Override
     public void initView() {
         PermissionHelper.hasPermission(this);
-
 
         findViewById(R.id.tv_go_to_file).setOnClickListener(new View.OnClickListener() {
             @Override

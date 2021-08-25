@@ -1,11 +1,15 @@
 package cn.com.medicalmeasurementassistant.utils;
 
+import android.content.Context;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -19,7 +23,7 @@ import java.util.zip.CRC32;
  * email: jid@hwtc.com.cn
  * description:
  */
-public class FileUtil {
+public class FileUtils {
 
     /**
      * 根据文件路径 递归创建文件
@@ -48,7 +52,7 @@ public class FileUtil {
         File[] subFiles = file.listFiles();
 
         if (subFiles == null) {
-            LogUtil.w("subFiles==null");
+            LogUtils.w("subFiles==null");
             return null;
         }
 
@@ -178,8 +182,8 @@ public class FileUtil {
     }
 
     public static String getFileSignature(File file, String type) {
-        if (!file.exists()){
-            LogUtil.w("File doesn't exist!");
+        if (!file.exists()) {
+            LogUtils.w("File doesn't exist!");
             return "";
         }
 
@@ -196,7 +200,7 @@ public class FileUtil {
             is = new FileInputStream(file);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            LogUtil.e("Exception while getting FileInputStream");
+            LogUtils.e("Exception while getting FileInputStream");
             return "";
         }
 
@@ -213,14 +217,14 @@ public class FileUtil {
             return output;
         } catch (IOException e) {
             e.printStackTrace();
-            LogUtil.e("Unable to process file for ");
+            LogUtils.e("Unable to process file for ");
             return "";
         } finally {
             try {
                 is.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                LogUtil.e("Exception on closing inputStream:");
+                LogUtils.e("Exception on closing inputStream:");
             }
         }
     }
@@ -228,7 +232,7 @@ public class FileUtil {
     public static byte[] readFileToByteArray(String path) {
         File file = new File(path);
         if (!file.exists()) {
-            LogUtil.w("File doesn't exist!");
+            LogUtils.w("File doesn't exist!");
             return null;
         }
         FileInputStream in;
@@ -237,14 +241,14 @@ public class FileUtil {
             in = new FileInputStream(file);
             long inSize = in.getChannel().size();//判断FileInputStream中是否有内容
             if (inSize == 0) {
-                LogUtil.d("The FileInputStream has no content!");
+                LogUtils.d("The FileInputStream has no content!");
                 return null;
             }
             //in.available() 表示要读取的文件中的数据长度
             byte[] buffer = new byte[in.available()];
             //将文件中的数据读到buffer中
             int read = in.read(buffer);
-            LogUtil.d("read=" + read);
+            LogUtils.d("read=" + read);
             return buffer;
         } catch (IOException e) {
             e.printStackTrace();
@@ -263,7 +267,7 @@ public class FileUtil {
                 e.printStackTrace();
             }
         } else {
-            LogUtil.e("文件不存在!");
+            LogUtils.e("文件不存在!");
         }
         return size;
     }
@@ -276,7 +280,7 @@ public class FileUtil {
 
     public static void writeInternal(String filePathName, String content) {
         File file = new File(filePathName);
-        if (file.exists()){
+        if (file.exists()) {
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream(filePathName);
                 byte[] bytes = content.getBytes();
@@ -304,6 +308,22 @@ public class FileUtil {
             e.printStackTrace();
         }
         return stringBuilder.toString();
+    }
+
+    public static String getAssetsTxt(Context context, String path) {
+        StringBuilder s = new StringBuilder();
+        try {
+            InputStream is = context.getAssets().open(path);
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            String temp;
+            while ((temp = br.readLine()) != null) {
+                temp += "\n";
+                s.append(temp);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return s.toString();
     }
 }
 
