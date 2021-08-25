@@ -22,7 +22,7 @@ import java.util.Locale;
  */
 public class LogUtils {
     // 自定义Tag的前缀，可以是作者名
-    public static String customTagPrefix = "HWFixtureLauncher";
+    public static String customTagPrefix = "MedicalMeasurementAssistant";
     // SD卡中的根目录
     public static String LOG_PATH = "";
 

@@ -1,0 +1,1 @@
+adb pull /storage/emulated/0/Android/data/cn.com.medicalmeasurementassistant/files/logs
