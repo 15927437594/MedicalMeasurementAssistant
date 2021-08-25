@@ -1,11 +1,14 @@
 package cn.com.medicalmeasurementassistant.base
 
+import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.com.medicalmeasurementassistant.R
+import com.blankj.utilcode.util.BarUtils
+import com.blankj.utilcode.util.StringUtils
 
 abstract class BaseKotlinActivity : AppCompatActivity() {
     var titleTv: TextView? = null
@@ -34,10 +37,23 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
         return -1
     }
 
-    open fun setStatusBar() {}
+    open fun setStatusBar() {
+        val viewStatus = findViewById<View>(R.id.view_status)
+        viewStatus?.let {
+//            BarUtils.setStatusBarAlpha(it)
+        }
+        BarUtils.setStatusBarLightMode(this, true)
+    }
+
+    open fun title(): String {
+        return ""
+    }
+
     open fun initTitleView() {
-//        titleTv = findViewById(R.id.title_tv)
-//        titleTv?.text = "ss"
+        titleTv = findViewById(R.id.tv_title)
+        setText(titleTv,title())
+        backLayout = findViewById(R.id.iv_back)
+        backLayout?.setOnClickListener { finish() }
     }
 
     open fun initTitleData() {}
@@ -45,4 +61,16 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
     open fun initBeforeSetContentView() {}
     open fun initListener() {}
     open fun initData() {}
+    fun getActivity(): Activity {
+        return this
+    }
+
+    companion object {
+        fun setText(tv: TextView?, content: String?) {
+            tv?.text = if (StringUtils.isEmpty(content)) "" else content
+        }
+
+
+    }
+
 }

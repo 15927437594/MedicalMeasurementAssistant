@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
 import com.blankj.utilcode.util.SizeUtils;
 
+import cn.com.medicalmeasurementassistant.R;
+
 
 /**
  * <pre>
@@ -23,11 +25,7 @@ import com.blankj.utilcode.util.SizeUtils;
  */
 public class RecyclerViewUtils {
     public static void setRecyclerViewDivider(RecyclerView recyclerView, Context context) {
-        recyclerView.setLayoutManager(new LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false));
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(context, DividerItemDecoration.VERTICAL);
-//        dividerItemDecoration.setDrawable(ContextCompat.getDrawable(context, R.drawable.charge_draw_item_decor_trans_shape));
-        recyclerView.addItemDecoration(dividerItemDecoration);
-//        recyclerView.setItemAnimator(new MyItemAnimator());
+        setRecyclerViewDivider(recyclerView,context,R.drawable.divider_tran_shape);
     }
 
     public static void setRecyclerViewDividerBgMain(RecyclerView recyclerView, Context context) {
