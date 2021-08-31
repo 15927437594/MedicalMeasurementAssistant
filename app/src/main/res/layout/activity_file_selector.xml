@@ -11,7 +11,7 @@
 
   <include
     android:id="@+id/ll_title_contain"
-    layout="@layout/layout_incluce_title" />
+    layout="@layout/layout_include_title" />
 
   <SearchView
     android:id="@+id/search_view"

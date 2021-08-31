@@ -1,0 +1,347 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="vertical"
+  tools:context=".ui.InformationCollectionActivity"
+  tools:ignore="ContentDescription,SmallSp">
+
+  <View
+    android:id="@+id/view_status"
+    android:layout_width="0dp"
+    android:layout_height="0dp" />
+
+  <androidx.core.widget.NestedScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="8dp"
+    android:overScrollMode="never"
+    android:scrollbars="none">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+
+      <TextView
+        android:id="@+id/tv_page_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:text="@string/emg_angle_measuring"
+        android:textColor="@color/theme_color"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+      <ImageView
+        android:id="@+id/iv_collect_operate_top"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="15dp"
+        android:src="@drawable/icon_switch_collect_nor"
+        app:layout_constraintBottom_toBottomOf="@id/tv_page_title"
+        app:layout_constraintDimensionRatio="H,84:48"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/tv_page_title"
+        app:layout_constraintWidth_percent="0.11" />
+
+
+      <ImageView
+        android:id="@+id/iv_collect_operate"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="25dp"
+        android:src="@drawable/icon_collect_start"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintLeft_toLeftOf="@id/tv_page_title"
+        app:layout_constraintTop_toBottomOf="@id/tv_page_title"
+        app:layout_constraintWidth_percent="0.075" />
+
+      <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:text="@string/text_collect_start"
+        android:textColor="@color/theme_color"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/iv_collect_operate"
+        app:layout_constraintLeft_toRightOf="@id/iv_collect_operate"
+        app:layout_constraintTop_toTopOf="@id/iv_collect_operate" />
+
+
+      <ImageView
+        android:id="@+id/iv_file_save"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:src="@drawable/icon_file_save"
+        app:layout_constraintBottom_toBottomOf="@id/iv_collect_operate"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintRight_toRightOf="@id/iv_collect_operate_top"
+        app:layout_constraintTop_toTopOf="@id/iv_collect_operate"
+        app:layout_constraintWidth_percent="0.05" />
+
+      <ImageView
+        android:id="@+id/iv_file_list"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="20dp"
+        android:src="@drawable/icon_file_list"
+        app:layout_constraintBottom_toBottomOf="@id/iv_collect_operate"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintRight_toLeftOf="@id/iv_file_save"
+        app:layout_constraintTop_toTopOf="@id/iv_collect_operate"
+        app:layout_constraintWidth_percent="0.05" />
+
+      <FrameLayout
+        android:id="@+id/frameLayout_wave_pattern"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:background="#EEEEEE"
+        app:layout_constraintDimensionRatio="1"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_collect_operate" />
+
+      <com.hjq.shape.view.ShapeTextView
+        android:id="@+id/stv_collect_option_bg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frameLayout_wave_pattern"
+        app:shape_solidColor="@color/collect_option_bg"
+        app:shape_topLeftRadius="15dp"
+        app:shape_topRightRadius="15dp" />
+
+
+      <com.hjq.shape.view.ShapeTextView
+        android:id="@+id/stv_setting_params"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="@string/setting_params"
+        android:textColor="@color/theme_color"
+        android:textSize="16sp"
+        app:layout_constraintLeft_toLeftOf="@id/tv_page_title"
+        app:layout_constraintRight_toLeftOf="@id/stv_collect_angle"
+        app:layout_constraintTop_toTopOf="@id/stv_collect_option_bg"
+        app:shape_radius="6dp"
+        app:shape_strokeColor="@color/theme_color"
+        app:shape_strokeWidth="1dp" />
+
+      <com.hjq.shape.view.ShapeTextView
+        android:id="@+id/stv_collect_angle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="@string/collect_angle"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        app:layout_constraintLeft_toRightOf="@id/stv_setting_params"
+        app:layout_constraintRight_toRightOf="@id/iv_collect_operate_top"
+        app:layout_constraintTop_toTopOf="@id/stv_setting_params"
+        app:shape_radius="6dp"
+        app:shape_solidColor="@color/theme_color" />
+
+      <com.hjq.shape.layout.ShapeRelativeLayout
+        android:id="@+id/srl_left_top"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:padding="15dp"
+        app:layout_constraintLeft_toLeftOf="@id/tv_page_title"
+        app:layout_constraintRight_toLeftOf="@id/srl_right_top"
+        app:layout_constraintTop_toBottomOf="@id/stv_setting_params"
+        app:shape_radius="6dp"
+        app:shape_solidColor="@color/white">
+
+        <TextView
+          android:id="@+id/tv_show_time_length_tip"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/show_time_length"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+
+        <TextView
+          android:id="@+id/tv_show_time_length"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/tv_show_time_length_tip"
+          android:layout_marginTop="15dp"
+          android:textColor="@color/theme_color"
+          android:textSize="20sp"
+          android:textStyle="bold" />
+
+        <TextView
+          android:id="@+id/tv_time_unit"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignTop="@id/tv_show_time_length"
+          android:layout_alignParentEnd="true"
+          android:text="@string/second"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+      </com.hjq.shape.layout.ShapeRelativeLayout>
+
+
+      <com.hjq.shape.layout.ShapeRelativeLayout
+        android:id="@+id/srl_right_top"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:padding="15dp"
+        app:layout_constraintLeft_toRightOf="@id/srl_left_top"
+        app:layout_constraintRight_toRightOf="@id/iv_collect_operate_top"
+        app:layout_constraintTop_toTopOf="@id/srl_left_top"
+        app:shape_radius="6dp"
+        app:shape_solidColor="@color/white">
+
+        <TextView
+          android:id="@+id/tv_scale_range_tip"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/emg_scale_range"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+
+        <TextView
+          android:id="@+id/tv_scale_range"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/tv_scale_range_tip"
+          android:layout_marginTop="15dp"
+          android:textColor="@color/theme_color"
+          android:textSize="20sp"
+          android:textStyle="bold" />
+
+        <TextView
+          android:id="@+id/tv_scale_unit"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignTop="@id/tv_scale_range"
+          android:layout_alignParentEnd="true"
+          android:text="@string/mv"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+      </com.hjq.shape.layout.ShapeRelativeLayout>
+
+      <com.hjq.shape.layout.ShapeRelativeLayout
+        android:id="@+id/srl_left_bottom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginBottom="50dp"
+        android:padding="15dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="@id/tv_page_title"
+        app:layout_constraintRight_toLeftOf="@id/srl_right_bottom"
+        app:layout_constraintTop_toBottomOf="@id/srl_left_top"
+        app:shape_radius="6dp"
+        app:shape_solidColor="@color/white">
+
+        <TextView
+          android:id="@+id/tv_cap_scale_range_tip"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/cap_scale_range"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+
+        <TextView
+          android:id="@+id/tv_cap_scale_range"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/tv_cap_scale_range_tip"
+          android:layout_marginTop="15dp"
+          android:textColor="@color/theme_color"
+          android:textSize="20sp"
+          android:textStyle="bold" />
+
+        <TextView
+          android:id="@+id/tv_cap_unit"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignTop="@id/tv_cap_scale_range"
+          android:layout_alignParentEnd="true"
+          android:text="@string/pf"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+      </com.hjq.shape.layout.ShapeRelativeLayout>
+
+      <com.hjq.shape.layout.ShapeRelativeLayout
+        android:id="@+id/srl_right_bottom"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="15dp"
+        android:padding="15dp"
+        app:layout_constraintLeft_toRightOf="@id/srl_left_bottom"
+        app:layout_constraintRight_toRightOf="@id/iv_collect_operate_top"
+        app:layout_constraintTop_toTopOf="@id/srl_left_bottom"
+        app:shape_radius="6dp"
+        app:shape_solidColor="@color/white">
+
+        <TextView
+          android:id="@+id/tv_save_data_tip"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:text="@string/save_sample_data"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+
+        <TextView
+
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_below="@id/tv_save_data_tip"
+          android:layout_marginTop="15dp"
+          android:text="-"
+          android:textColor="@color/theme_color"
+          android:textSize="20sp"
+          android:textStyle="bold" />
+
+        <ImageView
+          android:id="@+id/iv_save_data"
+          android:layout_width="30dp"
+          android:layout_height="17dp"
+          android:layout_alignParentEnd="true"
+          android:src="@drawable/icon_switch_collect_nor"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_alignTop="@id/iv_save_data"
+          android:layout_alignParentEnd="true"
+          android:layout_alignParentBottom="true"
+          android:text="@string/second"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp" />
+      </com.hjq.shape.layout.ShapeRelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
+  </androidx.core.widget.NestedScrollView>
+
+
+</LinearLayout>
+
+  <!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+  <!--  xmlns:app="http://schemas.android.com/apk/res-auto"-->
+  <!--  xmlns:tools="http://schemas.android.com/tools"-->
+  <!--  android:layout_width="match_parent"-->
+  <!--  android:layout_height="match_parent"-->
+  <!--  tools:context=".ui.InformationCollectionActivity">-->
+
+  <!--</androidx.constraintlayout.widget.ConstraintLayout>-->

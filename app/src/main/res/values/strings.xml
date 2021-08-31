@@ -1,3 +1,17 @@
 <resources>
-    <string name="app_name">MedicalMeasurement</string>
+  <string name="app_name">MedicalMeasurement</string>
+  <string name="emg_angle_measuring"><![CDATA[EMG&Angle Measuring]]></string>
+  <string name="text_collect_start">启动</string>
+  <string name="text_collect_stop">启动</string>
+  <string name="setting_params">设置参数</string>
+  <string name="collect_angle">校准角度</string>
+  <string name="show_time_length">显示时间长度</string>
+  <string name="emg_scale_range">EMG刻度范围</string>
+  <string name="second">s</string>
+  <string name="mv">mV</string>
+  <string name="cap_scale_range">电容刻度范围</string>
+  <string name="pf">pF</string>
+  <string name="save_sample_data">记录采样数据</string>
+  <string name="global_setting">全局设置</string>
+
 </resources>

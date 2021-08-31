@@ -1,9 +1,12 @@
 package cn.com.medicalmeasurementassistant.base
 
 import android.app.Activity
+import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import cn.com.medicalmeasurementassistant.R
@@ -38,9 +41,12 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
     }
 
     open fun setStatusBar() {
+        transparentStatusBar(this)
         val viewStatus = findViewById<View>(R.id.view_status)
         viewStatus?.let {
-//            BarUtils.setStatusBarAlpha(it)
+            val layoutParams = it.layoutParams
+            layoutParams.height = BarUtils.getStatusBarHeight()
+            it.layoutParams = layoutParams
         }
         BarUtils.setStatusBarLightMode(this, true)
     }
@@ -49,9 +55,22 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
         return ""
     }
 
+    open fun transparentStatusBar(activity: Activity) {
+        val window = activity.window
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            val option = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            window.decorView.systemUiVisibility = option
+            window.statusBarColor = Color.TRANSPARENT
+        } else {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+        }
+    }
+
+
     open fun initTitleView() {
         titleTv = findViewById(R.id.tv_title)
-        setText(titleTv,title())
+        setText(titleTv, title())
         backLayout = findViewById(R.id.iv_back)
         backLayout?.setOnClickListener { finish() }
     }
