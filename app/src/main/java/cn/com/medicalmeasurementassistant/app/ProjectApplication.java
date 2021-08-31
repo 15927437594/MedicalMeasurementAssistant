@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.blankj.utilcode.util.Utils;
 
+import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.PathUtils;
 
 public class ProjectApplication extends Application {
@@ -15,6 +16,7 @@ public class ProjectApplication extends Application {
         application = this;
         Utils.init(this);
         PathUtils.initPathConfig(this);
+        LogUtils.LOG_PATH = getExternalFilesDir(null).getPath() + "/logs";
     }
 
     public static ProjectApplication getApp() {
