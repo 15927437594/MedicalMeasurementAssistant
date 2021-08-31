@@ -5,14 +5,12 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.app.ProjectApplication
-import cn.com.medicalmeasurementassistant.utils.LogUtil
-import cn.com.medicalmeasurementassistant.utils.StringSpanUtils
 import cn.com.medicalmeasurementassistant.utils.StringUtils
 import cn.com.medicalmeasurementassistant.view.recyclerview.BaseSimpleRecyclerAdapter
 import cn.com.medicalmeasurementassistant.view.recyclerview.ViewHolder
-import com.blankj.utilcode.util.LogUtils
 import java.io.File
 
 class FileListAdapter : BaseSimpleRecyclerAdapter<File>() {
@@ -31,8 +29,6 @@ class FileListAdapter : BaseSimpleRecyclerAdapter<File>() {
             return
         }
         mSearchKey?.let {
-
-            Log.i("ssssss---","position---------------------------$position")
             if (highLightText(t.name, it, holder.getView(R.id.tv_file_name))) {
                 return
             }
@@ -52,8 +48,8 @@ class FileListAdapter : BaseSimpleRecyclerAdapter<File>() {
             if (index != -1) {
                 highLight = true
                 lastIndex = index + searchKey.length
-                Log.i("ssssss---","index = $index  lastIndex = $lastIndex")
-                val span = ForegroundColorSpan(ProjectApplication.getApp().resources.getColor(R.color.red))
+
+                val span = ForegroundColorSpan(ContextCompat.getColor(ProjectApplication.getApp(),R.color.red))
                 spannableString.setSpan(span, index, lastIndex, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
