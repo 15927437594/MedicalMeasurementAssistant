@@ -36,19 +36,19 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-      <ImageView
+      <Switch
         android:id="@+id/iv_collect_operate_top"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginEnd="15dp"
-        android:src="@drawable/icon_switch_collect_nor"
+        android:thumb="@drawable/switch_custom_thumb_on_20"
+        android:track="@drawable/switch_custom_track_selector"
         app:layout_constraintBottom_toBottomOf="@id/tv_page_title"
-        app:layout_constraintDimensionRatio="H,84:48"
+
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_page_title"
-        app:layout_constraintWidth_percent="0.11" />
+        app:layout_constraintTop_toTopOf="@id/tv_page_title" />
 
-
+      <!--      android:src="@drawable/icon_switch_collect_nor"-->
       <ImageView
         android:id="@+id/iv_collect_operate"
         android:layout_width="0dp"
@@ -95,6 +95,68 @@
         app:layout_constraintTop_toTopOf="@id/iv_collect_operate"
         app:layout_constraintWidth_percent="0.05" />
 
+
+      <com.hjq.shape.view.ShapeTextView
+        android:id="@+id/rg_contain_bg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="25dp"
+        app:layout_constraintDimensionRatio="H,33:4"
+        app:layout_constraintLeft_toLeftOf="@id/tv_page_title"
+        app:layout_constraintRight_toRightOf="@id/iv_collect_operate_top"
+        app:layout_constraintTop_toBottomOf="@id/iv_collect_operate"
+        app:shape_radius="25dp"
+        app:shape_strokeColor="@color/theme_color"
+        app:shape_strokeWidth="1dp" />
+
+      <RadioGroup
+        android:id="@+id/rg_contain"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        android:padding="2.5dp"
+        app:layout_constraintBottom_toBottomOf="@id/rg_contain_bg"
+        app:layout_constraintDimensionRatio="H,33:4"
+        app:layout_constraintLeft_toLeftOf="@id/rg_contain_bg"
+        app:layout_constraintRight_toRightOf="@id/rg_contain_bg"
+        app:layout_constraintTop_toTopOf="@id/rg_contain_bg">
+
+        <com.hjq.shape.view.ShapeRadioButton
+          android:id="@+id/rb_option_one"
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:button="@color/transparent"
+          android:checked="true"
+          android:gravity="center"
+          android:text="@string/text_emg"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp"
+          android:textStyle="bold"
+          app:shape_radius="25dp"
+          app:shape_solidCheckedColor="@color/theme_color"
+          app:shape_solidColor="@color/white"
+          app:shape_textCheckedColor="@color/white" />
+
+        <com.hjq.shape.view.ShapeRadioButton
+          android:id="@+id/rb_option_two"
+          android:layout_width="0dp"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:button="@color/transparent"
+          android:gravity="center"
+          android:text="@string/text_capacitance"
+          android:textColor="@color/theme_color"
+          android:textSize="14sp"
+          android:textStyle="bold"
+          app:shape_radius="25dp"
+          app:shape_solidCheckedColor="@color/theme_color"
+          app:shape_solidColor="@color/white"
+          app:shape_textCheckedColor="@color/white" />
+
+      </RadioGroup>
+
+
       <FrameLayout
         android:id="@+id/frameLayout_wave_pattern"
         android:layout_width="0dp"
@@ -104,7 +166,7 @@
         app:layout_constraintDimensionRatio="1"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/iv_collect_operate" />
+        app:layout_constraintTop_toBottomOf="@id/rg_contain" />
 
       <com.hjq.shape.view.ShapeTextView
         android:id="@+id/stv_collect_option_bg"
@@ -126,7 +188,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:padding="12dp"
+        android:padding="10dp"
         android:text="@string/setting_params"
         android:textColor="@color/theme_color"
         android:textSize="16sp"
@@ -143,7 +205,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="15dp"
         android:gravity="center"
-        android:padding="12dp"
+        android:padding="10dp"
         android:text="@string/collect_angle"
         android:textColor="@color/white"
         android:textSize="16sp"
@@ -310,14 +372,14 @@
           android:textSize="20sp"
           android:textStyle="bold" />
 
-        <ImageView
+        <Switch
           android:id="@+id/iv_save_data"
-          android:layout_width="30dp"
-          android:layout_height="17dp"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
           android:layout_alignParentEnd="true"
-          android:src="@drawable/icon_switch_collect_nor"
-          android:textColor="@color/theme_color"
-          android:textSize="14sp" />
+          android:thumb="@drawable/switch_custom_thumb_on_16"
+          android:track="@drawable/switch_custom_track_selector" />
+
 
         <TextView
           android:layout_width="wrap_content"

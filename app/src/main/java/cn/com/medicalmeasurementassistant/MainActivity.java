@@ -5,7 +5,6 @@ import android.view.View;
 
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.ui.FileSelectorActivity;
-import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.PermissionHelper;
 
@@ -33,5 +32,10 @@ public class MainActivity extends BaseKotlinActivity {
                 MeasurementFileUtils.saveMeasurementFile("这是刚刚创建的" + System.currentTimeMillis());
             }
         });
+    }
+
+    private void launcher2( Class<?> clz) {
+
+
     }
 }

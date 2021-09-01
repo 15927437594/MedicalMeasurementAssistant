@@ -34,6 +34,7 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     }
 
     override fun initView() {
+
         intent.getStringExtra("parentPath")?.let {
             mParentDirectoryName = it
         }

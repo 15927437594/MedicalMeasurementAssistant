@@ -24,7 +24,8 @@
     android:roundIcon="@mipmap/ic_launcher"
     android:supportsRtl="true"
     android:theme="@style/Theme.MedicalMeasurementAssistant">
-    <activity android:name=".ui.SettingParamsActivity"></activity>
+    <activity android:name=".ui.CalibrationAngleActivity"></activity>
+    <activity android:name=".ui.SettingParamsActivity" />
     <activity android:name=".ui.InformationCollectionActivity" />
     <activity android:name=".ui.SplashActivity">
       <intent-filter>

@@ -16,7 +16,8 @@ class SplashActivity : BaseKotlinActivity() {
         handler.postDelayed({
             val intent = Intent(getActivity(), InformationCollectionActivity::class.java)
             startActivity(intent)
-        },2000)
+            finish()
+        }, 1000)
 
     }
 }

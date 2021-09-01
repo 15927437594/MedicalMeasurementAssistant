@@ -1,6 +1,10 @@
 package cn.com.medicalmeasurementassistant.base
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.res.Configuration
+import android.content.res.Resources
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -89,7 +93,19 @@ abstract class BaseKotlinActivity : AppCompatActivity() {
             tv?.text = if (StringUtils.isEmpty(content)) "" else content
         }
 
+        fun launcherActivity(context: Context, clazz: Class<*>) {
+            val intent = Intent(context, clazz)
+            context.startActivity(intent)
+        }
 
     }
 
+    @Override
+    override fun getResources(): Resources {
+        val res = super.getResources()
+        val config = Configuration()
+        config.setToDefaults()
+        res.updateConfiguration(config, res.displayMetrics)
+        return res
+    }
 }

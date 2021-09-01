@@ -13,5 +13,20 @@
   <string name="pf">pF</string>
   <string name="save_sample_data">记录采样数据</string>
   <string name="global_setting">全局设置</string>
+  <string name="text_angle_mv">量程（mV）</string>
+  <string name="text_ref_electrode_status">REF电极状态</string>
+  <string name="text_electrode_status_off">已脱落</string>
+  <string name="text_electrode_status_on">未脱落</string>
+  <string name="text_channel_opened">通道开启</string>
+  <string name="text_high_pass_filtering">高通滤波</string>
+  <string name="text_power_frequency_notch">工频陷波</string>
+  <string name="text_real_angle_unit">实际角度（度）</string>
+  <string name="text_capacitance_tip">电容值（pF）</string>
+  <string name="text_step_one">第一步：腿伸直，保持膝盖关节角度为0度</string>
+  <string name="text_step_two">第一步：腿伸直，保持膝盖关节角度为0度</string>
+  <string name="text_sure">确定</string>
+  <string name="text_next_step">下一步</string>
+  <string name="text_emg">EMG</string>
+  <string name="text_capacitance">电容</string>
 
 </resources>

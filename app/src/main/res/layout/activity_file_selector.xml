@@ -4,7 +4,6 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/bg_color"
   android:focusable="true"
   android:focusableInTouchMode="true"
   tools:context=".ui.FileSelectorActivity">
@@ -13,15 +12,28 @@
     android:id="@+id/ll_title_contain"
     layout="@layout/layout_include_title" />
 
+  <com.hjq.shape.view.ShapeTextView
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    app:layout_constraintBottom_toBottomOf="@id/search_view"
+    app:layout_constraintLeft_toLeftOf="@id/search_view"
+    app:layout_constraintRight_toRightOf="@id/search_view"
+    app:layout_constraintTop_toTopOf="@id/search_view"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/theme_color_10" />
+
   <SearchView
     android:id="@+id/search_view"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
+    android:layout_marginHorizontal="15dp"
     android:imeOptions="actionSearch"
+    android:searchIcon="@drawable/icon_file_search"
     android:visibility="gone"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
     app:layout_constraintTop_toBottomOf="@id/ll_title_contain" />
+
 
   <!--  <EditText-->
   <!--    android:id="@+id/et_search_content"-->
@@ -34,6 +46,7 @@
     android:id="@+id/recycler_view"
     android:layout_width="0dp"
     android:layout_height="0dp"
+    android:layout_marginHorizontal="15dp"
     android:overScrollMode="never"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"

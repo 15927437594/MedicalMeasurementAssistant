@@ -21,6 +21,16 @@
   <color name="color_text_theme_10_white">#19ffffff</color>
   <color name="red">#ff0000</color>
   <color name="theme_color">#6836B8</color>
+  <color name="theme_color_10">#1a6836B8</color>
+  <color name="theme_color_shadow">#ff6836B8</color>
   <color name="collect_option_bg">#F4F1FF</color>
   <color name="title_color">#48336A</color>
+  <color name="title_color_60">#9948336A</color>
+  <color name="title_color_40">#6648336A</color>
+  <color name="electrode_bg_color_on">#3D61CDE0</color>
+  <color name="electrode_text_color_on">#61CDE0</color>
+  <color name="electrode_bg_color_off">#3DE06192</color>
+  <color name="electrode_text_color_off">#E06192</color>
+  <color name="options_mv_bg_color">#F4F2FA</color>
+
 </resources>

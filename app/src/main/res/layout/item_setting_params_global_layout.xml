@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content">
+
+  <com.hjq.shape.view.ShapeTextView
+    android:id="@+id/stv_setting_bg"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginBottom="15dp"
+    app:layout_constraintBottom_toTopOf="@id/slv_electrode_status"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/theme_color" />
+
+  <TextView
+    android:id="@+id/tv_global_setting"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="15dp"
+    android:layout_marginTop="15dp"
+    android:text="@string/global_setting"
+    android:textColor="@color/white"
+    android:textSize="18sp"
+    android:textStyle="bold"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+  <!-- 通道设置-->
+  <com.hjq.shape.view.ShapeTextView
+    android:id="@+id/tv_channel_setting_bg"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginTop="12dp"
+    app:layout_constraintDimensionRatio="1"
+    app:layout_constraintLeft_toLeftOf="@id/tv_global_setting"
+    app:layout_constraintRight_toLeftOf="@id/tv_high_pass_filtering_setting_bg"
+    app:layout_constraintTop_toBottomOf="@id/tv_global_setting"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/color_text_theme_10_white" />
+
+  <ImageView
+    android:id="@+id/iv_channel_status"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginStart="12sp"
+    android:src="@drawable/icon_setting_params_sel"
+    app:layout_constraintBottom_toTopOf="@id/tv_channel_status"
+    app:layout_constraintDimensionRatio="H,7:4"
+    app:layout_constraintLeft_toLeftOf="@id/tv_channel_setting_bg"
+    app:layout_constraintTop_toTopOf="@id/tv_channel_setting_bg"
+    app:layout_constraintWidth_percent="0.1" />
+
+  <TextView
+    android:id="@+id/tv_channel_status"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/text_channel_opened"
+    android:textColor="@color/white"
+    android:textSize="15sp"
+    app:layout_constraintBottom_toBottomOf="@id/tv_channel_setting_bg"
+    app:layout_constraintLeft_toLeftOf="@id/iv_channel_status"
+    app:layout_constraintTop_toBottomOf="@id/iv_channel_status" />
+
+  <!-- 高通滤波设置-->
+  <com.hjq.shape.view.ShapeTextView
+    android:id="@+id/tv_high_pass_filtering_setting_bg"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginStart="15dp"
+    app:layout_constraintDimensionRatio="1"
+    app:layout_constraintLeft_toRightOf="@id/tv_channel_setting_bg"
+    app:layout_constraintRight_toLeftOf="@id/tv_power_frequency_notch_setting_bg"
+    app:layout_constraintTop_toTopOf="@id/tv_channel_setting_bg"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/color_text_theme_10_white" />
+
+
+  <ImageView
+    android:id="@+id/iv_filtering_status"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginStart="12sp"
+    android:src="@drawable/icon_setting_params_sel"
+    app:layout_constraintBottom_toBottomOf="@id/iv_channel_status"
+    app:layout_constraintDimensionRatio="H,7:4"
+    app:layout_constraintLeft_toLeftOf="@id/tv_high_pass_filtering_setting_bg"
+    app:layout_constraintTop_toTopOf="@id/iv_channel_status"
+    app:layout_constraintWidth_percent="0.1" />
+
+  <TextView
+    android:id="@+id/tv_filtering_status"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/text_high_pass_filtering"
+    android:textColor="@color/white"
+    android:textSize="15sp"
+    app:layout_constraintBottom_toBottomOf="@id/tv_channel_status"
+    app:layout_constraintLeft_toLeftOf="@id/iv_filtering_status"
+    app:layout_constraintTop_toTopOf="@id/tv_channel_status" />
+
+
+  <!-- 工频陷波设置-->
+  <com.hjq.shape.view.ShapeTextView
+    android:id="@+id/tv_power_frequency_notch_setting_bg"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginStart="15dp"
+    android:layout_marginEnd="15dp"
+    app:layout_constraintDimensionRatio="1"
+    app:layout_constraintLeft_toRightOf="@id/tv_high_pass_filtering_setting_bg"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="@id/tv_channel_setting_bg"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/color_text_theme_10_white" />
+
+
+  <ImageView
+    android:id="@+id/iv_frequency_status"
+    android:layout_width="0dp"
+    android:layout_height="0dp"
+    android:layout_marginStart="12sp"
+    android:src="@drawable/icon_setting_params_sel"
+    app:layout_constraintBottom_toBottomOf="@id/iv_channel_status"
+    app:layout_constraintDimensionRatio="H,7:4"
+    app:layout_constraintLeft_toLeftOf="@id/tv_power_frequency_notch_setting_bg"
+    app:layout_constraintTop_toTopOf="@id/iv_channel_status"
+    app:layout_constraintWidth_percent="0.1" />
+
+  <TextView
+    android:id="@+id/tv_frequency_status"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="@string/text_power_frequency_notch"
+    android:textColor="@color/white"
+    android:textSize="15sp"
+    app:layout_constraintBottom_toBottomOf="@id/tv_channel_status"
+    app:layout_constraintLeft_toLeftOf="@id/iv_frequency_status"
+    app:layout_constraintTop_toTopOf="@id/tv_channel_status" />
+
+
+
+  <com.hjq.shape.layout.ShapeLinearLayout
+    android:id="@+id/power_frequency_"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="10dp"
+    android:orientation="horizontal"
+    android:paddingHorizontal="15dp"
+    android:paddingVertical="10dp"
+    app:layout_constraintLeft_toLeftOf="@id/tv_channel_setting_bg"
+    app:layout_constraintRight_toRightOf="@id/tv_power_frequency_notch_setting_bg"
+    app:layout_constraintTop_toBottomOf="@id/tv_channel_setting_bg"
+    app:shape_radius="6dp"
+    app:shape_solidColor="@color/color_text_theme_10_white">
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/text_angle_mv"
+      android:textColor="@color/white"
+      android:textSize="15sp" />
+
+    <TextView
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:drawablePadding="4dp"
+      android:gravity="end"
+      android:text="400"
+      android:textColor="@color/white"
+      android:textSize="15sp"
+      app:drawableEndCompat="@drawable/icon_select_draw_right" />
+
+  </com.hjq.shape.layout.ShapeLinearLayout>
+
+  <com.hjq.shape.layout.ShapeLinearLayout
+    android:id="@+id/slv_electrode_status"
+    android:layout_width="0dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="30dp"
+    android:paddingHorizontal="15dp"
+    android:paddingVertical="9dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/power_frequency_"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/electrode_bg_color_on">
+
+    <TextView
+      android:id="@+id/tv_electrode_status_tip"
+      android:layout_width="0dp"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:text="@string/text_ref_electrode_status"
+      android:textColor="@color/electrode_text_color_on"
+      android:textSize="15sp" />
+
+    <TextView
+      android:id="@+id/tv_electrode_status"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="@string/text_electrode_status_on"
+      android:textColor="@color/electrode_text_color_on"
+      android:textSize="15sp" />
+  </com.hjq.shape.layout.ShapeLinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
