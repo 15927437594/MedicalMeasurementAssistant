@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
-  android:layout_height="wrap_content">
+  android:layout_height="wrap_content"
+  tools:ignore="UseSwitchCompatOrMaterialXml">
 
   <com.hjq.shape.view.ShapeTextView
     android:id="@+id/stv_setting_bg"
@@ -41,17 +43,16 @@
     app:shape_radius="5dp"
     app:shape_solidColor="@color/color_text_theme_10_white" />
 
-  <ImageView
-    android:id="@+id/iv_channel_status"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
+  <Switch
+    android:id="@+id/switch_channel_status"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:layout_marginStart="12sp"
-    android:src="@drawable/icon_setting_params_sel"
+    android:thumb="@drawable/switch_theme_color_on_20dp"
+    android:track="@drawable/switch_white_track_selector"
     app:layout_constraintBottom_toTopOf="@id/tv_channel_status"
-    app:layout_constraintDimensionRatio="H,7:4"
     app:layout_constraintLeft_toLeftOf="@id/tv_channel_setting_bg"
-    app:layout_constraintTop_toTopOf="@id/tv_channel_setting_bg"
-    app:layout_constraintWidth_percent="0.1" />
+    app:layout_constraintTop_toTopOf="@id/tv_channel_setting_bg" />
 
   <TextView
     android:id="@+id/tv_channel_status"
@@ -61,8 +62,8 @@
     android:textColor="@color/white"
     android:textSize="15sp"
     app:layout_constraintBottom_toBottomOf="@id/tv_channel_setting_bg"
-    app:layout_constraintLeft_toLeftOf="@id/iv_channel_status"
-    app:layout_constraintTop_toBottomOf="@id/iv_channel_status" />
+    app:layout_constraintLeft_toLeftOf="@id/switch_channel_status"
+    app:layout_constraintTop_toBottomOf="@id/switch_channel_status" />
 
   <!-- 高通滤波设置-->
   <com.hjq.shape.view.ShapeTextView
@@ -78,17 +79,17 @@
     app:shape_solidColor="@color/color_text_theme_10_white" />
 
 
-  <ImageView
-    android:id="@+id/iv_filtering_status"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
+  <Switch
+    android:id="@+id/switch_filtering_status"
+    android:thumb="@drawable/switch_theme_color_on_20dp"
+    android:track="@drawable/switch_white_track_selector"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:checked="true"
     android:layout_marginStart="12sp"
-    android:src="@drawable/icon_setting_params_sel"
-    app:layout_constraintBottom_toBottomOf="@id/iv_channel_status"
-    app:layout_constraintDimensionRatio="H,7:4"
+    app:layout_constraintBottom_toBottomOf="@id/switch_channel_status"
     app:layout_constraintLeft_toLeftOf="@id/tv_high_pass_filtering_setting_bg"
-    app:layout_constraintTop_toTopOf="@id/iv_channel_status"
-    app:layout_constraintWidth_percent="0.1" />
+    app:layout_constraintTop_toTopOf="@id/switch_channel_status" />
 
   <TextView
     android:id="@+id/tv_filtering_status"
@@ -98,7 +99,7 @@
     android:textColor="@color/white"
     android:textSize="15sp"
     app:layout_constraintBottom_toBottomOf="@id/tv_channel_status"
-    app:layout_constraintLeft_toLeftOf="@id/iv_filtering_status"
+    app:layout_constraintLeft_toLeftOf="@id/switch_filtering_status"
     app:layout_constraintTop_toTopOf="@id/tv_channel_status" />
 
 
@@ -117,17 +118,16 @@
     app:shape_solidColor="@color/color_text_theme_10_white" />
 
 
-  <ImageView
-    android:id="@+id/iv_frequency_status"
-    android:layout_width="0dp"
-    android:layout_height="0dp"
+  <Switch
+    android:id="@+id/switch_frequency_status"
+    android:thumb="@drawable/switch_theme_color_on_20dp"
+    android:track="@drawable/switch_white_track_selector"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
     android:layout_marginStart="12sp"
-    android:src="@drawable/icon_setting_params_sel"
-    app:layout_constraintBottom_toBottomOf="@id/iv_channel_status"
-    app:layout_constraintDimensionRatio="H,7:4"
+    app:layout_constraintBottom_toBottomOf="@id/switch_channel_status"
     app:layout_constraintLeft_toLeftOf="@id/tv_power_frequency_notch_setting_bg"
-    app:layout_constraintTop_toTopOf="@id/iv_channel_status"
-    app:layout_constraintWidth_percent="0.1" />
+    app:layout_constraintTop_toTopOf="@id/switch_channel_status" />
 
   <TextView
     android:id="@+id/tv_frequency_status"
@@ -137,9 +137,8 @@
     android:textColor="@color/white"
     android:textSize="15sp"
     app:layout_constraintBottom_toBottomOf="@id/tv_channel_status"
-    app:layout_constraintLeft_toLeftOf="@id/iv_frequency_status"
+    app:layout_constraintLeft_toLeftOf="@id/switch_frequency_status"
     app:layout_constraintTop_toTopOf="@id/tv_channel_status" />
-
 
 
   <com.hjq.shape.layout.ShapeLinearLayout
@@ -168,7 +167,6 @@
       android:layout_height="wrap_content"
       android:drawablePadding="4dp"
       android:gravity="end"
-      android:text="400"
       android:textColor="@color/white"
       android:textSize="15sp"
       app:drawableEndCompat="@drawable/icon_select_draw_right" />

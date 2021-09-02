@@ -10,6 +10,8 @@
   <color name="transparent">#00ffffff</color>
   <color name="bg_color">#eeeeee</color>
   <color name="color_text_theme_70_white">#b0ffffff</color>
+  <color name="color_text_theme_10_white">#19ffffff</color>
+  <color name="color_text_theme_30_white">#4Cffffff</color>
   <color name="text_color_66">#666666</color>
   <color name="text_color_search_high_light">#FFE300</color>
 
@@ -18,7 +20,7 @@
   <color name="text_color_status_100">#00C78E</color>
   <color name="text_color_status_30">#FF7600</color>
   <color name="text_color_status_10">#A93239</color>
-  <color name="color_text_theme_10_white">#19ffffff</color>
+
   <color name="red">#ff0000</color>
   <color name="theme_color">#6836B8</color>
   <color name="theme_color_10">#1a6836B8</color>

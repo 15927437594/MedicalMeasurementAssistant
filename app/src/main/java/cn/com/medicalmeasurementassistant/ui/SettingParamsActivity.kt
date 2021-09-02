@@ -3,6 +3,7 @@ package cn.com.medicalmeasurementassistant.ui
 import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
 import cn.com.medicalmeasurementassistant.ui.adapter.SettingParamsAdapter
 import cn.com.medicalmeasurementassistant.utils.spaces_item_decoration.RecyclerViewUtils
 
@@ -22,12 +23,7 @@ class SettingParamsActivity : BaseKotlinActivity() {
 
         val paramsAdapter = SettingParamsAdapter()
         recyclerView.adapter = paramsAdapter
-
-        val mutableListOf = mutableListOf<String>()
-        for (i in 0..9) {
-            mutableListOf.add("通道$i")
-        }
-        paramsAdapter.datas = mutableListOf
+        paramsAdapter.datas = SettingParamsBean.getInstance().settingBeans
 
 
     }

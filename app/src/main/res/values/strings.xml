@@ -28,5 +28,8 @@
   <string name="text_next_step">下一步</string>
   <string name="text_emg">EMG</string>
   <string name="text_capacitance">电容</string>
+  <string name="text_heng">-</string>
+  <string name="text_electrode_on">电极未脱落</string>
+  <string name="text_electrode_off">电极脱落</string>
 
 </resources>
