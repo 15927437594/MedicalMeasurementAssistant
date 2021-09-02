@@ -53,7 +53,12 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
             } else if (o1.isFile && o2.isDirectory) {
                 1
             } else {
-                o1.name.compareTo(o2.name)
+                if (o1.lastModified() > o2.lastModified()) {
+                    -1
+                } else {
+                   1
+                }
+//                o1.lastModified().compareTo(o2.lastModified())
             }
         })
 //        if (isCanUpdateList)
