@@ -8,32 +8,41 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.app.ProjectApplication
+import cn.com.medicalmeasurementassistant.entity.FileItemBean
+import cn.com.medicalmeasurementassistant.utils.FileUtils
 import cn.com.medicalmeasurementassistant.utils.StringUtils
 import cn.com.medicalmeasurementassistant.view.recyclerview.BaseSimpleRecyclerAdapter
 import cn.com.medicalmeasurementassistant.view.recyclerview.ViewHolder
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
 
-class FileListAdapter : BaseSimpleRecyclerAdapter<File>() {
+class FileListAdapter : BaseSimpleRecyclerAdapter<FileItemBean>() {
     var mSearchKey: String? = null
     override fun getLayoutId(): Int {
         return R.layout.layout_item_file_list
     }
 
 
-    override fun convert(holder: ViewHolder, t: File, position: Int) {
-        val imageView = holder.getImageView(R.id.iv_file_type)
-        imageView.setImageResource(if (t.isDirectory) R.drawable.icon_folder else R.drawable.icon_file)
-
-        if (StringUtils.isEmpty(mSearchKey) || StringUtils.isEmpty(t.name)) {
-            holder.setText(R.id.tv_file_name, t.name)
+    override fun convert(holder: ViewHolder, t: FileItemBean, position: Int) {
+//        val imageView = holder.getImageView(R.id.iv_file_type)
+//        imageView.setImageResource(if (t.isDirectory) R.drawable.icon_folder else R.drawable.icon_file)
+//        holder.setText(R.id.tv_file_date, t.lastModified)
+        if (StringUtils.isEmpty(mSearchKey)) {
+            holder.setText(R.id.tv_file_name, t.fileName)
+            holder.setText(R.id.tv_file_date, t.lastModified)
             return
         }
         mSearchKey?.let {
-            if (highLightText(t.name, it, holder.getView(R.id.tv_file_name))) {
+            val highLightText = highLightText(t.lastModified, it, holder.getView(R.id.tv_file_date))
+            val highLightText1 = highLightText(t.fileName, it, holder.getView(R.id.tv_file_name))
+            if (highLightText || highLightText1) {
                 return
             }
         }
-        holder.setText(R.id.tv_file_name, t.name)
+        holder.setText(R.id.tv_file_date, t.lastModified)
+        holder.setText(R.id.tv_file_name, t.fileName)
+
     }
 
 
@@ -49,12 +58,21 @@ class FileListAdapter : BaseSimpleRecyclerAdapter<File>() {
                 highLight = true
                 lastIndex = index + searchKey.length
 
-                val span = ForegroundColorSpan(ContextCompat.getColor(ProjectApplication.getApp(),R.color.red))
+                val span = ForegroundColorSpan(ContextCompat.getColor(ProjectApplication.getApp(), R.color.red))
                 spannableString.setSpan(span, index, lastIndex, Spanned.SPAN_INCLUSIVE_INCLUSIVE)
             }
         }
         textView.text = spannableString
         return highLight
     }
+}
 
+fun getFileLastModifiedTime(file: File): String {
+    val mFormatType = "yyyy.MM.dd"
+    val cal = Calendar.getInstance()
+    val time = file.lastModified()
+    val formatter = SimpleDateFormat(mFormatType)
+    cal.timeInMillis = time
+    // 输出：修改时间[2] 2009-08-17 10:32:38
+    return formatter.format(cal.time)
 }

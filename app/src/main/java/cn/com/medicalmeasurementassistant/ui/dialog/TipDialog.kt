@@ -23,7 +23,8 @@ fun showErrorTipDialog(activity: Activity, content: String, sureStr: String, lis
         dialog.dismiss()
         listen.sure()
     }
-
+    dialog.setContentView(view)
+    setFullScreenDialog(dialog)
 }
 
 interface DialogListener {

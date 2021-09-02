@@ -1,6 +1,7 @@
 package cn.com.medicalmeasurementassistant.ui
 
 import android.content.Context
+import android.graphics.Color
 import android.text.TextUtils
 import android.view.MotionEvent
 import android.view.View
@@ -10,13 +11,18 @@ import android.widget.SearchView
 import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.entity.FileItemBean
 import cn.com.medicalmeasurementassistant.ui.adapter.FileListAdapter
+import cn.com.medicalmeasurementassistant.ui.adapter.getFileLastModifiedTime
 import cn.com.medicalmeasurementassistant.utils.PathUtils
+import cn.com.medicalmeasurementassistant.utils.StringUtils
 import cn.com.medicalmeasurementassistant.utils.TestUtil
 import cn.com.medicalmeasurementassistant.utils.ToastHelper
 import cn.com.medicalmeasurementassistant.utils.spaces_item_decoration.RecyclerViewUtils
 import com.blankj.utilcode.util.FileUtils
+import java.io.File
 import java.io.FileFilter
+import java.lang.reflect.Field
 
 
 class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
@@ -26,7 +32,7 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     private var mParentDirectoryName: String = PathUtils.getMeasurementDataPath()
     private var isCanUpdateList: Boolean = true
     override fun getLayoutId(): Int {
-        return R.layout.activity_file_selector
+        return R.layout.activity_file_selector2
     }
 
     override fun title(): String {
@@ -35,36 +41,73 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
 
     override fun initView() {
 
-        intent.getStringExtra("parentPath")?.let {
-            mParentDirectoryName = it
+
+        try {        //--拿到字节码
+            val argClass: Class<SearchView> = mSearchView.javaClass
+            //--指定某个私有属性,mSearchPlate是搜索框父布局的名字
+            val ownField: Field = argClass.getDeclaredField("mSearchPlate")
+            //--暴力反射,只有暴力反射才能拿到私有属性
+            ownField.isAccessible = true
+            val mView = ownField[mSearchView] as View
+            //--设置背景
+            mView.setBackgroundColor(Color.TRANSPARENT)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
+
 
         mSearchView.visibility = View.VISIBLE
         //设置该SearchView默认是否自动缩小为图标
         mSearchView.isIconifiedByDefault = false
         //设置该SearchView显示搜索按钮
         mSearchView.isSubmitButtonEnabled = true
-        mSearchView.queryHint = "查找"
-        RecyclerViewUtils.setGridLayoutManager(mRecyclerView, 4, 2f)
+        mSearchView.queryHint = getString(R.string.text_search_hint)
+        RecyclerViewUtils.setRecyclerViewDivider(mRecyclerView, this, R.drawable.divider_tran_shape_8dp)
         mRecyclerView.adapter = fileListAdapter
         updateDirectory("")
     }
 
     private fun updateDirectory(searchKey: String) {
         val listFilesInDir = FileUtils.listFilesInDirWithFilter(mParentDirectoryName, getFileFilter(searchKey), true)
+        val listFiles = sss(listFilesInDir)
         listFilesInDir.sortWith(Comparator { o1, o2 ->
             o1.name.compareTo(o2.name)
         })
         if (isCanUpdateList) {
             fileListAdapter.mSearchKey = searchKey
-            fileListAdapter.datas = listFilesInDir
+            fileListAdapter.datas = listFiles
         }
     }
 
+    private fun sss(fileList: List<File>): List<FileItemBean> {
+        val mutableList = mutableListOf<FileItemBean>()
+        for (file in fileList) {
+            val fileItemBean = FileItemBean()
+            fileItemBean.file = file
+            fileItemBean.lastModified = getFileLastModifiedTime(file)
+            fileItemBean.fileName = getFileNameNoEx(file.name)
+            mutableList.add(fileItemBean)
+        }
+        return mutableList
+    }
 
+    /*
+    * Java文件操作 获取不带扩展名的文件名
+    * */
+    private fun getFileNameNoEx(filename: String): String {
+        if (filename.isNotEmpty()) {
+            val dot = filename.lastIndexOf('.')
+            if (dot > -1 && dot < filename.length) {
+                return filename.substring(0, dot)
+            }
+        }
+        return filename
+    }
+
+    // 筛选文件
     private fun getFileFilter(searchKey: String): FileFilter {
         return FileFilter { pathname ->
-            pathname.name.endsWith(".txt") && pathname.isFile && pathname.name.contains(searchKey)
+            pathname.name.endsWith(".txt") && pathname.isFile && (getFileNameNoEx(pathname.name).contains(searchKey) || getFileLastModifiedTime(pathname).contains(searchKey))
         }
     }
 
@@ -72,12 +115,12 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
         backLayout?.setOnClickListener(this)
         fileListAdapter.setOnItemClickListener { _, position ->
             val file = fileListAdapter.datas[position]
-            TestUtil.shareFile(getActivity(), file)
+            TestUtil.shareFile(getActivity(), file.file)
         }
 
         fileListAdapter.setOnItemLongClickListener { _, position ->
             val file = fileListAdapter.datas[position]
-            val path = file.path.replace("$mParentDirectoryName/","")
+            val path = file.file.path.replace("$mParentDirectoryName/", "")
             ToastHelper.showLong(path)
             true
 

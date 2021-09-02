@@ -5,6 +5,8 @@ import android.widget.RadioGroup
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.ui.dialog.FileNameDialogListener
+import cn.com.medicalmeasurementassistant.ui.dialog.showInputFileNameDialog
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils
 
 class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener {
@@ -33,9 +35,18 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.iv_file_list -> launcherActivity(this, FileSelectorActivity::class.java)
+            R.id.iv_file_list -> launcherActivity(this, FileSearchActivity::class.java)
             R.id.iv_file_save -> {
-                MeasurementFileUtils.saveMeasurementFile("这是刚刚创建的" + System.currentTimeMillis())
+                showInputFileNameDialog(this, object : FileNameDialogListener {
+                    override fun sure(fileName: String) {
+                        MeasurementFileUtils.saveMeasurementFile(fileName,"这是刚刚创建的" + System.currentTimeMillis())
+                    }
+                })
+
+
+
+
+
             }
             R.id.stv_setting_params -> launcherActivity(this, SettingParamsActivity::class.java)
             R.id.stv_collect_angle -> launcherActivity(this, CalibrationAngleActivity::class.java)

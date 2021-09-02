@@ -18,7 +18,7 @@ public class MeasurementFileUtils {
      * @param content
      */
     public synchronized static void saveMeasurementFile(String content) {
-        saveMeasurementFile(content, null);
+        saveMeasurementFile(null, content);
     }
 
     /**
@@ -26,9 +26,10 @@ public class MeasurementFileUtils {
      *
      * @param content
      */
-    public synchronized static void saveMeasurementFile(String content, String fileName) {
+    public synchronized static void saveMeasurementFile(String fileName, String content) {
         // 保存内容到文件
-        String storePath = PathUtils.getMeasurementDataPath() + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE));
+        String storePath = PathUtils.getMeasurementDataPath();
+//        + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE))
         if (StringUtils.isEmpty(fileName)) {
             fileName = TimeUtils.getNowString(new SimpleDateFormat("HH_mm_ss", Locale.SIMPLIFIED_CHINESE)) + ".txt";
         } else {
@@ -37,10 +38,10 @@ public class MeasurementFileUtils {
             }
         }
         File file = new File(storePath, fileName);
-        saveMeasurementFile(file, content);
+        saveMeasurementFileForFile(file, content);
     }
 
-    public synchronized static void saveMeasurementFile(File file, String content) {
+    public synchronized static void saveMeasurementFileForFile(File file, String content) {
 //        boolean orExistsFile = FileUtils.createOrExistsFile(file);
         FileIOUtils.writeFileFromString(file, content);
 //        if (orExistsFile) {

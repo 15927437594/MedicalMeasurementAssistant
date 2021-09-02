@@ -25,13 +25,13 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
     private var mStack: Stack<File> = Stack()
 
     override fun getLayoutId(): Int {
-        return R.layout.activity_file_selector
+        return R.layout.activity_file_selector2
     }
 
     override fun initView() {
         mTvMore.visibility = View.VISIBLE
         mTvMore.setBackgroundResource(R.drawable.icon_search)
-        RecyclerViewUtils.setGridLayoutManager(mRecyclerView, 4, 2f)
+        RecyclerViewUtils.setRecyclerViewDivider(mRecyclerView, this, R.drawable.divider_tran_shape_8dp)
         mRecyclerView.adapter = fileListAdapter
         updateDirectory(null)
 
@@ -43,7 +43,7 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
             titleTv?.text = "文件列表"
             directoryName = mParentDirectoryName
         } else {
-            titleTv?.text = file.path.replace("$mParentDirectoryName/","")
+            titleTv?.text = file.path.replace("$mParentDirectoryName/", "")
             directoryName = file.path
         }
         val listFilesInDir = FileUtils.listFilesInDir(directoryName)
@@ -56,22 +56,22 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
                 o1.name.compareTo(o2.name)
             }
         })
-        if (isCanUpdateList)
-            fileListAdapter.datas = listFilesInDir
+//        if (isCanUpdateList)
+//            fileListAdapter.datas = listFilesInDir
     }
 
     override fun initListener() {
-        mTvMore.setOnClickListener(this)
-        backLayout?.setOnClickListener(this)
-        fileListAdapter.setOnItemClickListener { _, position ->
-            val file = fileListAdapter.datas[position]
-            if (file.isDirectory) {
-                mStack.push(file)
-                updateDirectory(file)
-            } else {
-                TestUtil.shareFile(getActivity(), file)
-            }
-        }
+//        mTvMore.setOnClickListener(this)
+//        backLayout?.setOnClickListener(this)
+//        fileListAdapter.setOnItemClickListener { _, position ->
+//            val file = fileListAdapter.datas[position]
+//            if (file.isDirectory) {
+//                mStack.push(file)
+//                updateDirectory(file)
+//            } else {
+//                TestUtil.shareFile(getActivity(), file)
+//            }
+//        }
     }
 
     override fun onBackPressed() {
@@ -93,7 +93,7 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
 
             R.id.tv_more -> {
                 val intent = Intent(this, FileSearchActivity::class.java)
-                intent.putExtra("parentPath",directoryName )
+                intent.putExtra("parentPath", directoryName)
                 startActivity(intent)
             }
             R.id.iv_back -> {
