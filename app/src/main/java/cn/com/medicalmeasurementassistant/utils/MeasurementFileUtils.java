@@ -1,6 +1,6 @@
 package cn.com.medicalmeasurementassistant.utils;
 
-import com.blankj.utilcode.util.FileUtils;
+import com.blankj.utilcode.util.FileIOUtils;
 import com.blankj.utilcode.util.TimeUtils;
 
 import java.io.File;
@@ -18,31 +18,36 @@ public class MeasurementFileUtils {
      * @param content
      */
     public synchronized static void saveMeasurementFile(String content) {
-        // 保存log到文件
-        String storePath = PathUtils.getMeasurementDataPath() + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE));
-        String fileName = TimeUtils.getNowString(new SimpleDateFormat("HH_mm_ss", Locale.SIMPLIFIED_CHINESE)) + ".txt";
-//        boolean orExistsFile = FileUtils.createOrExistsFile(storePath);
-        File file = new File(storePath, fileName);
-        saveMeasurementFile(file, content);
+        saveMeasurementFile(null, content);
     }
 
-    public synchronized static void saveMeasurementFile(File file, String content) {
-//        if (file == null) {
-//            return;
-//        }
-//        if (file.exists()) {
-//            addTxtToFileWrite(file, content);
-//            return;
-//        }
-//
-//        boolean newFile = file.mkdirs();
-//        if (newFile)
-//            addTxtToFileWrite(file, content);
-//        //
-        boolean orExistsFile = FileUtils.createOrExistsFile(file);
-        if (orExistsFile) {
-            addTxtToFileWrite(file, content);
+    /**
+     * 保存文件
+     *
+     * @param content
+     */
+    public synchronized static void saveMeasurementFile(String fileName, String content) {
+        // 保存内容到文件
+        String storePath = PathUtils.getMeasurementDataPath();
+//        + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE))
+        if (StringUtils.isEmpty(fileName)) {
+            fileName = TimeUtils.getNowString(new SimpleDateFormat("HH_mm_ss", Locale.SIMPLIFIED_CHINESE)) + ".txt";
+        } else {
+            if (!fileName.endsWith(".txt")) {
+                fileName += ".txt";
+            }
         }
+        File file = new File(storePath, fileName);
+        saveMeasurementFileForFile(file, content);
+    }
+
+    public synchronized static void saveMeasurementFileForFile(File file, String content) {
+//        boolean orExistsFile = FileUtils.createOrExistsFile(file);
+        FileIOUtils.writeFileFromString(file, content);
+//        if (orExistsFile) {
+//
+//            addTxtToFileWrite(file, content);
+//        }
     }
 
     /**

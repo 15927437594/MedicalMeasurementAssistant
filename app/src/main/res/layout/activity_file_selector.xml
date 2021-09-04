@@ -4,22 +4,81 @@
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  android:background="@color/bg_color"
+  android:focusable="true"
+  android:focusableInTouchMode="true"
   tools:context=".ui.FileSelectorActivity">
 
   <include
     android:id="@+id/ll_title_contain"
-    layout="@layout/layout_incluce_title" />
+    layout="@layout/layout_include_title" />
 
-  <SearchView
-    android:id="@+id/search_view"
+  <com.hjq.shape.layout.ShapeLinearLayout
+    android:id="@+id/srl_search_contain"
     android:layout_width="0dp"
     android:layout_height="wrap_content"
-    android:imeOptions="actionSearch"
-    android:visibility="gone"
+    android:layout_marginHorizontal="15dp"
+    android:layout_marginTop="15dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/ll_title_contain" />
+    app:layout_constraintTop_toBottomOf="@id/ll_title_contain"
+    app:shape_radius="5dp"
+    app:shape_solidColor="@color/theme_color_10">
+
+    <ImageView
+      android:layout_width="15dp"
+      android:layout_height="15dp"
+      android:layout_marginHorizontal="15dp"
+      android:layout_marginVertical="15dp"
+      android:src="@drawable/icon_file_search" />
+
+    <EditText
+      android:id="@+id/edit_search_file"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_gravity="center_vertical"
+      android:layout_weight="1"
+      android:background="@color/transparent"
+      android:gravity="center_vertical"
+      android:hint="@string/text_search_hint"
+      android:textColor="@color/title_color"
+      android:textSize="16sp"
+      android:imeOptions="actionSearch"
+      android:textColorHint="@color/title_color_40" />
+
+<!--    <ImageView-->
+<!--      android:layout_width="15dp"-->
+<!--      android:layout_height="15dp"-->
+<!--      android:layout_marginHorizontal="15dp"-->
+<!--      android:layout_marginVertical="15dp"-->
+<!--      android:src="@drawable/icon_file_search" />-->
+  </com.hjq.shape.layout.ShapeLinearLayout>
+
+
+<!--  <com.hjq.shape.view.ShapeTextView-->
+<!--    android:layout_width="0dp"-->
+<!--    android:layout_height="0dp"-->
+<!--    android:visibility="gone"-->
+<!--    app:layout_constraintBottom_toBottomOf="@id/search_view"-->
+<!--    app:layout_constraintLeft_toLeftOf="@id/search_view"-->
+<!--    app:layout_constraintRight_toRightOf="@id/search_view"-->
+<!--    app:layout_constraintTop_toTopOf="@id/search_view"-->
+<!--    app:shape_radius="5dp"-->
+<!--    app:shape_solidColor="@color/theme_color_10" />-->
+
+<!--  <SearchView-->
+<!--    android:id="@+id/search_view"-->
+<!--    android:layout_width="0dp"-->
+<!--    android:layout_height="wrap_content"-->
+<!--    android:layout_marginHorizontal="15dp"-->
+<!--    android:imeOptions="actionSearch"-->
+<!--    android:searchIcon="@drawable/icon_file_search"-->
+<!--    android:visibility="gone"-->
+<!--    app:layout_constraintLeft_toLeftOf="parent"-->
+<!--    app:layout_constraintRight_toRightOf="parent"-->
+<!--    app:layout_constraintTop_toBottomOf="@id/ll_title_contain" />-->
+
 
   <!--  <EditText-->
   <!--    android:id="@+id/et_search_content"-->
@@ -32,10 +91,12 @@
     android:id="@+id/recycler_view"
     android:layout_width="0dp"
     android:layout_height="0dp"
+    android:layout_marginHorizontal="15dp"
+    android:layout_marginTop="15dp"
     android:overScrollMode="never"
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent"
-    app:layout_constraintTop_toBottomOf="@id/search_view" />
+    app:layout_constraintTop_toBottomOf="@id/srl_search_contain" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

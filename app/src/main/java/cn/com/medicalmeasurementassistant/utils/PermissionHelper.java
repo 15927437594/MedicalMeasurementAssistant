@@ -9,7 +9,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.PermissionChecker;
 
-
 public class PermissionHelper {
     public static final int PERMISSION_CODE = 1001;
 

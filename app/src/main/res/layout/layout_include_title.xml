@@ -19,28 +19,32 @@
 
     <ImageView
       android:id="@+id/iv_back"
-      android:layout_width="25dp"
-      android:layout_height="25dp"
+      android:layout_width="16dp"
+      android:layout_height="28dp"
       android:layout_centerVertical="true"
-      android:padding="5dp"
-      android:src="@drawable/icon_black_back" />
+      android:paddingVertical="2dp"
+      android:paddingHorizontal="4dp"
+      android:src="@drawable/icon_back" />
 
     <TextView
       android:id="@+id/tv_title"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_centerInParent="true"
-      android:gravity="center"
+      android:layout_toRightOf="@id/iv_back"
+      android:layout_marginLeft="5dp"
+      android:layout_centerVertical="true"
       android:text="标题"
-      android:textSize="17sp" />
+      android:textStyle="bold"
+      android:textColor="@color/title_color"
+      android:textSize="18sp" />
 
     <TextView
       android:id="@+id/tv_more"
       android:layout_width="25dp"
       android:layout_height="25dp"
-      android:visibility="gone"
+      android:layout_alignParentRight="true"
       android:layout_centerVertical="true"
-      android:layout_alignParentRight="true"/>
+      android:visibility="gone" />
 
 
   </RelativeLayout>
