@@ -2,6 +2,7 @@ package cn.com.medicalmeasurementassistant.ui
 
 import android.view.View
 import android.widget.RadioGroup
+import android.widget.Switch
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
@@ -11,6 +12,7 @@ import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils
 
 class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener {
 
+    private val collectionSwitch by lazy { findViewById<Switch>(R.id.iv_collect_operate_top) }
     override fun getLayoutId(): Int {
         return R.layout.activity_information_collection
     }
@@ -23,14 +25,11 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
         setClick(R.id.iv_file_save)
         setClick(R.id.stv_setting_params)
         setClick(R.id.stv_collect_angle)
+
     }
 
     private fun setClick(@IdRes id: Int) {
         findViewById<View>(id).setOnClickListener(this)
-
-        findViewById<RadioGroup>(R.id.rg_contain).setOnCheckedChangeListener { group, checkedId ->
-
-        }
     }
 
     override fun onClick(v: View) {
