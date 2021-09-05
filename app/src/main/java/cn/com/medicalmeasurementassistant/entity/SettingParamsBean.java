@@ -59,6 +59,16 @@ public class SettingParamsBean {
         private boolean frequencyNotchStatus;
         // REF电极状态
         private boolean electrodeStatus;
+        // 通道量程
+        private int angle = Constant.DEFAULT_ANGLE;
+
+        public int getAngle() {
+            return angle;
+        }
+
+        public void setAngle(int angle) {
+            this.angle = angle;
+        }
 
         public boolean getChannelStatus() {
             return channelStatus;
@@ -105,7 +115,7 @@ public class SettingParamsBean {
         //通道名称
         private String channelName;
         // 通道量程
-        private String channelAngle;
+        private int channelAngle = Constant.DEFAULT_ANGLE;
         // 电极状态  true 未脱落，false 脱落
         private boolean electrodeStatus;
 
@@ -117,11 +127,11 @@ public class SettingParamsBean {
             this.channelName = channelName;
         }
 
-        public String getChannelAngle() {
+        public int getChannelAngle() {
             return channelAngle;
         }
 
-        public void setChannelAngle(String channelAngle) {
+        public void setChannelAngle(int channelAngle) {
             this.channelAngle = channelAngle;
         }
 

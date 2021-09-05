@@ -50,8 +50,9 @@
       <!-- </intent-filter> -->
     </activity>
     <activity android:name=".ui.FileSearchActivity" />
+      <activity android:name=".ui.JavaInformationCollectionActivity" />
 
-    <provider
+      <provider
       android:name=".utils.pro.MeasurementFileProvider"
       android:authorities="${applicationId}.MeasurementFileProvider"
       android:exported="false"

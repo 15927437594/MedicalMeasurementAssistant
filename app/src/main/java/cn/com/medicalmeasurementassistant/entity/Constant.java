@@ -15,4 +15,9 @@ public class Constant {
     public static final int FUNCTION_REPLY_SAMPLED_DATA = 0x03;
     public static final int FUNCTION_REPLY_STOP_DATA_COLLECT = 0x05;
     public static final int TCP_SERVER_PORT = 8081;
+
+    /**
+     *  默认量程
+     */
+    public static final int DEFAULT_ANGLE = 400;
 }
