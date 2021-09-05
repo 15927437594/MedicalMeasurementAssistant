@@ -38,17 +38,21 @@ public abstract class BaseSendProtocol extends Protocol {
         data = protocolData();
         length = data.size();
         List<Integer> actionList = CalculateUtils.intToHighLow(action);
-        List<Integer> lengthList = CalculateUtils.intToHighLow(length);
         raw.add(start);
         raw.add(version);
         raw.add(source);
         raw.add(destination);
         raw.addAll(actionList);
-        raw.addAll(lengthList);
+        if (length > 0) {
+            List<Integer> lengthList = CalculateUtils.intToHighLow(length);
+            raw.addAll(lengthList);
+        }
         raw.addAll(data);
-        List<Integer> crcResult = CalculateUtils.calculateCrc(raw);
-        crc1 = crcResult.get(0);
-        crc2 = crcResult.get(1);
+        byte[] bytes = CalculateUtils.integerListToBytes(raw);
+        int crc16Check = CalculateUtils.crc16Check(bytes, bytes.length);
+        List<Integer> crcResult = CalculateUtils.intToHighLow(crc16Check);
+        crc1 = crcResult.get(1);
+        crc2 = crcResult.get(0);
         raw.add(crc1);
         raw.add(crc2);
         return raw;

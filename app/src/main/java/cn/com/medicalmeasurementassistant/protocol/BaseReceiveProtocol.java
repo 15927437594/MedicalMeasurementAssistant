@@ -35,7 +35,6 @@ public abstract class BaseReceiveProtocol extends Protocol {
     public boolean unpack(List<Integer> srcData) {
         byte[] bytes = CalculateUtils.integerListToBytes(srcData);
         LogUtils.i(CalculateUtils.bytesToHex(bytes));
-
         boolean result;
         version = srcData.get(1);
         source = srcData.get(2);
@@ -46,7 +45,8 @@ public abstract class BaseReceiveProtocol extends Protocol {
         crc1 = srcData.get(srcData.size() - 2);
         crc2 = srcData.get(srcData.size() - 1);
         List<Integer> crcData = new ArrayList<>(srcData.subList(0, length + 8));
-        result = CalculateUtils.checkCrc(crcData, crc1, crc2);
+        byte[] crcDataBytes = CalculateUtils.integerListToBytes(crcData);
+        result = CalculateUtils.checkCrc(crcDataBytes, crc1, crc2);
         if (!result) {
             length = 0x0000;
             data.clear();
