@@ -5,9 +5,12 @@ import android.widget.RadioGroup
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.manager.ServerManager
 import cn.com.medicalmeasurementassistant.ui.dialog.FileNameDialogListener
 import cn.com.medicalmeasurementassistant.ui.dialog.showInputFileNameDialog
+import cn.com.medicalmeasurementassistant.utils.LogUtils
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils
+import cn.com.medicalmeasurementassistant.utils.SocketUtils
 
 class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener {
 
@@ -16,6 +19,9 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
     }
 
     override fun initView() {
+//        val hostIp = SocketUtils.getHostIp("")
+//        LogUtils.i("hostIp=$hostIp")
+//        ServerManager.getInstance().createServerSocket()
     }
 
     override fun initListener() {
