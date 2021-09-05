@@ -1,7 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -11,8 +10,13 @@ import androidx.core.content.ContextCompat;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
+import cn.com.medicalmeasurementassistant.manager.ServerManager;
+import cn.com.medicalmeasurementassistant.protocol.send.SendStartDataCollect;
+import cn.com.medicalmeasurementassistant.protocol.send.SendStopDataCollect;
 import cn.com.medicalmeasurementassistant.ui.dialog.InputFileNameDialogKt;
+import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
+import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 
 public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener {
     // 右上角链接按钮
@@ -46,15 +50,15 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         setClick(R.id.iv_collect_operate);
 
         mConnectionSwitch.setOnCheckedChangeListener((compoundButton, isConnection) -> {
+            LogUtils.i("isConnection=" + isConnection);
             if (isConnection) {
-                // TODO 链接
+                String hostIp = SocketUtils.getHostIp("192.168");
+                LogUtils.i("hostIp=" + hostIp);
+                ServerManager.getInstance().createServerSocket();
             } else {
-                // TODO 断开链接
+                ServerManager.getInstance().disconnectDevice();
             }
-
-
         });
-
     }
 
     private void setClick(@IdRes int id) {
@@ -64,7 +68,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-
             case R.id.iv_file_list:
                 // 文件查找
                 BaseKotlinActivity.Companion.launcherActivity(this, FileSearchActivity.class);
@@ -87,16 +90,17 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 if (mCollectionStatus) {
                     // 启动
                     mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this,R.color.electrode_text_color_on));
+                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
                     // 此处需要开始计时
+                    ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
                 } else {
                     // 停止
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this,R.color.theme_color));
+                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
                     // 此处需要停止计时
+                    ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
                 }
-
                 break;
             default:
                 break;

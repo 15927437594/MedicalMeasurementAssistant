@@ -21,9 +21,6 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
     }
 
     override fun initView() {
-//        val hostIp = SocketUtils.getHostIp("")
-//        LogUtils.i("hostIp=$hostIp")
-//        ServerManager.getInstance().createServerSocket()
     }
 
     override fun initListener() {

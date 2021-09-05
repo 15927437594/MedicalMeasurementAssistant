@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import cn.com.medicalmeasurementassistant.entity.Constant;
 import cn.com.medicalmeasurementassistant.protocol.ProtocolHelper;
 import cn.com.medicalmeasurementassistant.protocol.send.SendHandshakeSignal;
-import cn.com.medicalmeasurementassistant.protocol.send.SendStartDataCollect;
-import cn.com.medicalmeasurementassistant.protocol.send.SendStopDataCollect;
 import cn.com.medicalmeasurementassistant.utils.CalculateUtils;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
 
@@ -34,11 +32,16 @@ public class ServerManager {
     private final AtomicBoolean mIsServerSocketInterrupted = new AtomicBoolean(false);
     private final AtomicBoolean mIsClientInterrupted = new AtomicBoolean(false);
     private OutputStream mOutputStream;
-    private Handler mHandler;
+    private final Handler mHandler;
 
     private ServerManager() {
         mThreadPool = Executors.newCachedThreadPool();
         mHandler = new Handler();
+        try {
+            mServerSocket = new ServerSocket(Constant.TCP_SERVER_PORT);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static ServerManager getInstance() {
@@ -55,16 +58,11 @@ public class ServerManager {
     public void createServerSocket() {
         mThreadPool.execute(() -> {
             try {
-                if (mServerSocket == null) {
-                    mServerSocket = new ServerSocket(Constant.TCP_SERVER_PORT);
-                }
                 while (!mIsServerSocketInterrupted.get()) {
                     mClient = mServerSocket.accept();
                     LogUtils.i("accept and add client");
-                    mThreadPool.execute(new ClientService(mClient));
+                    mThreadPool.execute(new deviceClient(mClient));
                     mHandler.postDelayed(() -> sendData(new SendHandshakeSignal().pack()), 1000L);
-                    mHandler.postDelayed(() -> sendData(new SendStartDataCollect().pack()), 1000L);
-                    mHandler.postDelayed(() -> sendData(new SendStopDataCollect().pack()), 20000L);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -72,12 +70,20 @@ public class ServerManager {
         });
     }
 
-    private class ClientService implements Runnable {
-        private Socket socket;
+    public void disconnectDevice() {
+        try {
+            if (mServerSocket != null) {
+                mServerSocket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private class deviceClient implements Runnable {
         DataInputStream dataInputStream;
 
-        private ClientService(Socket socket) {
-            this.socket = socket;
+        private deviceClient(Socket socket) {
             try {
                 InputStream inputStream = socket.getInputStream();
                 dataInputStream = new DataInputStream(inputStream);
@@ -88,7 +94,6 @@ public class ServerManager {
 
         @Override
         public void run() {
-            LogUtils.d("service run");
             try {
                 while (!mIsClientInterrupted.get()) {
                     byte[] buffer = new byte[1024];
