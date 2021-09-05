@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-
 /**
  * user: Created by DuJi on 2021/8/25 21:00
  * email: 18571762595@163.com
@@ -115,6 +114,27 @@ public class CalculateUtils {
             result.set(1, 0x00);
         }
         return result;
+    }
+
+    public static int crc16Check(byte[] bytes, int length) {
+        int regCRC = 0xFFFF;
+        int temp;
+        int i, j;
+
+        for (i = 0; i < length; i++) {
+            temp = bytes[i];
+            if (temp < 0) temp += 256;
+            temp &= 0xFF;
+            regCRC ^= temp;
+
+            for (j = 0; j < 8; j++) {
+                if ((regCRC & 0x0001) == 0x0001)
+                    regCRC = (regCRC >> 1) ^ 0xA001;
+                else
+                    regCRC >>= 1;
+            }
+        }
+        return (regCRC & 0xFFFF);
     }
 
     public static boolean checkCrc(byte[] crcData, int crc1, int crc2) {
@@ -259,27 +279,6 @@ public class CalculateUtils {
             }
         }
         return 0xFF - tCrc;
-    }
-
-    public static int crc16Check(byte[] bytes, int length) {
-        int regCRC = 0xFFFF;
-        int temp;
-        int i, j;
-
-        for (i = 0; i < length; i++) {
-            temp = bytes[i];
-            if (temp < 0) temp += 256;
-            temp &= 0xFF;
-            regCRC ^= temp;
-
-            for (j = 0; j < 8; j++) {
-                if ((regCRC & 0x0001) == 0x0001)
-                    regCRC = (regCRC >> 1) ^ 0xA001;
-                else
-                    regCRC >>= 1;
-            }
-        }
-        return (regCRC & 0xFFFF);
     }
 }
 
