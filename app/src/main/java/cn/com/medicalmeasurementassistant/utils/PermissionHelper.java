@@ -3,7 +3,6 @@ package cn.com.medicalmeasurementassistant.utils;
 import android.Manifest;
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.util.Log;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
@@ -38,7 +37,6 @@ public class PermissionHelper {
                     break;
                 }
             }
-            Log.e("AppActivity-", "hasPermission = " + hasAllPermission);
 
             if (!hasAllPermission) {
                 isRequest = true;

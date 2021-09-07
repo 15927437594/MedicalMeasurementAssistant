@@ -6,9 +6,12 @@ import android.widget.Switch
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.manager.ServerManager
 import cn.com.medicalmeasurementassistant.ui.dialog.FileNameDialogListener
 import cn.com.medicalmeasurementassistant.ui.dialog.showInputFileNameDialog
+import cn.com.medicalmeasurementassistant.utils.LogUtils
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils
+import cn.com.medicalmeasurementassistant.utils.SocketUtils
 
 class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener {
 

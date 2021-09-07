@@ -137,10 +137,11 @@ public class CalculateUtils {
         return (regCRC & 0xFFFF);
     }
 
-    public static boolean checkCrc(List<Integer> crcData, int crc1, int crc2) {
+    public static boolean checkCrc(byte[] crcData, int crc1, int crc2) {
         boolean result = false;
-        List<Integer> crc = calculateCrc(crcData);
-        if (crc1 == crc.get(0) && crc2 == crc.get(1)) {
+        int crc = crc16Check(crcData, crcData.length);
+        List<Integer> crcList = intToHighLow(crc);
+        if (crc1 == crcList.get(0) && crc2 == crcList.get(1)) {
             result = true;
         }
         return result;

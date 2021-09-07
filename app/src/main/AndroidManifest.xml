@@ -15,6 +15,8 @@
   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 如果是安卓10.0，需要后台获取连接的wifi名称则添加进程获取位置信息权限 -->
   <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- android 10.0使用wifi api新添加的权限 -->
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+      tools:ignore="ScopedStorage" />
 
   <application
     android:name=".app.ProjectApplication"
@@ -24,10 +26,11 @@
     android:roundIcon="@mipmap/ic_launcher"
     android:supportsRtl="true"
     android:theme="@style/Theme.MedicalMeasurementAssistant">
-    <activity android:name=".ui.CalibrationAngleActivity"></activity>
+    <activity android:name=".ui.CalibrationAngleActivity" />
     <activity android:name=".ui.SettingParamsActivity" />
     <activity android:name=".ui.InformationCollectionActivity" />
-    <activity android:name=".ui.SplashActivity">
+    <activity android:name=".ui.SplashActivity"
+        android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
 
