@@ -1,7 +1,5 @@
 package cn.com.medicalmeasurementassistant.protocol;
 
-import android.os.Handler;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +17,6 @@ public class ProtocolHelper extends Protocol {
     private static volatile ProtocolHelper sInstance = null;
     private final List<Integer> srcSocketData;
     private final List<Integer> socketProtocolData;
-    private Handler mHandler;
 
     private ProtocolHelper() {
         srcSocketData = new ArrayList<>();
@@ -43,7 +40,7 @@ public class ProtocolHelper extends Protocol {
             for (int i = 0; i < bytesLength; i++) {
                 srcSocketData.add(data[i] & 0xff);
             }
-            byte[] bytes = CalculateUtils.integerListToBytes(srcSocketData);
+
             if (srcSocketData.get(0) == 0x63 && srcSocketData.get(1) == 0x6F && srcSocketData.get(2) == 0x6E) {
                 srcSocketData.clear();
                 return;
@@ -95,11 +92,11 @@ public class ProtocolHelper extends Protocol {
      */
     private void dispatchProtocol(ReceiveProtocol receiveProtocol) {
         LogUtils.i("dispatchProtocol");
-        List<Integer> packData = receiveProtocol.raw;
         List<Integer> list = CalculateUtils.intToHighLow(receiveProtocol.action);
         int category = list.get(0);
         int function = list.get(1);
         LogUtils.i("handleMessage: " + "category=" + category + ", " + "function=" + function);
+        LogUtils.i("handleMessage: " + "dataLength=" + receiveProtocol.data.size());
         switch (category) {
             case Constant.CATEGORY_COMMON:
                 if (function == Constant.FUNCTION_REPLY_HANDSHAKE_SIGNAL) {
@@ -130,9 +127,4 @@ public class ProtocolHelper extends Protocol {
         }
         return sInstance;
     }
-
-    public void setHandler(Handler handler) {
-        this.mHandler = handler;
-    }
-
 }

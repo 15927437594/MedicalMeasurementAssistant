@@ -1,7 +1,5 @@
 package cn.com.medicalmeasurementassistant.protocol;
 
-import com.blankj.utilcode.util.LogUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +31,6 @@ public abstract class BaseReceiveProtocol extends Protocol {
      * @param srcData 完整协议数据包
      */
     public boolean unpack(List<Integer> srcData) {
-        byte[] bytes = CalculateUtils.integerListToBytes(srcData);
-        LogUtils.i(CalculateUtils.bytesToHex(bytes));
         List<Integer> crcData;
         boolean result;
         version = srcData.get(1);
@@ -42,6 +38,10 @@ public abstract class BaseReceiveProtocol extends Protocol {
         destination = srcData.get(3);
         action = CalculateUtils.highLowToInt(srcData.get(4), srcData.get(5));
         if (action == 0x0105) {
+            crcData = new ArrayList<>(srcData.subList(0, 6));
+        } else if (action == 0x0403) {
+            length = CalculateUtils.highLowToInt(srcData.get(6), srcData.get(7));
+            data.addAll(srcData.subList(8, length + 8 + 4));
             crcData = new ArrayList<>(srcData.subList(0, 6));
         } else {
             length = CalculateUtils.highLowToInt(srcData.get(6), srcData.get(7));
