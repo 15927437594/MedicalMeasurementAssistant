@@ -1,11 +1,10 @@
 package cn.com.medicalmeasurementassistant.protocol;
 
-import android.os.Handler;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import cn.com.medicalmeasurementassistant.entity.Constant;
+import cn.com.medicalmeasurementassistant.manager.ServerManager;
 import cn.com.medicalmeasurementassistant.utils.CalculateUtils;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
 
@@ -17,7 +16,6 @@ import cn.com.medicalmeasurementassistant.utils.LogUtils;
 public class ProtocolHelper extends Protocol {
     private static volatile ProtocolHelper sInstance = null;
     private final List<Integer> srcSocketData;
-    private Handler mHandler;
     private final List<Integer> socketProtocolData;
 
     private ProtocolHelper() {
@@ -27,7 +25,7 @@ public class ProtocolHelper extends Protocol {
 
     /**
      * 从字节数据中解析出每帧协议
-     * Start + Version + Source + Destination + Action + Length的长度固定为 8
+     * Start + Version + Source + Destination + Action
      * Data的长度=high_low_to_int(data[6],data[7])
      * CRC的长度固定为2
      *
@@ -37,30 +35,47 @@ public class ProtocolHelper extends Protocol {
         LogUtils.i("data=" + CalculateUtils.bytesToHex(data));
         try {
             int dataLength = 0;
+            int dataAction = 0;
             srcSocketData.clear();
             for (int i = 0; i < bytesLength; i++) {
                 srcSocketData.add(data[i] & 0xff);
             }
 
+            if (srcSocketData.get(0) == 0x63 && srcSocketData.get(1) == 0x6F && srcSocketData.get(2) == 0x6E) {
+                srcSocketData.clear();
+                return;
+            }
+            if (srcSocketData.get(0) == 0x1B && srcSocketData.get(1) == 0x06 && srcSocketData.get(2) == 0x00) {
+                srcSocketData.clear();
+                return;
+            }
+//            LogUtils.i("bytes=" + CalculateUtils.bytesToHex(bytes));
             for (int i = 0; i < srcSocketData.size(); i++) {
-                if (srcSocketData.get(0) == 0xEB) {
-                    socketProtocolData.clear();
-                }
                 socketProtocolData.add(srcSocketData.get(i));
                 int protocolLength = socketProtocolData.size();
-                if (protocolLength == 8) {
-                    dataLength = 8 + CalculateUtils.highLowToInt(socketProtocolData.get(6), socketProtocolData.get(7)) + 2;
-
+                if (protocolLength == 6) {
+                    dataAction = CalculateUtils.highLowToInt(socketProtocolData.get(4), socketProtocolData.get(5));
+                    LogUtils.i("dataAction=" + dataAction);
                 }
-                LogUtils.i("protocolLength:" + protocolLength + ", " + "dataLength:" + dataLength);
+                if (dataAction == 0x0105) {
+                    dataLength = 6 + 2;
+                } else {
+                    if (protocolLength >= 8) {
+                        if (dataAction == 0x0403) {
+                            dataLength = 8 + CalculateUtils.highLowToInt(socketProtocolData.get(6), socketProtocolData.get(7)) + 4 + 2;
+                        } else {
+                            dataLength = 8 + CalculateUtils.highLowToInt(socketProtocolData.get(6), socketProtocolData.get(7)) + 2;
+                        }
+
+                    }
+                }
                 if (protocolLength == dataLength) {
+                    boolean result;
                     ReceiveProtocol protocol = new ReceiveProtocol();
-                    boolean result = protocol.unpack(socketProtocolData);
+                    result = protocol.unpack(socketProtocolData);
                     if (result) {
                         dispatchProtocol(protocol);
                     }
-                    socketProtocolData.clear();
-                } else if (protocolLength > dataLength) {
                     socketProtocolData.clear();
                 }
             }
@@ -77,17 +92,15 @@ public class ProtocolHelper extends Protocol {
      */
     private void dispatchProtocol(ReceiveProtocol receiveProtocol) {
         LogUtils.i("dispatchProtocol");
-        List<Integer> packData = receiveProtocol.raw;
         List<Integer> list = CalculateUtils.intToHighLow(receiveProtocol.action);
         int category = list.get(0);
         int function = list.get(1);
-        int command = receiveProtocol.data.get(0);
-        LogUtils.i("handleMessage: " + "category=" + category + ", " + "function=" + function + ", " + "command=" + command);
-
+        LogUtils.i("handleMessage: " + "category=" + category + ", " + "function=" + function);
+        LogUtils.i("handleMessage: " + "dataLength=" + receiveProtocol.data.size());
         switch (category) {
             case Constant.CATEGORY_COMMON:
                 if (function == Constant.FUNCTION_REPLY_HANDSHAKE_SIGNAL) {
-
+                    ServerManager.getInstance().setDeviceConnect(true);
                 }
                 break;
             case Constant.CATEGORY_DATA_COLLECT:
@@ -114,9 +127,4 @@ public class ProtocolHelper extends Protocol {
         }
         return sInstance;
     }
-
-    public void setHandler(Handler handler) {
-        this.mHandler = handler;
-    }
-
 }
