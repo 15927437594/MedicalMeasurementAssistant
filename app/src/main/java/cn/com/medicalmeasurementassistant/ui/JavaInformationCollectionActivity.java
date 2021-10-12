@@ -54,7 +54,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             if (isConnection) {
                 String hostIp = SocketUtils.getHostIp("192.168");
                 LogUtils.i("hostIp=" + hostIp);
-                ServerManager.getInstance().createServerSocket();
+                ServerManager.getInstance().connectDevice();
             } else {
                 ServerManager.getInstance().disconnectDevice();
             }
