@@ -1,5 +1,5 @@
 <resources>
-  <string name="app_name">MedicalMeasurement</string>
+  <string name="app_name">EMGAndAngleMeasuring</string>
   <string name="emg_angle_measuring"><![CDATA[EMG&Angle Measuring]]></string>
   <string name="text_collect_start">启动</string>
   <string name="text_collect_stop">启动</string>
