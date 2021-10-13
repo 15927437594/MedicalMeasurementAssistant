@@ -33,6 +33,7 @@ public class ServerManager {
     private final AtomicBoolean mIsClientInterrupted = new AtomicBoolean(false);
     private OutputStream mOutputStream;
     private final Handler mHandler;
+    private boolean mConnectDevice = false;
 
     private ServerManager() {
         mThreadPool = Executors.newCachedThreadPool();
@@ -55,13 +56,14 @@ public class ServerManager {
         return sInstance;
     }
 
-    public void createServerSocket() {
+    public void connectDevice() {
+        mIsServerSocketInterrupted.set(false);
         mThreadPool.execute(() -> {
             try {
                 while (!mIsServerSocketInterrupted.get()) {
                     mClient = mServerSocket.accept();
                     LogUtils.i("accept and add client");
-                    mThreadPool.execute(new deviceClient(mClient));
+                    mThreadPool.execute(new DeviceClient(mClient));
                     mHandler.postDelayed(() -> sendData(new SendHandshakeSignal().pack()), 1000L);
                 }
             } catch (Exception e) {
@@ -75,15 +77,20 @@ public class ServerManager {
             if (mServerSocket != null) {
                 mServerSocket.close();
             }
+            mIsServerSocketInterrupted.set(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private class deviceClient implements Runnable {
+    public void setDeviceConnect(boolean connect) {
+        this.mConnectDevice = connect;
+    }
+
+    private class DeviceClient implements Runnable {
         DataInputStream dataInputStream;
 
-        private deviceClient(Socket socket) {
+        private DeviceClient(Socket socket) {
             try {
                 InputStream inputStream = socket.getInputStream();
                 dataInputStream = new DataInputStream(inputStream);
@@ -99,7 +106,7 @@ public class ServerManager {
                     byte[] buffer = new byte[1024];
                     if (dataInputStream != null) {
                         int read = dataInputStream.read(buffer);
-                        LogUtils.d("read=" + read);
+                        LogUtils.i("read=" + read);
                         if (read > 0) {
                             ProtocolHelper.getInstance().analysisSocketProtocol(buffer, read);
                         }
@@ -125,9 +132,11 @@ public class ServerManager {
         mThreadPool.execute(() -> {
             try {
                 //发送数据到客户端
-                mOutputStream = mClient.getOutputStream();
-                mOutputStream.write(buf);
-                mOutputStream.flush();
+                if (mClient != null) {
+                    mOutputStream = mClient.getOutputStream();
+                    mOutputStream.write(buf);
+                    mOutputStream.flush();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }

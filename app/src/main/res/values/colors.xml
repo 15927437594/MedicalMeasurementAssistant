@@ -34,5 +34,5 @@
   <color name="electrode_bg_color_off">#3DE06192</color>
   <color name="electrode_text_color_off">#E06192</color>
   <color name="options_mv_bg_color">#F4F2FA</color>
-
+  <color name="color_curve">#FF00FF</color>
 </resources>
