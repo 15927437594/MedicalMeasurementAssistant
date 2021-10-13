@@ -41,7 +41,9 @@ public abstract class BaseReceiveProtocol extends Protocol {
             crcData = new ArrayList<>(srcData.subList(0, 6));
         } else if (action == 0x0403) {
             length = CalculateUtils.highLowToInt(srcData.get(6), srcData.get(7));
-            data.addAll(srcData.subList(8, length + 8 + 4));
+            if (srcData.size()>length + 8 + 4){
+                data.addAll(srcData.subList(8, length + 8 + 4));
+            }
             crcData = new ArrayList<>(srcData.subList(0, 6));
         } else {
             length = CalculateUtils.highLowToInt(srcData.get(6), srcData.get(7));

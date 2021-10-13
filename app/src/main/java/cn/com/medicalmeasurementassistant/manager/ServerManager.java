@@ -63,7 +63,7 @@ public class ServerManager {
                 while (!mIsServerSocketInterrupted.get()) {
                     mClient = mServerSocket.accept();
                     LogUtils.i("accept and add client");
-                    mThreadPool.execute(new deviceClient(mClient));
+                    mThreadPool.execute(new DeviceClient(mClient));
                     mHandler.postDelayed(() -> sendData(new SendHandshakeSignal().pack()), 1000L);
                 }
             } catch (Exception e) {
@@ -87,10 +87,10 @@ public class ServerManager {
         this.mConnectDevice = connect;
     }
 
-    private class deviceClient implements Runnable {
+    private class DeviceClient implements Runnable {
         DataInputStream dataInputStream;
 
-        private deviceClient(Socket socket) {
+        private DeviceClient(Socket socket) {
             try {
                 InputStream inputStream = socket.getInputStream();
                 dataInputStream = new DataInputStream(inputStream);
@@ -106,10 +106,9 @@ public class ServerManager {
                     byte[] buffer = new byte[1024];
                     if (dataInputStream != null) {
                         int read = dataInputStream.read(buffer);
-                        LogUtils.d("read=" + read);
+                        LogUtils.i("read=" + read);
                         if (read > 0) {
-                            mHandler.postDelayed(() -> ProtocolHelper.getInstance().analysisSocketProtocol(buffer, read), 100L);
-
+                            ProtocolHelper.getInstance().analysisSocketProtocol(buffer, read);
                         }
                     }
                 }
