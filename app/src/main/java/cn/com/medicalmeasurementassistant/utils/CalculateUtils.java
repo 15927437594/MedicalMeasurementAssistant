@@ -66,10 +66,6 @@ public class CalculateUtils {
         return result;
     }
 
-    public static int highLowToInt(int high, int low) {
-        return (low | (high << 8));
-    }
-
     /**
      * @param str 原始字符串
      * @return ASCII数组
@@ -213,6 +209,14 @@ public class CalculateUtils {
         bytes[2] = (byte) (src >> 8);
         bytes[3] = (byte) (src);
         return bytes;
+    }
+
+    public static int highLowToInt(int high, int low) {
+        return (low | (high << 8));
+    }
+
+    public static long threeLongCombine(long first, long second, long third) {
+        return (third | (second << 8) | (first << 16));
     }
 
     public static long fourLongCombine(long first, long second, long third, long forth) {
