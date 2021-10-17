@@ -23,6 +23,5 @@ public class MainActivity extends BaseKotlinActivity {
             Intent intent = new Intent(MainActivity.this, FileSelectorActivity.class);
             startActivity(intent);
         });
-        findViewById(R.id.tv_add_file).setOnClickListener(v -> MeasurementFileUtils.saveMeasurementFile("这是刚刚创建的" + System.currentTimeMillis()));
     }
 }

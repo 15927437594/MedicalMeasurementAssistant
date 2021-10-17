@@ -1,53 +1,40 @@
 package cn.com.medicalmeasurementassistant.utils;
 
 import com.blankj.utilcode.util.FileIOUtils;
-import com.blankj.utilcode.util.TimeUtils;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+import java.util.List;
 
 public class MeasurementFileUtils {
 
 
-    /**
-     * 保存文件
-     *
-     * @param content
-     */
-    public synchronized static void saveMeasurementFile(String content) {
-        saveMeasurementFile(null, content);
-    }
+//    /**
+//     * 保存文件
+//     *
+//     * @param content
+//     */
+//    public synchronized static void saveMeasurementFile(String content) {
+//        saveMeasurementFile(null, content);
+//    }
 
-    /**
-     * 保存文件
-     *
-     * @param content
-     */
-    public synchronized static void saveMeasurementFile(String fileName, String content) {
+    public synchronized static void saveMeasurementFile(String fileName, List<Float> originalData, List<Float> filterData) {
+        String originalFileName = fileName + "-original.csv";
+        String filterFileName = fileName + "-filter.csv";
         // 保存内容到文件
         String storePath = PathUtils.getMeasurementDataPath();
-//        + "/" + TimeUtils.getNowString(new SimpleDateFormat("yyyy-MM-dd", Locale.SIMPLIFIED_CHINESE))
-        if (StringUtils.isEmpty(fileName)) {
-            fileName = TimeUtils.getNowString(new SimpleDateFormat("HH_mm_ss", Locale.SIMPLIFIED_CHINESE)) + ".txt";
-        } else {
-            if (!fileName.endsWith(".txt")) {
-                fileName += ".txt";
-            }
-        }
-        File file = new File(storePath, fileName);
-        saveMeasurementFileForFile(file, content);
+        LogUtils.i("storePath=" + storePath);
+        LogUtils.i("originalDataSize=" + originalData.size());
+        LogUtils.i("filterDataSize=" + filterData.size());
+        File originalFile = new File(storePath, originalFileName);
+        File filterFile = new File(storePath, filterFileName);
+        saveMeasurementFileForFile(originalFile, originalData);
+        saveMeasurementFileForFile(filterFile, filterData);
     }
 
-    public synchronized static void saveMeasurementFileForFile(File file, String content) {
-//        boolean orExistsFile = FileUtils.createOrExistsFile(file);
-        FileIOUtils.writeFileFromString(file, content);
-//        if (orExistsFile) {
-//
-//            addTxtToFileWrite(file, content);
-//        }
+    public synchronized static void saveMeasurementFileForFile(File file, List<Float> data) {
+        FileIOUtils.writeFileFromString(file, data.toString());
     }
 
     /**
