@@ -108,7 +108,7 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     // 筛选文件
     private fun getFileFilter(searchKey: String): FileFilter {
         return FileFilter { pathname ->
-            pathname.name.endsWith(".txt") && pathname.isFile && (getFileNameNoEx(pathname.name).contains(searchKey) || getFileLastModifiedTime(pathname).contains(searchKey))
+            pathname.name.endsWith(".csv") && pathname.isFile && (getFileNameNoEx(pathname.name).contains(searchKey) || getFileLastModifiedTime(pathname).contains(searchKey))
         }
     }
 

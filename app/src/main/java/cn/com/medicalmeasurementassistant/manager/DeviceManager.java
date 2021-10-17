@@ -16,26 +16,15 @@ public class DeviceManager {
 
     public static volatile DeviceManager sInstance = null;
     private DeviceInfoListener mDeviceInfoListener = null;
-    private final List<Float> channel1;
-    private final List<Float> channel2;
-    private final List<Float> channel3;
-    private final List<Float> channel4;
-    private final List<Float> channel5;
-    private final List<Float> channel6;
-    private final List<Float> channel7;
-    private final List<Float> channel8;
-
+    private boolean isDeviceOpen = false;
+    private boolean isDeviceStart = false;
+    private boolean mSaveSampleData = false;
+    private List<Float> mOriginalData;
+    private List<Float> mFilterData;
 
     private DeviceManager() {
-        channel1 = new ArrayList<>();
-        channel2 = new ArrayList<>();
-        channel3 = new ArrayList<>();
-        channel4 = new ArrayList<>();
-        channel5 = new ArrayList<>();
-        channel6 = new ArrayList<>();
-        channel7 = new ArrayList<>();
-        channel8 = new ArrayList<>();
-
+        mOriginalData = new ArrayList<>();
+        mFilterData = new ArrayList<>();
     }
 
     public static DeviceManager getInstance() {
@@ -61,7 +50,7 @@ public class DeviceManager {
     }
 
     public void replyStartDataCollect(List<Integer> data) {
-        LogUtils.d("replyStartDataCollect data=" + CalculateUtils.getHexStringList(data));
+        LogUtils.i("replyStartDataCollect data=" + CalculateUtils.getHexStringList(data));
         if (mDeviceInfoListener != null) {
             mDeviceInfoListener.replyStartDataCollect(data);
         }
@@ -83,6 +72,9 @@ public class DeviceManager {
     }
 
     public float calculateVoltage(int first, int second, int third) {
+        if (first == 0x00 && second == 0x00 && third == 0x00) {
+            return 0.0F;
+        }
         long combine = CalculateUtils.threeLongCombine(first, second, third);
         long l = -(0xFFFFFF - combine + 1);
         return (float) (l * 400) / 0x7FFFFF;
@@ -90,52 +82,84 @@ public class DeviceManager {
 
     public void analysisSampledData(List<Integer> data) {
         for (int i = 0; i < data.size() - 24; i += 24) {
-            channel1.add(calculateVoltage(data.get(i), data.get(i + 1), data.get(i + 2)));
-            channel2.add(calculateVoltage(data.get(i + 3), data.get(i + 4), data.get(i + 5)));
-            channel3.add(calculateVoltage(data.get(i + 6), data.get(i + 7), data.get(i + 8)));
-            channel4.add(calculateVoltage(data.get(i + 9), data.get(i + 10), data.get(i + 11)));
-            channel5.add(calculateVoltage(data.get(i + 12), data.get(i + 13), data.get(i + 14)));
-            channel6.add(calculateVoltage(data.get(i + 15), data.get(i + 16), data.get(i + 17)));
-            channel7.add(calculateVoltage(data.get(i + 18), data.get(i + 19), data.get(i + 20)));
-            channel8.add(calculateVoltage(data.get(i + 21), data.get(i + 22), data.get(i + 23)));
-        }
+            float pointChannel1 = calculateVoltage(data.get(i), data.get(i + 1), data.get(i + 2));
+            float pointChannel2 = calculateVoltage(data.get(i + 3), data.get(i + 4), data.get(i + 5));
+            float pointChannel3 = calculateVoltage(data.get(i + 6), data.get(i + 7), data.get(i + 8));
+            float pointChannel4 = calculateVoltage(data.get(i + 9), data.get(i + 10), data.get(i + 11));
+            float pointChannel5 = calculateVoltage(data.get(i + 12), data.get(i + 13), data.get(i + 14));
+            float pointChannel6 = calculateVoltage(data.get(i + 15), data.get(i + 16), data.get(i + 17));
+            float pointChannel7 = calculateVoltage(data.get(i + 18), data.get(i + 19), data.get(i + 20));
+            float pointChannel8 = calculateVoltage(data.get(i + 21), data.get(i + 22), data.get(i + 23));
+            if (isSaveSampleData()){
+                mOriginalData.add(pointChannel1);
+                mOriginalData.add(pointChannel2);
+                mOriginalData.add(pointChannel3);
+                mOriginalData.add(pointChannel4);
+                mOriginalData.add(pointChannel5);
+                mOriginalData.add(pointChannel6);
+                mOriginalData.add(pointChannel7);
+                mOriginalData.add(pointChannel8);
 
-        LogUtils.i("channel1=" + channel1);
-        LogUtils.i("channel2=" + channel2);
-        LogUtils.i("channel3=" + channel3);
-        LogUtils.i("channel4=" + channel4);
-        LogUtils.i("channel5=" + channel5);
-        LogUtils.i("channel6=" + channel6);
-        LogUtils.i("channel7=" + channel7);
-        LogUtils.i("channel8=" + channel8);
+                mFilterData.add(pointChannel1);
+                mFilterData.add(pointChannel2);
+                mFilterData.add(pointChannel3);
+                mFilterData.add(pointChannel4);
+                mFilterData.add(pointChannel5);
+                mFilterData.add(pointChannel6);
+                mFilterData.add(pointChannel7);
+                mFilterData.add(pointChannel8);
+            }
 
-        if (mDeviceInfoListener != null) {
-            mDeviceInfoListener.replyVoltageData(1,channel1);
+            if (mDeviceInfoListener != null) {
+                mDeviceInfoListener.replyVoltageData(1, pointChannel1);
+                mDeviceInfoListener.replyVoltageData(2, pointChannel2);
+                mDeviceInfoListener.replyVoltageData(3, pointChannel3);
+                mDeviceInfoListener.replyVoltageData(4, pointChannel4);
+                mDeviceInfoListener.replyVoltageData(5, pointChannel5);
+                mDeviceInfoListener.replyVoltageData(6, pointChannel6);
+                mDeviceInfoListener.replyVoltageData(7, pointChannel7);
+                mDeviceInfoListener.replyVoltageData(8, pointChannel8);
+            }
         }
+    }
 
-        if (channel1.size() > 3 * 1000) {
-            channel1.clear();
-        }
-        if (channel2.size() > 3 * 1000) {
-            channel2.clear();
-        }
-        if (channel3.size() > 3 * 1000) {
-            channel3.clear();
-        }
-        if (channel4.size() > 3 * 1000) {
-            channel4.clear();
-        }
-        if (channel5.size() > 3 * 1000) {
-            channel5.clear();
-        }
-        if (channel6.size() > 3 * 1000) {
-            channel6.clear();
-        }
-        if (channel7.size() > 3 * 1000) {
-            channel7.clear();
-        }
-        if (channel8.size() > 3 * 1000) {
-            channel8.clear();
-        }
+    public boolean isSaveSampleData() {
+        return mSaveSampleData;
+    }
+
+    public void setSaveSampleData(boolean save) {
+        this.mSaveSampleData = save;
+    }
+
+    public List<Float> getOriginalData() {
+        return this.mOriginalData;
+    }
+
+    public void setOriginData(List<Float> data) {
+        this.mOriginalData = data;
+    }
+
+    public List<Float> getFilterData() {
+        return this.mFilterData;
+    }
+
+    public void setFilterData(List<Float> data) {
+        this.mFilterData = data;
+    }
+
+    public boolean isDeviceStart() {
+        return isDeviceStart;
+    }
+
+    public void setDeviceStart(boolean deviceStart) {
+        isDeviceStart = deviceStart;
+    }
+
+    public boolean isDeviceOpen() {
+        return isDeviceOpen;
+    }
+
+    public void setDeviceOpen(boolean deviceOpen) {
+        isDeviceOpen = deviceOpen;
     }
 }

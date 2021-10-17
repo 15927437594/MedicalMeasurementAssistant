@@ -402,6 +402,7 @@
                     android:textStyle="bold" />
 
                 <Switch
+                    android:checked="false"
                     android:id="@+id/iv_save_data"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
