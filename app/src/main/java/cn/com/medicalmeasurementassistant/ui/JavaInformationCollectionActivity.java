@@ -1,7 +1,12 @@
 package cn.com.medicalmeasurementassistant.ui;
 
+import android.util.ArrayMap;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -9,14 +14,18 @@ import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.TreeMap;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.listener.DeviceInfoListener;
+import cn.com.medicalmeasurementassistant.listener.OnWaveCountChangeListener;
 import cn.com.medicalmeasurementassistant.manager.DeviceManager;
 import cn.com.medicalmeasurementassistant.manager.ServerManager;
+import cn.com.medicalmeasurementassistant.manager.WaveManager;
 import cn.com.medicalmeasurementassistant.protocol.send.SendStartDataCollect;
 import cn.com.medicalmeasurementassistant.protocol.send.SendStopDataCollect;
 import cn.com.medicalmeasurementassistant.ui.dialog.InputFileNameDialogKt;
@@ -26,7 +35,7 @@ import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 import cn.com.medicalmeasurementassistant.utils.ToastHelper;
 import cn.com.medicalmeasurementassistant.utils.WaveUtils;
 
-public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener {
+public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, OnWaveCountChangeListener {
     // 右上角链接按钮
     private Switch mConnectionSwitch;
     // 测量状态ImageView
@@ -45,6 +54,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TimerTask timerTask;
     private float point = 0f;
     private int pointIndex = 0;
+    private LinearLayout mWaveContainLL;
+    private FrameLayout mEmgWaveFrameLayout,mDianrongWaveFrameLayout;
+    private RadioGroup mRadioGroup;
 
     @Override
     public int getLayoutId() {
@@ -56,12 +68,17 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         timer = new Timer();
         mWaveUtils = new WaveUtils();
         mConnectionSwitch = findViewById(R.id.iv_collect_operate_top);
+        mRadioGroup = findViewById(R.id.rg_contain);
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
-        mWaveView1 = findViewById(R.id.wave_view1);
-        mWaveView2 = findViewById(R.id.wave_view2);
-        mWaveView3 = findViewById(R.id.wave_view3);
-        mWaveView4 = findViewById(R.id.wave_view4);
+        mWaveContainLL = findViewById(R.id.ll_wave_contain);
+        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
+        mDianrongWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
+        WaveManager.getInstance().addCallback(this);
+//        mWaveView1 = findViewById(R.id.wave_view1);
+//        mWaveView2 = findViewById(R.id.wave_view2);
+//        mWaveView3 = findViewById(R.id.wave_view3);
+//        mWaveView4 = findViewById(R.id.wave_view4);
     }
 
     @Override
@@ -81,6 +98,18 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 ServerManager.getInstance().connectDevice();
             } else {
                 ServerManager.getInstance().disconnectDevice();
+            }
+        });
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                if(i == R.id.rb_option_one){
+                    mDianrongWaveFrameLayout.setVisibility(View.INVISIBLE);
+                    mEmgWaveFrameLayout.setVisibility(View.VISIBLE);
+                }else{
+                    mDianrongWaveFrameLayout.setVisibility(View.VISIBLE);
+                    mEmgWaveFrameLayout.setVisibility(View.INVISIBLE);
+                }
             }
         });
     }
@@ -175,4 +204,47 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         //500表示调用schedule方法后等待500ms后调用run方法，50表示以后调用run方法的时间间隔
         timer.schedule(timerTask, 500, 50);
     }
+
+
+
+    @Override
+    public void waveCount(boolean isAdd, int position) {
+        WaveView waveView = mWaveMap.get(position);
+        if (isAdd) {
+            if (waveView == null) {
+                waveView = new WaveView(getActivity(), position + 1);
+                waveView.setIsShow(true);
+                mWaveMap.put(position, waveView);
+            } else {
+                waveView.setIsShow(true);
+            }
+
+            Map<Integer, WaveView> stu = new TreeMap<>(mWaveMap);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
+            layoutParams.weight = 1;
+            layoutParams.topMargin = 5;
+
+            for (Integer viewIncex : stu.keySet()) {
+                WaveView view = stu.get(viewIncex);
+                if (view != null) {
+                    if (view.getParent() != null) {
+                        ((ViewGroup) view.getParent()).removeView(view);
+                    }
+                    if (!view.isShow()) {
+                        continue;
+                    }
+                    mWaveContainLL.addView(view, layoutParams);
+                }
+
+            }
+
+        } else {
+            if (waveView != null) {
+                waveView.setIsShow(false);
+                mWaveContainLL.removeView(waveView);
+            }
+        }
+    }
+
+    private final Map<Integer, WaveView> mWaveMap = new ArrayMap<>();
 }

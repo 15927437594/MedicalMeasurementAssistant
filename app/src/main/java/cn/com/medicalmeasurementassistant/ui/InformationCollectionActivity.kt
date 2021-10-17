@@ -45,10 +45,6 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
                     }
                 })
 
-
-
-
-
             }
             R.id.stv_setting_params -> launcherActivity(this, SettingParamsActivity::class.java)
             R.id.stv_collect_angle -> launcherActivity(this, CalibrationAngleActivity::class.java)

@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.GlobalBean
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
+import cn.com.medicalmeasurementassistant.manager.WaveManager
 import cn.com.medicalmeasurementassistant.view.recyclerview.BaseSimpleRecyclerAdapter
 import cn.com.medicalmeasurementassistant.view.recyclerview.ViewHolder
 import com.hjq.shape.layout.ShapeLinearLayout
@@ -43,20 +44,20 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 // 工频陷波
                 val frequencySwitch = holder.getView<Switch>(R.id.switch_frequency_status)
 
-                channelSwitch.isChecked = !globalBean.channelStatus
+                channelSwitch.isChecked = globalBean.channelStatus
                 channelSwitch.setOnCheckedChangeListener { _, isChecked ->
-                    globalBean.channelStatus = !isChecked
+                    globalBean.channelStatus = isChecked
                 }
 
-                highPassFilter.isChecked = !globalBean.highPassFilterStatus
+                highPassFilter.isChecked = globalBean.highPassFilterStatus
                 highPassFilter.setOnCheckedChangeListener { _, isChecked ->
-                    globalBean.highPassFilterStatus = !isChecked
+                    globalBean.highPassFilterStatus = isChecked
                 }
 
 
-                frequencySwitch.isChecked = !globalBean.frequencyNotchStatus
+                frequencySwitch.isChecked = globalBean.frequencyNotchStatus
                 frequencySwitch.setOnCheckedChangeListener { _, isChecked ->
-                    globalBean.frequencyNotchStatus = !isChecked
+                    globalBean.frequencyNotchStatus = isChecked
                 }
 
                 holder.setText(R.id.tv_angle_value, globalBean.angle)
@@ -101,18 +102,21 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 shapeTextView.solidPressedColor = shapeTextView.solidColor
                 val textColor = if (channelBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
                 shapeTextView.setTextColor(ContextCompat.getColor(holder.context, textColor))
-                val electrodeStatus = if (channelBean.electrodeStatus) R.string.text_electrode_on else R.string.text_electrode_off
-                shapeTextView.text = holder.context.getString(electrodeStatus)
+//                val electrodeStatus = if (channelBean.electrodeStatus) R.string.text_electrode_on else R.string.text_electrode_off
+//                shapeTextView.text = holder.context.getString(electrodeStatus)
                 shapeTextView.intoBackground()
                 shapeTextView.invalidate()
 
                 // 电极状态SwitchView 设置监听
                 val channelSwitch = holder.getView<Switch>(R.id.switch_status_desc)
-                channelSwitch.isChecked = !channelBean.electrodeStatus
+                channelSwitch.isChecked = channelBean.electrodeStatus
                 channelSwitch.setOnCheckedChangeListener { view, isChecked ->
                     view.setOnCheckedChangeListener(null)
-                    channelBean.electrodeStatus = !isChecked
-                    notifyItemChanged(position)
+                    channelSwitch.postDelayed({
+                        WaveManager.getInstance().WaveCountChange(isChecked, position - 1)
+                        channelBean.electrodeStatus = isChecked
+                        notifyItemChanged(position)
+                    }, 50)
                 }
             }
         }

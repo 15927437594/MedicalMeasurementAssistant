@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".ui.InformationCollectionActivity"
+    tools:context=".ui.JavaInformationCollectionActivity"
     tools:ignore="ContentDescription,SmallSp,UseSwitchCompatOrMaterialXml">
 
     <View
@@ -168,35 +168,26 @@
                 app:layout_constraintTop_toBottomOf="@id/rg_contain">
 
                 <LinearLayout
-                    android:layout_width="wrap_content"
+                    android:id="@+id/ll_wave_contain"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
-
-                    <cn.com.medicalmeasurementassistant.ui.WaveView
-                        android:id="@+id/wave_view1"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:max_value="1"
-                        app:wave_line_width="5" />
-
-                    <cn.com.medicalmeasurementassistant.ui.WaveView
-                        android:id="@+id/wave_view2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <cn.com.medicalmeasurementassistant.ui.WaveView
-                        android:id="@+id/wave_view3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-
-                    <cn.com.medicalmeasurementassistant.ui.WaveView
-                        android:id="@+id/wave_view4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
                 </LinearLayout>
 
             </FrameLayout>
+            <FrameLayout
+                android:id="@+id/frameLayout_wave_pattern2"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_margin="15dp"
+                android:visibility="gone"
+                android:background="#EEEEEE"
+                app:layout_constraintDimensionRatio="1"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/rg_contain">
 
+            </FrameLayout>
             <com.hjq.shape.view.ShapeTextView
                 android:id="@+id/stv_collect_option_bg"
                 android:layout_width="0dp"

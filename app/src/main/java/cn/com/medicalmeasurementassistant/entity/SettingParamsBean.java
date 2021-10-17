@@ -30,6 +30,7 @@ public class SettingParamsBean {
             channelBean.setChannelName("通道" + (i + 1));
             settingBeans.add(channelBean);
         }
+        settingBeans.add(new ChannelBean());
     }
 
 

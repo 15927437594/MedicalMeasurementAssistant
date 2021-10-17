@@ -6,10 +6,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
 
 import androidx.annotation.Nullable;
+
+import com.blankj.utilcode.util.SizeUtils;
 
 /**
  * @Description: 波形图绘制控件
@@ -33,7 +36,7 @@ public class WaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode;
+    private int drawMode = NORMAL_MODE;
 
     /**
      * 宽高
@@ -43,6 +46,8 @@ public class WaveView extends View {
      * 网格画笔
      */
     private Paint mLinePaint;
+
+    private Paint mTextPaint;
     /**
      * 数据线画笔
      */
@@ -88,12 +93,12 @@ public class WaveView extends View {
     private int draw_index;
 
     private boolean isRefresh;
-
+    private int mPosition;
 
     /**
      * 网格是否可见
      */
-    private boolean gridVisible;
+    private boolean gridVisible = true;
     /**
      * 网格的宽高
      */
@@ -110,6 +115,24 @@ public class WaveView extends View {
      * 网格颜色
      */
     private int gridLineColor = Color.parseColor("#1b4200");
+    /**
+     * 是否已被加载过
+     */
+    private boolean isShow;
+
+    public boolean isShow() {
+        return isShow;
+    }
+
+    public void setIsShow(boolean added) {
+        isShow = added;
+    }
+
+    public WaveView(Context context, int position) {
+        this(context, null);
+        mPosition = position;
+
+    }
 
     public WaveView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -129,24 +152,33 @@ public class WaveView extends View {
     }
 
     private void init(AttributeSet attrs) {
-        MAX_VALUE = attrs.getAttributeIntValue(NAMESPACE, "max_value", 20);
-        WAVE_LINE_WIDTH = attrs.getAttributeIntValue(NAMESPACE, "wave_line_width", 10);
-        WAVE_LINE_STROKE_WIDTH = attrs.getAttributeIntValue(NAMESPACE, "wave_line_stroke_width", 3);
-        gridVisible = attrs.getAttributeBooleanValue(NAMESPACE, "grid_visible", true);
-        drawMode = attrs.getAttributeIntValue(NAMESPACE, "draw_mode", LOOP_MODE);
+        String wave_line_color = null;
+        String grid_line_color = null;
+        String wave_background = null;
+        if (attrs == null) {
+            MAX_VALUE = 2f;
+
+        } else {
+            MAX_VALUE = attrs.getAttributeIntValue(NAMESPACE, "max_value", 20);
+            WAVE_LINE_WIDTH = attrs.getAttributeIntValue(NAMESPACE, "wave_line_width", 10);
+            WAVE_LINE_STROKE_WIDTH = attrs.getAttributeIntValue(NAMESPACE, "wave_line_stroke_width", 3);
+            gridVisible = attrs.getAttributeBooleanValue(NAMESPACE, "grid_visible", true);
+            drawMode = attrs.getAttributeIntValue(NAMESPACE, "draw_mode", LOOP_MODE);
+            wave_line_color = attrs.getAttributeValue(NAMESPACE, "wave_line_color");
+            grid_line_color = attrs.getAttributeValue(NAMESPACE, "grid_line_color");
+            wave_background = attrs.getAttributeValue(NAMESPACE, "wave_background");
+        }
 
 
-        String wave_line_color = attrs.getAttributeValue(NAMESPACE, "wave_line_color");
         if (wave_line_color != null && !wave_line_color.isEmpty()) {
             waveLineColor = Color.parseColor(wave_line_color);
         }
 
-        String grid_line_color = attrs.getAttributeValue(NAMESPACE, "grid_line_color");
         if (grid_line_color != null && !grid_line_color.isEmpty()) {
             gridLineColor = Color.parseColor(grid_line_color);
         }
 
-        String wave_background = attrs.getAttributeValue(NAMESPACE, "wave_background");
+
         if (wave_background != null && !wave_background.isEmpty()) {
             setBackgroundColor(Color.parseColor(wave_background));
         }
@@ -164,6 +196,11 @@ public class WaveView extends View {
         mWavePaint.setStrokeWidth(WAVE_LINE_STROKE_WIDTH);
         /** 抗锯齿效果*/
         mWavePaint.setAntiAlias(true);
+
+        mTextPaint = new Paint();
+        mTextPaint.setAntiAlias(true);
+        mTextPaint.setColor(waveLineColor);
+        mTextPaint.setTextSize(SizeUtils.dp2px(10));
 
         mPath = new Path();
 
@@ -185,10 +222,16 @@ public class WaveView extends View {
         dataArray = new float[row];
     }
 
+    private Rect mTextRect = new Rect();
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        String textContent = "通道" + mPosition;
+        mTextPaint.getTextBounds(textContent, 0, textContent.length(), mTextRect);
+        int height = getHeight() / 2 - mTextRect.height() / 2;
+        canvas.drawText("通道" + mPosition, 0, height, mTextPaint);
         /** 绘制网格*/
         if (gridVisible) {
             drawGrid(canvas);
@@ -282,6 +325,8 @@ public class WaveView extends View {
             canvas.drawLine(i * GRID_WIDTH, 0,
                     i * GRID_WIDTH, mHeight, mLinePaint);
         }
+
+
     }
 
     /**
