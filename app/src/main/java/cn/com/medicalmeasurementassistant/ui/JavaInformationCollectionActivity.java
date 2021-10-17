@@ -46,10 +46,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mCollectionTv;
     // 当前测量状态，启动或者停止
     private boolean mCollectionStatus;
-    private WaveView mWaveView1;
-    private WaveView mWaveView2;
-    private WaveView mWaveView3;
-    private WaveView mWaveView4;
 
     private DeviceManager mDeviceManager;
     private Timer timer;
@@ -73,19 +69,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mRadioGroup = findViewById(R.id.rg_contain);
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
-        mWaveView1 = findViewById(R.id.wave_view1);
-        mWaveView2 = findViewById(R.id.wave_view2);
-        mWaveView3 = findViewById(R.id.wave_view3);
-        mWaveView4 = findViewById(R.id.wave_view4);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
         mWaveContainLL = findViewById(R.id.ll_wave_contain);
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mDianrongWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
         WaveManager.getInstance().addCallback(this);
-//        mWaveView1 = findViewById(R.id.wave_view1);
-//        mWaveView2 = findViewById(R.id.wave_view2);
-//        mWaveView3 = findViewById(R.id.wave_view3);
-//        mWaveView4 = findViewById(R.id.wave_view4);
     }
 
     @Override
@@ -203,7 +191,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyVoltageData(int channel, float point) {
         if (channel == 1) {
-            mWaveView1.showLine(point);
+//            mWaveView1.showLine(point);
         }
     }
 
