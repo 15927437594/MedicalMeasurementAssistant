@@ -6,6 +6,7 @@ import android.widget.Switch
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
+import cn.com.medicalmeasurementassistant.manager.DeviceManager
 import cn.com.medicalmeasurementassistant.manager.ServerManager
 import cn.com.medicalmeasurementassistant.ui.dialog.FileNameDialogListener
 import cn.com.medicalmeasurementassistant.ui.dialog.showInputFileNameDialog
@@ -41,7 +42,7 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
             R.id.iv_file_save -> {
                 showInputFileNameDialog(this, object : FileNameDialogListener {
                     override fun sure(fileName: String) {
-                        MeasurementFileUtils.saveMeasurementFile(fileName,"这是刚刚创建的" + System.currentTimeMillis())
+                        MeasurementFileUtils.saveMeasurementFile(fileName,DeviceManager.getInstance().originalData, DeviceManager.getInstance().filterData)
                     }
                 })
 

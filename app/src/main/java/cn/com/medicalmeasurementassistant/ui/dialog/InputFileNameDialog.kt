@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.widget.EditText
 import android.widget.TextView
 import cn.com.medicalmeasurementassistant.R
+import cn.com.medicalmeasurementassistant.utils.ToastHelper
 import com.blankj.utilcode.util.ScreenUtils
 
 /**
@@ -22,6 +23,7 @@ fun showInputFileNameDialog(activity: Activity, listen: FileNameDialogListener) 
     sureTv.setOnClickListener {
         dialog.dismiss()
         listen.sure(editText.text.toString())
+        ToastHelper.showShort("数据保存成功");
     }
     cancelTv.setOnClickListener { dialog.dismiss() }
     dialog.setCanceledOnTouchOutside(true)
