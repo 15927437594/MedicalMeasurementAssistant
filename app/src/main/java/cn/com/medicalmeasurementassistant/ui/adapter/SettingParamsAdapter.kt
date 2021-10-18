@@ -26,10 +26,6 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
         }
     }
 
-    private fun clearListener(view: Switch) {
-//        view.setOnCheckedChangeListener(null)
-    }
-
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     override fun convert(holder: ViewHolder, t: SettingParamsBean.SettingBean, position: Int) {
         val isTheLast = datas.size - 1
@@ -75,8 +71,8 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 electrodeStatusTip.setTextColor(ContextCompat.getColor(holder.context, textColor))
                 electrodeStatusTv.setTextColor(ContextCompat.getColor(holder.context, textColor))
 
-                val electrodeStatus = if (globalBean.electrodeStatus) R.string.text_electrode_status_on else R.string.text_electrode_status_off
-                electrodeStatusTv.text = holder.context.getString(electrodeStatus)
+//                val electrodeStatus = if (globalBean.electrodeStatus) R.string.text_electrode_status_on else R.string.text_electrode_status_off
+//                electrodeStatusTv.text = holder.context.getString(electrodeStatus)
                 shapeTextView.intoBackground()
                 shapeTextView.invalidate()
 
@@ -109,12 +105,12 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
 
                 // 电极状态SwitchView 设置监听
                 val channelSwitch = holder.getView<Switch>(R.id.switch_status_desc)
-                channelSwitch.isChecked = channelBean.electrodeStatus
+                channelSwitch.isChecked = channelBean.channelStatus
                 channelSwitch.setOnCheckedChangeListener { view, isChecked ->
                     view.setOnCheckedChangeListener(null)
                     channelSwitch.postDelayed({
                         WaveManager.getInstance().WaveCountChange(isChecked, position - 1)
-                        channelBean.electrodeStatus = isChecked
+                        channelBean.channelStatus = isChecked
                         notifyItemChanged(position)
                     }, 50)
                 }

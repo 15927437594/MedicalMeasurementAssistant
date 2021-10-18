@@ -1,8 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui;
 
-import android.util.ArrayMap;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -13,11 +11,10 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.TreeMap;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
@@ -33,7 +30,6 @@ import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 import cn.com.medicalmeasurementassistant.utils.ToastHelper;
-import cn.com.medicalmeasurementassistant.utils.WaveUtils;
 
 public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, OnWaveCountChangeListener {
     // 右上角链接按钮
@@ -52,8 +48,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TimerTask timerTask;
     private float point = 0f;
     private int pointIndex = 0;
-    private LinearLayout mWaveContainLL;
-    private FrameLayout mEmgWaveFrameLayout,mDianrongWaveFrameLayout;
+    private LinearLayout mEmgWaveContainLL;
+    private FrameLayout mEmgWaveFrameLayout, mDianrongWaveFrameLayout;
     private RadioGroup mRadioGroup;
 
     @Override
@@ -70,10 +66,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mWaveContainLL = findViewById(R.id.ll_wave_contain);
+        mEmgWaveContainLL = findViewById(R.id.ll_wave_contain);
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mDianrongWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
         WaveManager.getInstance().addCallback(this);
+        initWaveMap();
     }
 
     @Override
@@ -100,10 +97,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                if(i == R.id.rb_option_one){
+                if (i == R.id.rb_option_one) {
                     mDianrongWaveFrameLayout.setVisibility(View.INVISIBLE);
                     mEmgWaveFrameLayout.setVisibility(View.VISIBLE);
-                }else{
+                } else {
                     mDianrongWaveFrameLayout.setVisibility(View.VISIBLE);
                     mEmgWaveFrameLayout.setVisibility(View.INVISIBLE);
                 }
@@ -201,46 +198,44 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mDeviceManager.setDeviceStart(false);
     }
 
-
-
     @Override
     public void waveCount(boolean isAdd, int position) {
-        WaveView waveView = mWaveMap.get(position);
-        if (isAdd) {
-            if (waveView == null) {
-                waveView = new WaveView(getActivity(), position + 1);
-                waveView.setIsShow(true);
-                mWaveMap.put(position, waveView);
-            } else {
-                waveView.setIsShow(true);
-            }
+        WaveView waveView = emgWaveViews.get(position);
+        waveView.setVisibility(isAdd ? View.VISIBLE : View.GONE);
+        waveView.setIsShow(isAdd);
+        if (!isAdd) {
+            waveView.setScaleVisible(false);
+        }
 
-            Map<Integer, WaveView> stu = new TreeMap<>(mWaveMap);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
-            layoutParams.weight = 1;
-            layoutParams.topMargin = 5;
+        WaveView scaleWaveView = null;
 
-            for (Integer viewIncex : stu.keySet()) {
-                WaveView view = stu.get(viewIncex);
-                if (view != null) {
-                    if (view.getParent() != null) {
-                        ((ViewGroup) view.getParent()).removeView(view);
-                    }
-                    if (!view.isShow()) {
-                        continue;
-                    }
-                    mWaveContainLL.addView(view, layoutParams);
-                }
-
-            }
-
-        } else {
-            if (waveView != null) {
-                waveView.setIsShow(false);
-                mWaveContainLL.removeView(waveView);
+        for (WaveView view : emgWaveViews) {
+            if (view.isShow()) {
+                scaleWaveView = view;
             }
         }
+        if (scaleWaveView != null) {
+            scaleWaveView.setScaleVisible(true);
+        }
+
+
     }
 
-    private final Map<Integer, WaveView> mWaveMap = new ArrayMap<>();
+    private final List<WaveView> emgWaveViews = new ArrayList<>();
+
+    private void initWaveMap() {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
+        layoutParams.weight = 1;
+        for (int i = 1; i <= 8; i++) {
+
+            WaveView waveView = new WaveView(getActivity());
+            waveView.setIsShow(true);
+            if (i == 8) {
+                waveView.setScaleVisible(true);
+            }
+            emgWaveViews.add(waveView);
+            mEmgWaveContainLL.addView(waveView, layoutParams);
+        }
+
+    }
 }

@@ -118,7 +118,19 @@ public class SettingParamsBean {
         // 通道量程
         private int channelAngle = Constant.DEFAULT_ANGLE;
         // 电极状态  true 未脱落，false 脱落
-        private boolean electrodeStatus;
+        private boolean electrodeStatus = true;
+        /**
+         *  通道状态 true  开启，false 关闭
+         */
+        private boolean channelStatus = true;
+
+        public boolean getChannelStatus() {
+            return channelStatus;
+        }
+
+        public void setChannelStatus(boolean channelStatus) {
+            this.channelStatus = channelStatus;
+        }
 
         public String getChannelName() {
             return channelName;

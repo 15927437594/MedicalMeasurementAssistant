@@ -93,12 +93,24 @@ public class WaveView extends View {
     private int draw_index;
 
     private boolean isRefresh;
-    private int mPosition;
-
+    private String mWaveDesc;
     /**
      * 网格是否可见
      */
     private boolean gridVisible = true;
+
+    public boolean isScaleVisible() {
+        return scaleVisible;
+    }
+
+    public void setScaleVisible(boolean scaleVisible) {
+        this.scaleVisible = scaleVisible;
+    }
+
+    /**
+     * 是否显示刻度
+     */
+    private boolean scaleVisible = true;
     /**
      * 网格的宽高
      */
@@ -128,10 +140,8 @@ public class WaveView extends View {
         isShow = added;
     }
 
-    public WaveView(Context context, int position) {
+    public WaveView(Context context) {
         this(context, null);
-        mPosition = position;
-
     }
 
     public WaveView(Context context, @Nullable AttributeSet attrs) {
@@ -143,6 +153,15 @@ public class WaveView extends View {
         super(context, attrs, defStyleAttr);
         init(attrs);
     }
+
+    public String getmWaveDesc() {
+        return mWaveDesc;
+    }
+
+    public void setmWaveDesc(String mWaveDesc) {
+        this.mWaveDesc = mWaveDesc;
+    }
+
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -222,20 +241,22 @@ public class WaveView extends View {
         dataArray = new float[row];
     }
 
-    private Rect mTextRect = new Rect();
+    private final Rect mTextRect = new Rect();
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        String textContent = "通道" + mPosition;
-        mTextPaint.getTextBounds(textContent, 0, textContent.length(), mTextRect);
-        int height = getHeight() / 2 - mTextRect.height() / 2;
-        canvas.drawText("通道" + mPosition, 0, height, mTextPaint);
+
         /** 绘制网格*/
         if (gridVisible) {
             drawGrid(canvas);
         }
+        /**
+         *  绘制刻度
+         */
+        drawScale(canvas);
+
         /** 绘制折线*/
         switch (drawMode) {
             case 0:
@@ -249,6 +270,28 @@ public class WaveView extends View {
         if (draw_index >= row) {
             draw_index = 0;
             dataArray = new float[row];
+        }
+    }
+
+    /**
+     * 绘制刻度和图名称
+     *
+     * @param canvas
+     */
+    private void drawScale(Canvas canvas) {
+
+        if (mWaveDesc != null && mWaveDesc.length() != 0) {
+            mTextPaint.getTextBounds(mWaveDesc, 0, mWaveDesc.length(), mTextRect);
+            int height = getHeight() / 2 - mTextRect.height() / 2;
+            canvas.drawText(mWaveDesc, 0, height, mTextPaint);
+        }
+
+
+
+        if (scaleVisible) {
+
+
+
         }
     }
 
