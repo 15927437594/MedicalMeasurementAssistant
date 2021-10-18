@@ -74,12 +74,6 @@ public class WaveView extends View {
      * 波形颜色
      */
     private int waveLineColor = Color.parseColor("#EE4000");
-    /**
-     * 当前的x，y坐标
-     */
-    private float nowX, nowY;
-
-    private float startY;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -114,7 +108,8 @@ public class WaveView extends View {
     /**
      * 网格的宽高
      */
-    private final int GRID_WIDTH = 50;
+    private int GRID_WIDTH;
+    private final int GRID_LINE_HOR_COUNT = 4;
     /**
      * 网格的横线和竖线的数量
      */
@@ -233,8 +228,10 @@ public class WaveView extends View {
         mHeight = getMeasuredHeight();
 
         /** 根据网格的单位长宽，获取能绘制网格横线和竖线的数量*/
-        gridHorizontalNum = (int) (mHeight / GRID_WIDTH);
-        gridVerticalNum = (int) (mWidth / GRID_WIDTH);
+//        gridHorizontalNum = (int) (mHeight / GRID_WIDTH);
+        gridHorizontalNum = GRID_LINE_HOR_COUNT;
+        GRID_WIDTH = (int) (mHeight / gridHorizontalNum);
+        gridVerticalNum = (int) (mWidth * gridHorizontalNum / mHeight);
 
         /** 根据线条长度，最多能绘制多少个数据点*/
         row = (int) (mWidth / WAVE_LINE_WIDTH);
@@ -284,13 +281,15 @@ public class WaveView extends View {
             mTextPaint.getTextBounds(mWaveDesc, 0, mWaveDesc.length(), mTextRect);
             int height = getHeight() / 2 - mTextRect.height() / 2;
             canvas.drawText(mWaveDesc, 0, height, mTextPaint);
+            canvas.save();
         }
 
 
-
         if (scaleVisible) {
-
-
+//            mTextPaint.getTextBounds(mWaveDesc, 0, mWaveDesc.length(), mTextRect);
+            int height = mTextRect.height();
+            canvas.drawText(MAX_VALUE + "", 50, 50, mTextPaint);
+            canvas.drawText(-MAX_VALUE + "", 0, 100, mTextPaint);
 
         }
     }
@@ -325,14 +324,17 @@ public class WaveView extends View {
      */
     private void drawPathFromDatas(Canvas canvas, int start, int end) {
         mPath.reset();
-        startY = mHeight / 2 - dataArray[start] * (mHeight / (MAX_VALUE * 2));
+        float startY = mHeight / 2 - dataArray[start] * (mHeight / (MAX_VALUE * 2));
         mPath.moveTo(start * WAVE_LINE_WIDTH, startY);
         for (int i = start + 1; i < end + 1; i++) {
             if (isRefresh) {
                 isRefresh = false;
                 return;
             }
-            nowX = i * WAVE_LINE_WIDTH;
+            /**
+             * 当前的x，y坐标
+             */
+            float nowX = i * WAVE_LINE_WIDTH;
             float dataValue = dataArray[i];
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
             if (dataValue > 0) {
@@ -344,7 +346,7 @@ public class WaveView extends View {
                     dataValue = -MAX_VALUE;
                 }
             }
-            nowY = mHeight / 2 - dataValue * (mHeight / (MAX_VALUE * 2));
+            float nowY = mHeight / 2 - dataValue * (mHeight / (MAX_VALUE * 2));
             mPath.lineTo(nowX, nowY);
         }
         canvas.drawPath(mPath, mWavePaint);

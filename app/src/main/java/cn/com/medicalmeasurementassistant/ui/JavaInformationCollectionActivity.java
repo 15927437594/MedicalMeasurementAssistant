@@ -200,42 +200,44 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void waveCount(boolean isAdd, int position) {
-        WaveView waveView = emgWaveViews.get(position);
-        waveView.setVisibility(isAdd ? View.VISIBLE : View.GONE);
-        waveView.setIsShow(isAdd);
-        if (!isAdd) {
-            waveView.setScaleVisible(false);
-        }
-
-        WaveView scaleWaveView = null;
-
-        for (WaveView view : emgWaveViews) {
-            if (view.isShow()) {
-                scaleWaveView = view;
-            }
-        }
-        if (scaleWaveView != null) {
-            scaleWaveView.setScaleVisible(true);
-        }
-
-
+//        WaveView waveView = emgWaveViews.get(position);
+//        waveView.setVisibility(isAdd ? View.VISIBLE : View.GONE);
+//        waveView.setIsShow(isAdd);
+//        if (!isAdd) {
+//            waveView.setScaleVisible(false);
+//        }
+//
+//        WaveView scaleWaveView = null;
+//
+//        for (WaveView view : emgWaveViews) {
+//            if (view.isShow()) {
+//                scaleWaveView = view;
+//            }
+//        }
+//        if (scaleWaveView != null) {
+//            scaleWaveView.setScaleVisible(true);
+//        }
+        waveView.changeChannelStatus(position, isAdd);
     }
 
     private final List<WaveView> emgWaveViews = new ArrayList<>();
+    private MyWaveView waveView;
 
     private void initWaveMap() {
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0);
-        layoutParams.weight = 1;
-        for (int i = 1; i <= 8; i++) {
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+//        layoutParams.weight = 1;
+//        for (int i = 1; i <= 8; i++) {
+//
 
-            WaveView waveView = new WaveView(getActivity());
-            waveView.setIsShow(true);
-            if (i == 8) {
-                waveView.setScaleVisible(true);
-            }
-            emgWaveViews.add(waveView);
-            mEmgWaveContainLL.addView(waveView, layoutParams);
-        }
+//            waveView.setIsShow(true);
+//            waveView.setmWaveDesc("通道" + i);
+//            if (i == 8) {
+//                waveView.setScaleVisible(true);
+//            }
+//            emgWaveViews.add(waveView);
+        waveView = new MyWaveView(getActivity());
+        mEmgWaveContainLL.addView(waveView, layoutParams);
+//        }
 
     }
 }
