@@ -80,6 +80,22 @@ public class DeviceManager {
         return (float) (l * 400) / 0x7FFFFF;
     }
 
+
+    public void analysisSampledData2(List<Integer> data) {
+        for (int i = 0; i < data.size() - 24; i += 24) {
+            for (int m = 0; m < 8; m++) {
+                float pointChannel1 = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
+                if (isSaveSampleData()) {
+                    mOriginalData.add(pointChannel1);
+                    mFilterData.add(pointChannel1);
+                }
+                if (mDeviceInfoListener != null) {
+                    mDeviceInfoListener.replyVoltageData(m + 1, pointChannel1);
+                }
+            }
+        }
+    }
+
     public void analysisSampledData(List<Integer> data) {
         for (int i = 0; i < data.size() - 24; i += 24) {
             float pointChannel1 = calculateVoltage(data.get(i), data.get(i + 1), data.get(i + 2));
@@ -90,7 +106,7 @@ public class DeviceManager {
             float pointChannel6 = calculateVoltage(data.get(i + 15), data.get(i + 16), data.get(i + 17));
             float pointChannel7 = calculateVoltage(data.get(i + 18), data.get(i + 19), data.get(i + 20));
             float pointChannel8 = calculateVoltage(data.get(i + 21), data.get(i + 22), data.get(i + 23));
-            if (isSaveSampleData()){
+            if (isSaveSampleData()) {
                 mOriginalData.add(pointChannel1);
                 mOriginalData.add(pointChannel2);
                 mOriginalData.add(pointChannel3);

@@ -75,6 +75,8 @@ public class WaveView extends View {
      */
     private int waveLineColor = Color.parseColor("#EE4000");
 
+    private float startY;
+
     /**
      * 线条的长度，可用于控制横坐标
      */
@@ -324,7 +326,7 @@ public class WaveView extends View {
      */
     private void drawPathFromDatas(Canvas canvas, int start, int end) {
         mPath.reset();
-        float startY = mHeight / 2 - dataArray[start] * (mHeight / (MAX_VALUE * 2));
+        startY = mHeight / 2 - dataArray[start] * (mHeight / (MAX_VALUE * 2));
         mPath.moveTo(start * WAVE_LINE_WIDTH, startY);
         for (int i = start + 1; i < end + 1; i++) {
             if (isRefresh) {

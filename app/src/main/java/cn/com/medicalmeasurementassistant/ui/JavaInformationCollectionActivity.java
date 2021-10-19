@@ -11,7 +11,6 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -48,7 +47,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TimerTask timerTask;
     private float point = 0f;
     private int pointIndex = 0;
-    private LinearLayout mEmgWaveContainLL;
+    //    private LinearLayout mEmgWaveContainLL;
     private FrameLayout mEmgWaveFrameLayout, mDianrongWaveFrameLayout;
     private RadioGroup mRadioGroup;
 
@@ -66,7 +65,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mEmgWaveContainLL = findViewById(R.id.ll_wave_contain);
+//        mEmgWaveContainLL = findViewById(R.id.ll_wave_contain);
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mDianrongWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
         WaveManager.getInstance().addCallback(this);
@@ -120,10 +119,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, FileSearchActivity.class);
                 break;
             case R.id.iv_file_save:
-//                if (mDeviceManager.isDeviceStart()) {
-//                    ToastHelper.showShort("请停止设备采集再保存数据");
-//                    return;
-//                }
                 if (mDeviceManager.getOriginalData().size() == 0) {
                     ToastHelper.showShort("请采集数据后再保存");
                     return;
@@ -132,6 +127,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                         fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getFilterData()));
                 break;
             case R.id.stv_setting_params:
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
                 // 参数设置
                 BaseKotlinActivity.Companion.launcherActivity(this, SettingParamsActivity.class);
                 break;
@@ -187,9 +186,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void replyVoltageData(int channel, float point) {
-        if (channel == 1) {
-//            mWaveView1.showLine(point);
-        }
+
+        mWaveView.addData(channel, point);
+        //TODO 最好在更新所有通道的数据后调用,避免调用太多次
+        mWaveView.postInvalidate();
     }
 
     @Override
@@ -200,44 +200,17 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void waveCount(boolean isAdd, int position) {
-//        WaveView waveView = emgWaveViews.get(position);
-//        waveView.setVisibility(isAdd ? View.VISIBLE : View.GONE);
-//        waveView.setIsShow(isAdd);
-//        if (!isAdd) {
-//            waveView.setScaleVisible(false);
-//        }
-//
-//        WaveView scaleWaveView = null;
-//
-//        for (WaveView view : emgWaveViews) {
-//            if (view.isShow()) {
-//                scaleWaveView = view;
-//            }
-//        }
-//        if (scaleWaveView != null) {
-//            scaleWaveView.setScaleVisible(true);
-//        }
-        waveView.changeChannelStatus(position, isAdd);
+        mWaveView.clearChannelData();
+        mWaveView.changeChannelStatus(position, isAdd);
     }
 
-    private final List<WaveView> emgWaveViews = new ArrayList<>();
-    private MyWaveView waveView;
+    private MyWaveView mWaveView;
 
     private void initWaveMap() {
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-//        layoutParams.weight = 1;
-//        for (int i = 1; i <= 8; i++) {
-//
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        mWaveView = new MyWaveView(getActivity());
+        mEmgWaveFrameLayout.addView(mWaveView, layoutParams);
 
-//            waveView.setIsShow(true);
-//            waveView.setmWaveDesc("通道" + i);
-//            if (i == 8) {
-//                waveView.setScaleVisible(true);
-//            }
-//            emgWaveViews.add(waveView);
-        waveView = new MyWaveView(getActivity());
-        mEmgWaveContainLL.addView(waveView, layoutParams);
-//        }
 
     }
 }

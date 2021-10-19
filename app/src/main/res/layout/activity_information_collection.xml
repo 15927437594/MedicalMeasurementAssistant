@@ -167,12 +167,12 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/rg_contain">
 
-                <LinearLayout
-                    android:id="@+id/ll_wave_contain"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                </LinearLayout>
+<!--                <LinearLayout-->
+<!--                    android:id="@+id/ll_wave_contain"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:orientation="vertical">-->
+<!--                </LinearLayout>-->
 
             </FrameLayout>
             <FrameLayout

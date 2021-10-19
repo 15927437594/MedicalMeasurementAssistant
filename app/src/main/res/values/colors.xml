@@ -24,6 +24,7 @@
   <color name="red">#ff0000</color>
   <color name="theme_color">#6836B8</color>
   <color name="theme_color_10">#1a6836B8</color>
+  <color name="theme_color_20">#cc6836B8</color>
   <color name="theme_color_shadow">#ff6836B8</color>
   <color name="collect_option_bg">#F4F1FF</color>
   <color name="title_color">#48336A</color>
