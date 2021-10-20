@@ -1,5 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui;
 
+import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -12,8 +13,7 @@ import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Random;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
@@ -43,13 +43,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private boolean mCollectionStatus;
 
     private DeviceManager mDeviceManager;
-    private Timer timer;
-    private TimerTask timerTask;
-    private float point = 0f;
-    private int pointIndex = 0;
-    //    private LinearLayout mEmgWaveContainLL;
     private FrameLayout mEmgWaveFrameLayout, mDianrongWaveFrameLayout;
     private RadioGroup mRadioGroup;
+    private CountDownTimer timer1;
 
     @Override
     public int getLayoutId() {
@@ -65,7 +61,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-//        mEmgWaveContainLL = findViewById(R.id.ll_wave_contain);
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mDianrongWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
         WaveManager.getInstance().addCallback(this);
@@ -117,6 +112,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             case R.id.iv_file_list:
                 // 文件查找
                 BaseKotlinActivity.Companion.launcherActivity(this, FileSearchActivity.class);
+
                 break;
             case R.id.iv_file_save:
                 if (mDeviceManager.getOriginalData().size() == 0) {
@@ -139,10 +135,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
-                if (!mDeviceManager.isDeviceOpen()) {
-                    ToastHelper.showShort("请打开设备");
-                    return;
-                }
+//                if (!mDeviceManager.isDeviceOpen()) {
+//                    ToastHelper.showShort("请打开设备");
+//                    return;
+//                }
                 mCollectionStatus = !mCollectionStatus;
                 if (mCollectionStatus) {
                     // 启动
@@ -150,6 +146,32 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
                     // 此处需要开始计时
                     ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
+
+
+                    final Random random1 = new Random();
+                    timer1 = new CountDownTimer(10_000, 50) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+
+                            for (int i = 0; i < 8; i++) {
+                                if (mWaveView.checkChannelStatus(i)) {
+                                    float v = random1.nextFloat() * 2 - 2;
+                                    replyVoltageData(i, v);
+                                }
+                            }
+                            mWaveView.postInvalidate();
+
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+
+                        }
+                    };
+                    timer1.start();
+
+
                 } else {
                     // 停止
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
@@ -157,6 +179,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
                     // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
+
+                    if (timer1 != null) {
+                        timer1.cancel();
+                    }
+
                 }
                 break;
             default:
@@ -189,7 +216,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
         mWaveView.addData(channel, point);
         //TODO 最好在更新所有通道的数据后调用,避免调用太多次
-        mWaveView.postInvalidate();
+//        mWaveView.postInvalidate();
     }
 
     @Override

@@ -483,6 +483,9 @@ public class MyWaveView extends View {
         canvas.drawPath(mPath, index % 2 == 0 ? mWavePaintOne : mWavePaintTwo);
     }
 
+    public boolean checkChannelStatus(int position){
+        return mChannelStatus[position];
+    }
     /**
      * 添加新的数据
      */
