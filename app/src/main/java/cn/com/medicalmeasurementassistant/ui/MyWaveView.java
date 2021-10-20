@@ -184,8 +184,6 @@ public class MyWaveView extends View {
         for (int i = 0; i < mChannelStatus.length; i++) {
             totalDataArray.add(new LinkedList<>());
         }
-
-
     }
 
     private int getChannelShowCount() {
@@ -487,14 +485,14 @@ public class MyWaveView extends View {
         LinkedList<Float> dataArray = totalDataArray.get(position);
         switch (drawMode) {
             case 0:
-                /** 常规模式数据添加至最后一位*/
+                // 常规模式数据添加至最后一位
                 if (dataArray.size() == row) {
                     dataArray.removeFirst();
                 }
                 dataArray.addLast(line);
                 break;
             case 1:
-                /** 循环模式数据添加至当前绘制的位*/
+                // 循环模式数据添加至当前绘制的位
                 dataArray.removeFirst();
                 dataArray.addLast(line);
                 break;

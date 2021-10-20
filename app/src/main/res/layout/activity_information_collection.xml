@@ -167,27 +167,22 @@
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/rg_contain">
 
-<!--                <LinearLayout-->
-<!--                    android:id="@+id/ll_wave_contain"-->
-<!--                    android:layout_width="match_parent"-->
-<!--                    android:layout_height="wrap_content"-->
-<!--                    android:orientation="vertical">-->
-<!--                </LinearLayout>-->
-
             </FrameLayout>
+
             <FrameLayout
                 android:id="@+id/frameLayout_wave_pattern2"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_margin="15dp"
-                android:visibility="gone"
                 android:background="#EEEEEE"
+                android:visibility="gone"
                 app:layout_constraintDimensionRatio="1"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/rg_contain">
 
             </FrameLayout>
+
             <com.hjq.shape.view.ShapeTextView
                 android:id="@+id/stv_collect_option_bg"
                 android:layout_width="0dp"
@@ -393,11 +388,11 @@
                     android:textStyle="bold" />
 
                 <Switch
-                    android:checked="false"
                     android:id="@+id/iv_save_data"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"
+                    android:checked="false"
                     android:thumb="@drawable/switch_white_color_on_16dp"
                     android:track="@drawable/switch_theme_color_track_selector" />
 

@@ -130,16 +130,19 @@ public class DeviceManager {
     public void analysisSampledData2(List<Integer> data) {
         for (int i = 0; i < data.size() - 24; i += 24) {
             for (int m = 0; m < 8; m++) {
-                float pointChannel1 = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
+                float pointChannel = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
                 if (isSaveSampleData()) {
-                    mOriginalData.add(pointChannel1);
-                    mFilterData.add(pointChannel1);
+                    mOriginalData.add(pointChannel);
+                    mFilterData.add(pointChannel);
                 }
                 if (mDeviceInfoListener != null) {
-                    mDeviceInfoListener.replyVoltage(m + 1, pointChannel1);
+                    mDeviceInfoListener.replyVoltage(m + 1, pointChannel);
                 }
             }
         }
+
+        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
+        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
     }
 
     public boolean isSaveSampleData() {

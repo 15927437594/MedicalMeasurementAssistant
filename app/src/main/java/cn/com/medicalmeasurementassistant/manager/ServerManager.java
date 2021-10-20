@@ -33,7 +33,6 @@ public class ServerManager {
     private final AtomicBoolean mIsClientInterrupted = new AtomicBoolean(false);
     private OutputStream mOutputStream;
     private final Handler mHandler;
-    private boolean mConnectDevice = false;
 
     private ServerManager() {
         mThreadPool = Executors.newCachedThreadPool();
@@ -78,16 +77,15 @@ public class ServerManager {
     public void disconnectDevice() {
         try {
             mIsServerSocketInterrupted.set(true);
+            if (mOutputStream != null) {
+                mOutputStream.close();
+            }
             if (mServerSocket != null) {
                 mServerSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void setDeviceConnect(boolean connect) {
-        this.mConnectDevice = connect;
     }
 
     private class DeviceClient implements Runnable {
@@ -109,7 +107,7 @@ public class ServerManager {
                     byte[] buffer = new byte[1024];
                     if (dataInputStream != null) {
                         int read = dataInputStream.read(buffer);
-                        LogUtils.i("read=" + read);
+                        LogUtils.d("read=" + read);
                         if (read > 0) {
                             ProtocolHelper.getInstance().analysisSocketProtocol(buffer, read);
                         }

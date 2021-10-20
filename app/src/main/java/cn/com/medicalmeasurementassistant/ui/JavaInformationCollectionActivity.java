@@ -46,6 +46,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private DeviceManager mDeviceManager;
     private FrameLayout mEmgWaveFrameLayout, mCapacitanceWaveFrameLayout;
     private RadioGroup mRadioGroup;
+    private MyWaveView mEmgWaveView;
+    private MyWaveView mCapacitanceWaveView;
 
     @Override
     public int getLayoutId() {
@@ -64,7 +66,15 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
         WaveManager.getInstance().addCallback(this);
-        initWaveMap();
+        initEmgView();
+        initCapacitanceView();
+        byte[] bytes = new byte[4];
+        bytes[0] = (byte) 0x41;
+        bytes[1] = (byte) 0xE1;
+        bytes[2] = (byte) 0x99;
+        bytes[3] = (byte) 0x9A;
+        float capacitance = CalculateUtils.getFloat(bytes, 0);
+        LogUtils.d("capacitance=" + capacitance);
     }
 
     @Override
@@ -112,6 +122,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, FileSearchActivity.class);
                 break;
             case R.id.iv_file_save:
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
                 if (mDeviceManager.getOriginalData().size() == 0) {
                     ToastHelper.showShort("请采集数据后再保存");
                     return;
@@ -154,7 +168,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 break;
             default:
                 break;
-
         }
     }
 
@@ -174,9 +187,12 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void replyVoltage(int channel, float point) {
-        mWaveView.addData(channel, point);
+        mEmgWaveView.addData(channel, point);
         //TODO 最好在更新所有通道的数据后调用,避免调用太多次
-        mWaveView.postInvalidate();
+        if (channel == 8) {
+            mEmgWaveView.postInvalidate();
+        }
+//        mEmgWaveView.postInvalidate();
     }
 
     @Override
@@ -192,15 +208,22 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void waveCount(boolean isAdd, int position) {
-        mWaveView.clearChannelData();
-        mWaveView.changeChannelStatus(position, isAdd);
+        mEmgWaveView.clearChannelData();
+        mEmgWaveView.changeChannelStatus(position, isAdd);
     }
 
-    private MyWaveView mWaveView;
-
-    private void initWaveMap() {
+    private void initEmgView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        mWaveView = new MyWaveView(getActivity());
-        mEmgWaveFrameLayout.addView(mWaveView, layoutParams);
+        mEmgWaveView = new MyWaveView(getActivity());
+        mEmgWaveFrameLayout.addView(mEmgWaveView, layoutParams);
+    }
+
+    private void initCapacitanceView() {
+        FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
+        mCapacitanceWaveView = new MyWaveView(getActivity());
+        for (int i = 1; i < 8; i++) {
+            mCapacitanceWaveView.changeChannelStatus(i, false);
+        }
+        mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
     }
 }

@@ -1,7 +1,5 @@
 package cn.com.medicalmeasurementassistant.utils;
 
-import static java.lang.reflect.Array.getInt;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -218,6 +216,14 @@ public class CalculateUtils {
 
     public static float getFloat(byte[] arr, int index) {
         return Float.intBitsToFloat(getInt(arr, index));
+    }
+
+    // 从byte数组的index处的连续4个字节获得一个int
+    public static int getInt(byte[] arr, int index) {
+        return (0xff000000 & (arr[index] << 24)) |
+                (0x00ff0000 & (arr[index + 1] << 16)) |
+                (0x0000ff00 & (arr[index + 2] << 8)) |
+                (0x000000ff & arr[index + 3]);
     }
 }
 
