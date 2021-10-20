@@ -1,5 +1,7 @@
 package cn.com.medicalmeasurementassistant.utils;
 
+import static java.lang.reflect.Array.getInt;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -151,15 +153,6 @@ public class CalculateUtils {
         return "";
     }
 
-    public static List<Integer> calculateFixtureIP(String fixtureIP) {
-        List<Integer> data = new ArrayList<>();
-        String[] split = fixtureIP.split("\\.");
-        for (String s : split) {
-            data.add(Integer.valueOf(s));
-        }
-        return data;
-    }
-
     public static String bytesToHex(byte[] bytes) {
         StringBuilder sb = new StringBuilder();
         for (byte aByte : bytes) {
@@ -223,66 +216,8 @@ public class CalculateUtils {
         return (forth | (third << 8) | (second << 16) | (first << 24));
     }
 
-    public static List<Integer> computeKeyFromSeed(List<Integer> srcList) {
-        List<Integer> bufList = new ArrayList<>(srcList);
-        List<Integer> keyList = new ArrayList<>();
-
-        int crc0 = crc8(bufList);
-
-        bufList.set(0, crc0);
-        int crc1 = crc8(bufList);
-
-        bufList.set(0, srcList.get(0));
-        bufList.set(1, crc1);
-        int crc2 = crc8(bufList);
-
-        bufList.set(1, srcList.get(1));
-        bufList.set(2, crc2);
-        int crc3 = crc8(bufList);
-
-        bufList.set(2, srcList.get(2));
-        bufList.set(3, crc3);
-        int crc4 = crc8(bufList);
-
-        bufList.set(3, srcList.get(3));
-        bufList.set(4, crc4);
-        int crc5 = crc8(bufList);
-
-        bufList.set(4, srcList.get(4));
-        bufList.set(5, crc5);
-        int crc6 = crc8(bufList);
-
-        if (crc3 == 0 && crc4 == 0 && crc5 == 0 && crc6 == 0) {
-            keyList.add(crc1);
-            keyList.add(crc2);
-            keyList.add(crc3);
-            keyList.add(crc4);
-        } else {
-            keyList.add(crc3);
-            keyList.add(crc4);
-            keyList.add(crc5);
-            keyList.add(crc6);
-        }
-        return keyList;
-    }
-
-    public static int crc8(List<Integer> list) {
-        int tCrc = 0xFF;
-        for (int i = 0; i < list.size(); i++) {
-            tCrc ^= list.get(i);
-            tCrc &= 0xFF;
-
-            for (int j = 0; j < 8; j++) {
-                if ((tCrc & 0x80) != 0) {
-                    tCrc <<= 1;
-                    tCrc &= 0xFF;
-                    tCrc ^= 0x1D;
-                } else {
-                    tCrc <<= 1;
-                }
-            }
-        }
-        return 0xFF - tCrc;
+    public static float getFloat(byte[] arr, int index) {
+        return Float.intBitsToFloat(getInt(arr, index));
     }
 }
 

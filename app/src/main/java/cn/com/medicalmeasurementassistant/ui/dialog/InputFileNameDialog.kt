@@ -23,7 +23,7 @@ fun showInputFileNameDialog(activity: Activity, listen: FileNameDialogListener) 
     sureTv.setOnClickListener {
         dialog.dismiss()
         listen.sure(editText.text.toString())
-        ToastHelper.showShort("数据保存成功");
+        ToastHelper.showShort("数据保存成功")
     }
     cancelTv.setOnClickListener { dialog.dismiss() }
     dialog.setCanceledOnTouchOutside(true)

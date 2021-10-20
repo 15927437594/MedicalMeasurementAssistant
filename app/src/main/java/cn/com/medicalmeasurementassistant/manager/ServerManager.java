@@ -57,14 +57,17 @@ public class ServerManager {
     }
 
     public void connectDevice() {
+        LogUtils.i("connectDevice");
         mIsServerSocketInterrupted.set(false);
         mThreadPool.execute(() -> {
             try {
                 while (!mIsServerSocketInterrupted.get()) {
-                    mClient = mServerSocket.accept();
-                    LogUtils.i("accept and add client");
-                    mThreadPool.execute(new DeviceClient(mClient));
-                    mHandler.postDelayed(() -> sendData(new SendHandshakeSignal().pack()), 1000L);
+                    if (!mServerSocket.isClosed()) {
+                        mClient = mServerSocket.accept();
+                        LogUtils.i("accept and add client");
+                        mThreadPool.execute(new DeviceClient(mClient));
+                        mHandler.postDelayed(() -> sendData(new SendHandshakeSignal().pack()), 1000L);
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -74,10 +77,10 @@ public class ServerManager {
 
     public void disconnectDevice() {
         try {
+            mIsServerSocketInterrupted.set(true);
             if (mServerSocket != null) {
                 mServerSocket.close();
             }
-            mIsServerSocketInterrupted.set(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
