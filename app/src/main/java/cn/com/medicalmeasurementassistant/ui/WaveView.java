@@ -36,7 +36,7 @@ public class WaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = NORMAL_MODE;
+    private int drawMode = LOOP_MODE;
 
     /**
      * 宽高
@@ -80,7 +80,7 @@ public class WaveView extends View {
     /**
      * 线条的长度，可用于控制横坐标
      */
-    private int WAVE_LINE_WIDTH = 10;
+    private int WAVE_LINE_WIDTH = 5;
     /**
      * 数据点的数量
      */

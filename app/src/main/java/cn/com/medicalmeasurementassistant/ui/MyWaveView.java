@@ -42,7 +42,7 @@ public class MyWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = NORMAL_MODE;
+    private int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -181,11 +181,9 @@ public class MyWaveView extends View {
         mPath = new Path();
         gridHorizontalNum = getChannelShowCount();
 
-        for(int i = 0;i<mChannelStatus.length;i++){
+        for (int i = 0; i < mChannelStatus.length; i++) {
             totalDataArray.add(new LinkedList<>());
         }
-
-
     }
 
     private int getChannelShowCount() {
@@ -402,13 +400,11 @@ public class MyWaveView extends View {
     public void setRefresh(boolean refresh) {
         isRefresh = refresh;
     }
-    public void clearChannelData(){
-        for(LinkedList<Float> linkedList:totalDataArray){
+
+    public void clearChannelData() {
+        for (LinkedList<Float> linkedList : totalDataArray) {
             linkedList.clear();
         }
-
-
-
     }
 
     /**
@@ -417,7 +413,7 @@ public class MyWaveView extends View {
      * @param canvas
      */
     private void drawWaveLineNormal(Canvas canvas) {
-        if(totalDataArray.size() == 0){
+        if (totalDataArray.size() == 0) {
             return;
         }
 
@@ -433,7 +429,6 @@ public class MyWaveView extends View {
                 index++;
             }
         }
-
     }
 
     /**
@@ -493,18 +488,17 @@ public class MyWaveView extends View {
         LinkedList<Float> dataArray = totalDataArray.get(position);
         switch (drawMode) {
             case 0:
-                /** 常规模式数据添加至最后一位*/
+                // 常规模式数据添加至最后一位
                 if (dataArray.size() == row) {
                     dataArray.removeFirst();
                 }
                 dataArray.addLast(line);
                 break;
             case 1:
-                /** 循环模式数据添加至当前绘制的位*/
+                // 循环模式数据添加至当前绘制的位
                 dataArray.removeFirst();
                 dataArray.addLast(line);
                 break;
         }
-
     }
 }

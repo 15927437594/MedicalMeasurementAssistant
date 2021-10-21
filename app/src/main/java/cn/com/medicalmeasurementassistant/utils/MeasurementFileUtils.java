@@ -9,16 +9,6 @@ import java.util.List;
 
 public class MeasurementFileUtils {
 
-
-//    /**
-//     * 保存文件
-//     *
-//     * @param content
-//     */
-//    public synchronized static void saveMeasurementFile(String content) {
-//        saveMeasurementFile(null, content);
-//    }
-
     public synchronized static void saveMeasurementFile(String fileName, List<Float> originalData, List<Float> filterData) {
         String originalFileName = fileName + "-original.csv";
         String filterFileName = fileName + "-filter.csv";

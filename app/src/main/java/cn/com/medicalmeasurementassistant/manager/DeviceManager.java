@@ -58,45 +58,6 @@ public class DeviceManager {
 
     public void replySampledData(List<Integer> data) {
         LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
-        if (mDeviceInfoListener != null) {
-            mDeviceInfoListener.replySampledData(data);
-        }
-        analysisSampledData(data);
-    }
-
-    public void replyStopDataCollect(List<Integer> data) {
-        LogUtils.d("replyStopDataCollect data=" + CalculateUtils.getHexStringList(data));
-        if (mDeviceInfoListener != null) {
-            mDeviceInfoListener.replyStopDataCollect(data);
-        }
-    }
-
-    public float calculateVoltage(int first, int second, int third) {
-        if (first == 0x00 && second == 0x00 && third == 0x00) {
-            return 0.0F;
-        }
-        long combine = CalculateUtils.threeLongCombine(first, second, third);
-        long l = -(0xFFFFFF - combine + 1);
-        return (float) (l * 400) / 0x7FFFFF;
-    }
-
-
-    public void analysisSampledData2(List<Integer> data) {
-        for (int i = 0; i < data.size() - 24; i += 24) {
-            for (int m = 0; m < 8; m++) {
-                float pointChannel1 = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
-                if (isSaveSampleData()) {
-                    mOriginalData.add(pointChannel1);
-                    mFilterData.add(pointChannel1);
-                }
-                if (mDeviceInfoListener != null) {
-                    mDeviceInfoListener.replyVoltageData(m + 1, pointChannel1);
-                }
-            }
-        }
-    }
-
-    public void analysisSampledData(List<Integer> data) {
         for (int i = 0; i < data.size() - 24; i += 24) {
             float pointChannel1 = calculateVoltage(data.get(i), data.get(i + 1), data.get(i + 2));
             float pointChannel2 = calculateVoltage(data.get(i + 3), data.get(i + 4), data.get(i + 5));
@@ -127,16 +88,61 @@ public class DeviceManager {
             }
 
             if (mDeviceInfoListener != null) {
-                mDeviceInfoListener.replyVoltageData(1, pointChannel1);
-                mDeviceInfoListener.replyVoltageData(2, pointChannel2);
-                mDeviceInfoListener.replyVoltageData(3, pointChannel3);
-                mDeviceInfoListener.replyVoltageData(4, pointChannel4);
-                mDeviceInfoListener.replyVoltageData(5, pointChannel5);
-                mDeviceInfoListener.replyVoltageData(6, pointChannel6);
-                mDeviceInfoListener.replyVoltageData(7, pointChannel7);
-                mDeviceInfoListener.replyVoltageData(8, pointChannel8);
+                mDeviceInfoListener.replyVoltage(1, pointChannel1);
+                mDeviceInfoListener.replyVoltage(2, pointChannel2);
+                mDeviceInfoListener.replyVoltage(3, pointChannel3);
+                mDeviceInfoListener.replyVoltage(4, pointChannel4);
+                mDeviceInfoListener.replyVoltage(5, pointChannel5);
+                mDeviceInfoListener.replyVoltage(6, pointChannel6);
+                mDeviceInfoListener.replyVoltage(7, pointChannel7);
+                mDeviceInfoListener.replyVoltage(8, pointChannel8);
             }
         }
+
+        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
+        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
+    }
+
+    public void replyCapacitanceData(byte[] data) {
+        float capacitance = CalculateUtils.getFloat(data, 0);
+        if (mDeviceInfoListener != null) {
+            mDeviceInfoListener.replyCapacitance(capacitance);
+        }
+    }
+
+    public void replyStopDataCollect(List<Integer> data) {
+        LogUtils.d("replyStopDataCollect data=" + CalculateUtils.getHexStringList(data));
+        if (mDeviceInfoListener != null) {
+            mDeviceInfoListener.replyStopDataCollect(data);
+        }
+    }
+
+    public float calculateVoltage(int first, int second, int third) {
+        if (first == 0x00 && second == 0x00 && third == 0x00) {
+            return 0.0F;
+        }
+        long combine = CalculateUtils.threeLongCombine(first, second, third);
+        long l = -(0xFFFFFF - combine + 1);
+        return (float) (l * 400) / 0x7FFFFF;
+    }
+
+
+    public void analysisSampledData2(List<Integer> data) {
+        for (int i = 0; i < data.size() - 24; i += 24) {
+            for (int m = 0; m < 8; m++) {
+                float pointChannel = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
+                if (isSaveSampleData()) {
+                    mOriginalData.add(pointChannel);
+                    mFilterData.add(pointChannel);
+                }
+                if (mDeviceInfoListener != null) {
+                    mDeviceInfoListener.replyVoltage(m + 1, pointChannel);
+                }
+            }
+        }
+
+        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
+        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
     }
 
     public boolean isSaveSampleData() {
