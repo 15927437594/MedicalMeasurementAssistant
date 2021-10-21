@@ -25,9 +25,9 @@ public class WaveManager {
         waveCountChangeListeners.remove(listener);
     }
 
-    public void WaveCountChange(boolean isAdd, int position) {
+    public void WaveCountChange() {
         for (OnWaveCountChangeListener listener : waveCountChangeListeners) {
-            listener.waveCount(isAdd, position);
+            listener.waveCountChange();
         }
     }
 

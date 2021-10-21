@@ -14,10 +14,10 @@ import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
-import java.util.Random;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
+import cn.com.medicalmeasurementassistant.entity.SettingParamsBean;
 import cn.com.medicalmeasurementassistant.listener.DeviceInfoListener;
 import cn.com.medicalmeasurementassistant.listener.OnWaveCountChangeListener;
 import cn.com.medicalmeasurementassistant.manager.DeviceManager;
@@ -47,7 +47,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private boolean mCollectionStatus;
     private DeviceManager mDeviceManager;
     private FrameLayout mEmgWaveFrameLayout, mCapacitanceWaveFrameLayout;
-    private FrameLayout mEmgWaveFrameLayout, mDianrongWaveFrameLayout;
     private RadioGroup mRadioGroup;
     private MyWaveView mEmgWaveView;
     private MyWaveView mCapacitanceWaveView;
@@ -151,10 +150,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
-//                if (!mDeviceManager.isDeviceOpen()) {
-//                    ToastHelper.showShort("请打开设备");
-//                    return;
-//                }
+                if (!mDeviceManager.isDeviceOpen()) {
+                    ToastHelper.showShort("请打开设备");
+                    return;
+                }
                 mCollectionStatus = !mCollectionStatus;
                 if (mCollectionStatus) {
                     // 启动
@@ -162,30 +161,28 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
                     // 此处需要开始计时
                     ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
-
-
-                    final Random random1 = new Random();
-                    timer1 = new CountDownTimer(10_000, 50) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-
-                            for (int i = 0; i < 8; i++) {
-                                if (mWaveView.checkChannelStatus(i)) {
-                                    float v = random1.nextFloat() * 2 - 2;
-                                    replyVoltageData(i, v);
-                                }
-                            }
-                            mWaveView.postInvalidate();
-
-
-                        }
-
-                        @Override
-                        public void onFinish() {
-
-                        }
-                    };
-                    timer1.start();
+//                    Random random = new Random();
+//                    if (timer1 != null) {
+//                        timer1.cancel();
+//                    }
+//                    timer1 = new CountDownTimer(10_000, 50) {
+//                        @Override
+//                        public void onTick(long millisUntilFinished) {
+//                            for (int i = 0; i < 8; i++) {
+//                                float v = random.nextFloat() * 2 - 2;
+//                                replyVoltage(i + 1, v);
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onFinish() {
+//                            for (int i = 0; i < 8; i++) {
+//                                float v = random.nextFloat() * 2 - 2;
+//                                replyVoltage(i + 1, v);
+//                            }
+//                        }
+//                    };
+//                    timer1.start();
 
 
                 } else {
@@ -223,13 +220,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void replyVoltage(int channel, float point) {
-        mEmgWaveView.addData(channel, point);
+        mEmgWaveView.addData(channel - 1, point);
         //TODO 最好在更新所有通道的数据后调用,避免调用太多次
         if (channel == 8) {
             mEmgWaveView.postInvalidate();
         }
-//        mEmgWaveView.postInvalidate();
-//        mWaveView.postInvalidate();
     }
 
     @Override
@@ -244,21 +239,28 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     }
 
     @Override
-    public void waveCount(boolean isAdd, int position) {
+    public void waveCountChange() {
+        List<SettingParamsBean.ChannelBean> chanelBeans = SettingParamsBean.getInstance().getChanelBeans();
         mEmgWaveView.clearChannelData();
-        mEmgWaveView.changeChannelStatus(position, isAdd);
+        for (int position = 0, l = chanelBeans.size(); position < l; position++) {
+            mEmgWaveView.changeChannelStatus(position, chanelBeans.get(position).getChannelStatus());
+        }
     }
 
     private void initEmgView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         mEmgWaveView = new MyWaveView(getActivity());
+        mEmgWaveView.setxAxisDesc("时间/s");
+        mEmgWaveView.setyAxisDesc("电压/mV");
         mEmgWaveFrameLayout.addView(mEmgWaveView, layoutParams);
     }
 
     private void initCapacitanceView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
         mCapacitanceWaveView = new MyWaveView(getActivity());
-        for (int i = 1; i < 8; i++) {
+        mCapacitanceWaveView.setxAxisDesc("时间/s");
+        mCapacitanceWaveView.setyAxisDesc("电容/mV");
+        for (int i = 0; i < 8; i++) {
             mCapacitanceWaveView.changeChannelStatus(i, false);
         }
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
