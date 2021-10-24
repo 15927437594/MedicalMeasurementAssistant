@@ -20,4 +20,6 @@ public class Constant {
      *  默认量程
      */
     public static final int DEFAULT_ANGLE = 400;
+    public static final int DEFAULT_CHANNEL = 8;
+    public static final int MSG_WHAT_DISTRIBUTE_VOLTAGE = 0;
 }

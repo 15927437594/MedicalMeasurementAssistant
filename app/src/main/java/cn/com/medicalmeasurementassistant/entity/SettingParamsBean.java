@@ -60,9 +60,9 @@ public class SettingParamsBean {
      */
     public static class GlobalBean extends SettingBean {
         // 通道状态
-        private boolean channelStatus;
+        private boolean channelStatus = true;
         // 高通虑波状态
-        private boolean highPassFilterStatus;
+        private boolean highPassFilterStatus = true;
         // 工频陷波状态
         private boolean frequencyNotchStatus;
         // REF电极状态

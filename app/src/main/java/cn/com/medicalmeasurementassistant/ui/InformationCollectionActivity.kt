@@ -1,7 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui
 
 import android.view.View
-import android.widget.RadioGroup
 import android.widget.Switch
 import androidx.annotation.IdRes
 import cn.com.medicalmeasurementassistant.R
@@ -42,7 +41,7 @@ class InformationCollectionActivity : BaseKotlinActivity(), View.OnClickListener
             R.id.iv_file_save -> {
                 showInputFileNameDialog(this, object : FileNameDialogListener {
                     override fun sure(fileName: String) {
-                        MeasurementFileUtils.saveMeasurementFile(fileName,DeviceManager.getInstance().originalData, DeviceManager.getInstance().filterData)
+                        MeasurementFileUtils.saveMeasurementFile(fileName,DeviceManager.getInstance().originalData, DeviceManager.getInstance().highPassFilterData)
                     }
                 })
 

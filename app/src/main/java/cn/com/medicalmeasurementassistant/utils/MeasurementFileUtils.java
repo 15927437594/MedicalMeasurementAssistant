@@ -9,7 +9,7 @@ import java.util.List;
 
 public class MeasurementFileUtils {
 
-    public synchronized static void saveMeasurementFile(String fileName, List<Float> originalData, List<Float> filterData) {
+    public synchronized static void saveMeasurementFile(String fileName, List<Double> originalData, List<Double> filterData) {
         String originalFileName = fileName + "-original.csv";
         String filterFileName = fileName + "-filter.csv";
         // 保存内容到文件
@@ -23,7 +23,7 @@ public class MeasurementFileUtils {
         saveMeasurementFileForFile(filterFile, filterData);
     }
 
-    public synchronized static void saveMeasurementFileForFile(File file, List<Float> data) {
+    public synchronized static void saveMeasurementFileForFile(File file, List<Double> data) {
         FileIOUtils.writeFileFromString(file, data.toString());
     }
 

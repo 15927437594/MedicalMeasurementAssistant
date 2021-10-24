@@ -13,9 +13,11 @@ public interface DeviceInfoListener {
 
     void replyStartDataCollect(List<Integer> data);
 
-    void replyVoltage(int channel, float point);
+    void replyVoltage(int channel, List<Double> data);
 
     void replyStopDataCollect(List<Integer> data);
 
     void replyCapacitance(float capacitance);
+
+    void replyDeviceStopped();
 }

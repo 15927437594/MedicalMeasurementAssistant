@@ -9,6 +9,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
+import cn.com.medicalmeasurementassistant.manager.DeviceManager
 import cn.com.medicalmeasurementassistant.manager.WaveManager
 import cn.com.medicalmeasurementassistant.view.recyclerview.BaseSimpleRecyclerAdapter
 import cn.com.medicalmeasurementassistant.view.recyclerview.ViewHolder
@@ -51,12 +52,14 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 highPassFilter.isChecked = globalBean.highPassFilterStatus
                 highPassFilter.setOnCheckedChangeListener { _, isChecked ->
                     globalBean.highPassFilterStatus = isChecked
+                    DeviceManager.getInstance().highPassFilterState = isChecked
                 }
 
 
                 frequencySwitch.isChecked = globalBean.frequencyNotchStatus
                 frequencySwitch.setOnCheckedChangeListener { _, isChecked ->
                     globalBean.frequencyNotchStatus = isChecked
+                    DeviceManager.getInstance().notchFilterState = isChecked
                 }
 
                 holder.setText(R.id.tv_angle_value, globalBean.angle)
@@ -87,10 +90,10 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 holder.setOnClickListener(R.id.stv_params_submit, object : View.OnClickListener {
                     override fun onClick(v: View?) {
                         var flag = false
-                        val chanelBeans = SettingParamsBean.getInstance().chanelBeans
+                        val channelBeans = SettingParamsBean.getInstance().chanelBeans
                         for (i in 0..7) {
-                            if (channelStatus[i] != chanelBeans[i].channelStatus) {
-                                chanelBeans[i].channelStatus = channelStatus[i]
+                            if (channelStatus[i] != channelBeans[i].channelStatus) {
+                                channelBeans[i].channelStatus = channelStatus[i]
                                 flag = true
                             }
                         }

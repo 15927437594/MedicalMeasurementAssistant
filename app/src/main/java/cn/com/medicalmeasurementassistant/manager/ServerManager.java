@@ -37,6 +37,10 @@ public class ServerManager {
     private ServerManager() {
         mThreadPool = Executors.newCachedThreadPool();
         mHandler = new Handler();
+//        MessageHandler.getInstance().createHandler();
+    }
+
+    private void createServerSocket() {
         try {
             mServerSocket = new ServerSocket(Constant.TCP_SERVER_PORT);
         } catch (IOException e) {
@@ -57,11 +61,13 @@ public class ServerManager {
 
     public void connectDevice() {
         LogUtils.i("connectDevice");
+        createServerSocket();
         mIsServerSocketInterrupted.set(false);
+        mIsClientInterrupted.set(false);
         mThreadPool.execute(() -> {
             try {
                 while (!mIsServerSocketInterrupted.get()) {
-                    if (!mServerSocket.isClosed()) {
+                    if (mServerSocket != null && !mServerSocket.isClosed()) {
                         mClient = mServerSocket.accept();
                         LogUtils.i("accept and add client");
                         mThreadPool.execute(new DeviceClient(mClient));
@@ -77,12 +83,19 @@ public class ServerManager {
     public void disconnectDevice() {
         try {
             mIsServerSocketInterrupted.set(true);
+            mIsClientInterrupted.set(true);
             if (mOutputStream != null) {
                 mOutputStream.close();
             }
             if (mServerSocket != null) {
                 mServerSocket.close();
+                mServerSocket = null;
             }
+            if (mClient != null) {
+                mClient.close();
+                mClient = null;
+            }
+            DeviceManager.getInstance().replyDeviceStopped();
         } catch (IOException e) {
             e.printStackTrace();
         }

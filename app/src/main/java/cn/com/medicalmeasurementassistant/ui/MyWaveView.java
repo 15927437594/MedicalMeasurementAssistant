@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.com.medicalmeasurementassistant.R;
+import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.StringUtils;
 
 public class MyWaveView extends View {
@@ -70,29 +71,30 @@ public class MyWaveView extends View {
 //    private float[] dataArray;
 //    private final LinkedList<Float> dataArray = new LinkedList<>();
 
-    private final List<LinkedList<Float>> totalDataArray = new ArrayList<>();
+    private final List<LinkedList<Double>> totalDataArray = new ArrayList<>();
 
     /**
-     * 数据最大值，默认-2~2之间
+     * 数据最大值，默认-1~1之间
      */
-    private final int MAX_VALUE = 2;
-    /**
-     * 线条粗细
-     */
-    private final static float WAVE_LINE_STROKE_WIDTH = SizeUtils.dp2px(1.5f);
+    private int MAX_VALUE = 2;
+
     /**
      * 线条的长度，可用于控制横坐标
      */
-    private final static int WAVE_LINE_WIDTH = 6;
+    private final static int WAVE_LINE_WIDTH = 1;
     /**
      * 点的数量
      */
     private int row = 20;
-    private final static int ROW_S = 20;
+    private final static int ROW_S = 100;
     /**
      * 网格线条的粗细
      */
     private final static int GRID_LINE_WIDTH = 3;
+    /**
+     * 线条粗细
+     */
+    private final static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
     private final boolean[] mChannelStatus = {true, true, true, true, true, true, true, true};
 
@@ -222,7 +224,7 @@ public class MyWaveView extends View {
     public void changeChannelStatus(int position, boolean status) {
         mChannelStatus[position] = status;
         initLineNum();
-        postInvalidate();
+        updateWaveLine();
     }
 
 
@@ -282,7 +284,11 @@ public class MyWaveView extends View {
          */
         drawScale(canvas);
 
+//        try {
         drawWaveLineNormal(canvas);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
 //        /** 绘制折线*/
 //        switch (drawMode) {
 //            case NORMAL_MODE:
@@ -315,8 +321,8 @@ public class MyWaveView extends View {
             }
             if (i % 2 != 0) {
                 Log.i("MyWaveView---", "  drawGrid__if  i " + i);
-                mLinePaint.setColor(getResources().getColor(R.color.electrode_text_color_on));
-                mLinePaint.setAlpha(150);
+                mLinePaint.setColor(getResources().getColor(R.color.electrode_text_color_off));
+                mLinePaint.setAlpha(120);
                 canvas.drawLine(mOffsetX, startY + mOffsetY,
                         getRight(), startY + mOffsetY, mLinePaint);
                 continue;
@@ -380,12 +386,12 @@ public class MyWaveView extends View {
                 String maxValue = String.valueOf(MAX_VALUE);
                 String minValue = String.valueOf(-MAX_VALUE);
                 mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
-                int scaleOneLeft = mOffsetX - mTextRect.width() - 3;
+                int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
                 int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
                 canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mLinePaint);
 
                 mLinePaint.getTextBounds(minValue, 0, minValue.length(), mTextRect);
-                int scaleTwoLeft = mOffsetX - mTextRect.width() - 2;
+                int scaleTwoLeft = mOffsetX - mTextRect.width() - 8;
                 int scaleTwoTop = mOffsetY + (index + 1) * 2 * mHorizontalLineScale - 3;
                 canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mLinePaint);
                 index++;
@@ -430,7 +436,7 @@ public class MyWaveView extends View {
         if (clearIndex) {
             offsetIndex = 0;
         }
-        for (LinkedList<Float> linkedList : totalDataArray) {
+        for (LinkedList<Double> linkedList : totalDataArray) {
             linkedList.clear();
         }
     }
@@ -440,15 +446,18 @@ public class MyWaveView extends View {
      *
      * @param canvas
      */
+    private boolean isDrawWaveLine;
+
     private void drawWaveLineNormal(Canvas canvas) {
         if (totalDataArray.size() == 0) {
             return;
         }
 
+        isDrawWaveLine = true;
         int index = 0;
         for (int i = 0; i < mChannelStatus.length; i++) {
             if (mChannelStatus[i]) {
-                LinkedList<Float> floats = totalDataArray.get(i);
+                LinkedList<Double> floats = totalDataArray.get(i);
                 if (floats.isEmpty()) {
                     index++;
                     continue;
@@ -457,8 +466,15 @@ public class MyWaveView extends View {
                 index++;
             }
         }
+        isDrawWaveLine = false;
     }
 
+    public void updateWaveLine() {
+        if (isDrawWaveLine) {
+            return;
+        }
+        postInvalidate();
+    }
 
 //    /**
 //     * 循环模式绘制折线
@@ -478,24 +494,28 @@ public class MyWaveView extends View {
      * @param end   结束数据位
      */
     private void drawPathFromDatas(Canvas canvas, int start, int end, int index, int dataPosition) {
+        if (index == 0) {
+            canvas.restore();
+        }
         mPath.reset();
-        LinkedList<Float> dataArray = totalDataArray.get(dataPosition);
-        int initOffsetY = mOffsetY + (2 * index) * mHorizontalLineScale + GRID_LINE_WIDTH;
-        float initOffsetY2 = (mHorizontalLineScale) * 2.0f / (MAX_VALUE);
-        for (int i = start + 1; i < end + 1; i++) {
+        LinkedList<Double> dataArray = totalDataArray.get(dataPosition);
+        int initOffsetY = mOffsetY + (2 * index + 1) * mHorizontalLineScale + GRID_LINE_WIDTH / 2;
+        double initOffsetY2 = (mHorizontalLineScale) * 1.0f / (MAX_VALUE);
+
+        for (int i = 0; i < end; i++) {
             if (isRefresh) {
                 isRefresh = false;
                 return;
             }
 
-            if (Math.abs(dataArray.get(i)) > MAX_VALUE) {
-                continue;
-            }
+//            if (Math.abs(dataArray.get(i)) > MAX_VALUE) {
+//                continue;
+//            }
             /**
              * 当前的x，y坐标
              */
             float nowX = i * WAVE_LINE_WIDTH;
-            float dataValue = dataArray.get(i);
+            double dataValue = dataArray.get(i);
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
             if (dataValue > 0) {
                 if (dataValue > MAX_VALUE) {
@@ -507,10 +527,12 @@ public class MyWaveView extends View {
                 }
             }
 
-            float nowY = initOffsetY - dataValue * initOffsetY2;
-
+            float nowY = (float) (initOffsetY - dataValue * initOffsetY2);
 //            float nowY = mOscillographHeight / 2 - dataValue * (mOscillographHeight / (MAX_VALUE * 2));
-            if (i == start + 1) {
+            if (dataPosition == 0) {
+                LogUtils.d("line_data" + dataPosition + " index = " + i);
+            }
+            if (i == 0) {
                 mPath.moveTo(nowX + mOffsetX, nowY);
             }
             mPath.lineTo(nowX + mOffsetX, nowY);
@@ -527,8 +549,11 @@ public class MyWaveView extends View {
     /**
      * 添加新的数据
      */
-    public void addData(int position, float line) {
-        LinkedList<Float> dataArray = totalDataArray.get(position);
+    public void addData(int position, List<Double> data) {
+        if(isDrawWaveLine){
+            return;
+        }
+        LinkedList<Double> dataArray = totalDataArray.get(position);
         switch (drawMode) {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位
@@ -538,7 +563,7 @@ public class MyWaveView extends View {
                         offsetIndex++;
                     }
                 }
-                dataArray.addLast(line);
+//                dataArray.addLast(line);
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
@@ -548,9 +573,48 @@ public class MyWaveView extends View {
                         clearChannelData(false);
                     }
                 }
-                dataArray.addLast(line);
+//                dataArray.addLast(line);
+                for (int i = 0; i < data.size(); i++) {
+                    dataArray.addLast(data.get(i));
+                }
+//                dataArray.addAll(data);
                 break;
         }
+    }
 
+    /**
+     * 添加新的数据
+     */
+    public void addData(int position, double data) {
+        if(isDrawWaveLine){
+            return;
+        }
+        LinkedList<Double> dataArray = totalDataArray.get(position);
+        switch (drawMode) {
+            case NORMAL_MODE:
+                // 常规模式数据添加至最后一位
+                if (dataArray.size() == row) {
+                    dataArray.removeFirst();
+                    if (position == 0) {
+                        offsetIndex++;
+                    }
+                }
+//                dataArray.addLast(line);
+                break;
+            case LOOP_MODE:
+                // 循环模式数据添加至当前绘制的位
+                if (dataArray.size() == row) {
+                    if (position == 0) {
+                        offsetIndex += row;
+                        clearChannelData(false);
+                    }
+                }
+                dataArray.addLast(data);
+                break;
+        }
+    }
+
+    public void setMaxValue(int value) {
+        this.MAX_VALUE = value;
     }
 }
