@@ -31,6 +31,7 @@ public class MyWaveView extends View {
     private int mOscillographHeight;
     private final static int mOffsetX = 50;
     private final static int mOffsetY = 50;
+    private final static int mOffsetBottom = 80;
     /**
      * 常规绘制模式 不断往后推的方式
      */
@@ -44,7 +45,7 @@ public class MyWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private int drawMode = NORMAL_MODE;
 
     /**
      * 网格画笔
@@ -65,6 +66,8 @@ public class MyWaveView extends View {
      */
     private Path mPath;
 
+    private int mShowTimeLength = 5;
+
     /**
      * 保存已绘制的数据坐标
      */
@@ -81,7 +84,7 @@ public class MyWaveView extends View {
     /**
      * 线条的长度，可用于控制横坐标
      */
-    private final static int WAVE_LINE_WIDTH = 1;
+    private final static int WAVE_LINE_WIDTH = 2;
     /**
      * 点的数量
      */
@@ -228,6 +231,10 @@ public class MyWaveView extends View {
     }
 
 
+    public void setShowTimeLength(int mShowTimeLength) {
+        this.mShowTimeLength = mShowTimeLength;
+    }
+
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
 //        mOscillographWidth = w;
@@ -242,8 +249,9 @@ public class MyWaveView extends View {
         Log.i("MyWaveView---", "  onLayout  ");
         /** 获取控件的宽高*/
         int witdh = getMeasuredWidth() - mOffsetX;
-        gridVerticalNum = witdh / (ROW_S * WAVE_LINE_WIDTH) + 1;
-        mOscillographWidth = gridVerticalNum * ROW_S * WAVE_LINE_WIDTH;
+        gridVerticalNum = mShowTimeLength;
+//        gridVerticalNum = witdh / (ROW_S * WAVE_LINE_WIDTH) + 1;
+        mOscillographWidth = ROW_S * WAVE_LINE_WIDTH;
         mOscillographHeight = getMeasuredHeight() - 2 * mOffsetY;
         initLineNum();
     }
@@ -307,6 +315,7 @@ public class MyWaveView extends View {
      */
     private void drawGrid(Canvas canvas) {
         int bottom = gridHorizontalNum * mHorizontalLineScale + mOffsetY;
+        int right = mOffsetX + mOscillographWidth * gridVerticalNum;
 
         /** 绘制横线*/
         for (int i = 0; i < gridHorizontalNum + 1; i++) {
@@ -315,6 +324,11 @@ public class MyWaveView extends View {
                 Log.i("MyWaveView---", "  drawGrid_for  i " + i);
                 mLinePaint.setColor(gridLineColor);
                 mLinePaint.setAlpha(50);
+                if (i == 0) {
+                    canvas.drawLine(mOffsetX, startY + mOffsetY,
+                            mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH, startY + mOffsetY, mLinePaint);
+                    continue;
+                }
                 canvas.drawLine(mOffsetX, startY + mOffsetY,
                         getRight(), startY + mOffsetY, mLinePaint);
                 continue;
@@ -324,26 +338,30 @@ public class MyWaveView extends View {
                 mLinePaint.setColor(getResources().getColor(R.color.electrode_text_color_off));
                 mLinePaint.setAlpha(120);
                 canvas.drawLine(mOffsetX, startY + mOffsetY,
-                        getRight(), startY + mOffsetY, mLinePaint);
+                        right, startY + mOffsetY, mLinePaint);
                 continue;
             }
             mLinePaint.setColor(gridLineColor);
             mLinePaint.setAlpha(50);
             canvas.drawLine(mOffsetX, startY + mOffsetY,
-                    getRight(), startY + mOffsetY, DashPathEffectPaint);
+                    right, startY + mOffsetY, DashPathEffectPaint);
         }
 
         mLinePaint.setColor(gridLineColor);
         mLinePaint.setAlpha(50);
+
+        canvas.drawLine(mOffsetX, mOffsetY,
+                mOffsetX, bottom, mLinePaint);
+        canvas.drawLine(mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH,
+                mOffsetY, mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH, bottom, mLinePaint);
         /** 绘制竖线*/
-        for (int i = 0; i < gridVerticalNum + 1; i++) {
-            int startX;
-            if (i == 0) {
-                startX = 2;
-            } else {
-                int offset = offsetIndex > 0 ? (offsetIndex % ROW_S * WAVE_LINE_WIDTH) : 0;
-                startX = i * mVerticalLineScale - offset;
+        for (int i = 0; i < gridVerticalNum; i++) {
+            if (i == gridVerticalNum - 1 && offsetIndex == 0) {
+                continue;
             }
+            int startX;
+            int offset = offsetIndex > 0 ? (offsetIndex % ROW_S * WAVE_LINE_WIDTH) : 0;
+            startX = (i + 1) * mVerticalLineScale - offset;
             canvas.drawLine(startX + mOffsetX, mOffsetY,
                     startX + mOffsetY, bottom, mLinePaint);
         }
@@ -366,7 +384,7 @@ public class MyWaveView extends View {
             mTextPaint.getTextBounds(xAxisDesc, 0, xAxisDesc.length(), mScaleTextRect);
             int xDescLeft = getWidth() - mScaleTextRect.width() - 5;
             int xDescBottom = mOscillographHeight + mOffsetY + mScaleTextRect.height();
-            canvas.drawText(xAxisDesc, xDescLeft, xDescBottom, mTextPaint);
+            canvas.drawText(xAxisDesc, xDescLeft, getHeight() - 5, mTextPaint);
             canvas.save();
         }
 
@@ -405,7 +423,7 @@ public class MyWaveView extends View {
             int left;
             if (i == 0) {
                 left = mOffsetX;
-                if (drawMode == NORMAL_MODE && offsetIndex % ROW_S > 10) {
+                if (drawMode == NORMAL_MODE && offsetIndex % ROW_S > ROW_S >> 1) {
                     continue;
                 }
             } else {
@@ -514,7 +532,7 @@ public class MyWaveView extends View {
             /**
              * 当前的x，y坐标
              */
-            float nowX = i * WAVE_LINE_WIDTH;
+            float nowX = i * WAVE_LINE_WIDTH + WAVE_LINE_WIDTH;
             double dataValue = dataArray.get(i);
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
             if (dataValue > 0) {
@@ -550,7 +568,7 @@ public class MyWaveView extends View {
      * 添加新的数据
      */
     public void addData(int position, List<Double> data) {
-        if(isDrawWaveLine){
+        if (isDrawWaveLine) {
             return;
         }
         LinkedList<Double> dataArray = totalDataArray.get(position);
@@ -586,7 +604,7 @@ public class MyWaveView extends View {
      * 添加新的数据
      */
     public void addData(int position, double data) {
-        if(isDrawWaveLine){
+        if (isDrawWaveLine) {
             return;
         }
         LinkedList<Double> dataArray = totalDataArray.get(position);
@@ -594,12 +612,12 @@ public class MyWaveView extends View {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位
                 if (dataArray.size() == row) {
-                    dataArray.removeFirst();
                     if (position == 0) {
                         offsetIndex++;
                     }
+                    dataArray.removeFirst();
                 }
-//                dataArray.addLast(line);
+                dataArray.addLast(data);
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位

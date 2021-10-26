@@ -17,9 +17,20 @@ public class Constant {
     public static final int TCP_SERVER_PORT = 8081;
 
     /**
-     *  默认量程
+     * 默认量程
      */
     public static final int DEFAULT_ANGLE = 400;
     public static final int DEFAULT_CHANNEL = 8;
     public static final int MSG_WHAT_DISTRIBUTE_VOLTAGE = 0;
+
+    /**
+     * 首页设置类型
+     * SETTING_TYPE_TIME_LENGTH 时间范围
+     * SETTING_TYPE_EMG_SCALE_RANGE EMG刻度
+     * SETTING_TYPE_CAP_SCALE_RANGE 电容刻度
+     */
+    public static final int SETTING_TYPE_TIME_LENGTH = 1;
+    public static final int SETTING_TYPE_EMG_SCALE_RANGE = 2;
+    public static final int SETTING_TYPE_CAP_SCALE_RANGE = 3;
+
 }
