@@ -1,8 +1,5 @@
 package cn.com.medicalmeasurementassistant.manager;
 
-import android.os.Handler;
-import android.os.Message;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -22,7 +19,6 @@ public class DeviceManager {
 
     public static volatile DeviceManager sInstance = null;
     private DeviceInfoListener mDeviceInfoListener = null;
-    private Handler mHandler;
     private boolean isDeviceOpen = false;
     private boolean isDeviceStart = false;
     private boolean mSaveSampleData = false;
@@ -50,7 +46,11 @@ public class DeviceManager {
     private final Map<Integer, Boolean> mNotchFilteredMap;
     private final Map<Integer, List<Double>> lastFilteredDataMap;
     private final Map<Integer, List<Double>> lastFilteringDataMap;
-
+    private static final long UPDATE_WAVE_VIEW_INTERVAL = 100L;
+    private long REPLY_SAMPLE_TIME = 0L;
+    private double p1 = 0;
+    private double p2 = 0;
+    private double mCurrentCapacitance = 0;
 
     private DeviceManager() {
         mHighPassFilteredMap = new HashMap<>();
@@ -244,6 +244,15 @@ public class DeviceManager {
     }
 
     public void replySampledData(List<Integer> data) {
+        long currentTimeMillis = System.currentTimeMillis();
+        LogUtils.d("UPDATE_WAVE_VIEW_INTERVAL=" + (currentTimeMillis));
+        LogUtils.d("UPDATE_WAVE_VIEW_INTERVAL=" + (currentTimeMillis - REPLY_SAMPLE_TIME));
+//        if (currentTimeMillis - REPLY_SAMPLE_TIME > UPDATE_WAVE_VIEW_INTERVAL) {
+//            REPLY_SAMPLE_TIME = currentTimeMillis;
+//        } else {
+//            return;
+//        }
+
         LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
         Map<Integer, List<Double>> map = new HashMap<>();
         List<Double> channel1Data = new ArrayList<>();
@@ -332,7 +341,8 @@ public class DeviceManager {
     }
 
     public void replyCapacitanceData(byte[] data) {
-        float capacitance = CalculateUtils.getFloat(data, 0) - 69.7F;
+        double capacitance = CalculateUtils.getFloat(data, 0) - 69.7F;
+        mCurrentCapacitance = capacitance;
         if (mDeviceInfoListener != null) {
             mDeviceInfoListener.replyCapacitance(capacitance);
         }
@@ -441,7 +451,31 @@ public class DeviceManager {
         this.mNotchFilterState = state;
     }
 
-    public void setHandler(Handler handler) {
-        this.mHandler = handler;
+    public double convertCapacitanceToAngle(double capacitance) {
+        return 90 / (p2 - p1) * capacitance + 90 * p1 / (p1 - p2);
+    }
+
+    public double getP1() {
+        return this.p1;
+    }
+
+    public void setP1(double p) {
+        this.p1 = p;
+    }
+
+    public double getP2() {
+        return this.p2;
+    }
+
+    public void setP2(double p) {
+        this.p2 = p;
+    }
+
+    public double getCurrentCapacitance(){
+        return this.mCurrentCapacitance;
+    }
+
+    public void setCurrentCapacitance(double value){
+        this.mCurrentCapacitance = value;
     }
 }

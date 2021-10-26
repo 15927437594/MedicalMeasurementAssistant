@@ -22,8 +22,8 @@
   <string name="text_power_frequency_notch">工频陷波</string>
   <string name="text_real_angle_unit">实际角度（度）</string>
   <string name="text_capacitance_tip">电容值（pF）</string>
-  <string name="text_step_one">第一步：腿伸直，保持膝盖关节角度为0度</string>
-  <string name="text_step_two">第一步：腿伸直，保持膝盖关节角度为0度</string>
+  <string name="text_step_one">第一步: 腿伸直, 保持膝盖关节角度为0度</string>
+  <string name="text_step_two">第二步: 腿伸直, 保持膝盖关节角度为90度</string>
   <string name="text_sure">确定</string>
   <string name="text_next_step">下一步</string>
   <string name="text_emg">EMG</string>
@@ -35,5 +35,8 @@
   <string name="text_pleast_file_name">请输入文件名</string>
   <string name="text_cancel">取消</string>
   <string name="text_enter_the_file_name_here">在此输入文件名</string>
+  <string name="text_value_zero">0</string>
+  <string name="text_value_ninety">90</string>
+  <string name="text_complete">完成</string>
 
 </resources>

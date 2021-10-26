@@ -77,6 +77,7 @@ public class MyWaveView extends View {
      * 数据最大值，默认-1~1之间
      */
     private int MAX_VALUE = 2;
+    private int MIN_VALUE= 2;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -384,7 +385,7 @@ public class MyWaveView extends View {
                 // 绘制区间标志
                 mLinePaint.setTextSize(SizeUtils.dp2px(10));
                 String maxValue = String.valueOf(MAX_VALUE);
-                String minValue = String.valueOf(-MAX_VALUE);
+                String minValue = String.valueOf(MIN_VALUE);
                 mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
                 int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
                 int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
@@ -470,9 +471,9 @@ public class MyWaveView extends View {
     }
 
     public void updateWaveLine() {
-        if (isDrawWaveLine) {
-            return;
-        }
+//        if (isDrawWaveLine) {
+//            return;
+//        }
         postInvalidate();
     }
 
@@ -522,8 +523,8 @@ public class MyWaveView extends View {
                     dataValue = MAX_VALUE;
                 }
             } else {
-                if (dataValue < -MAX_VALUE) {
-                    dataValue = -MAX_VALUE;
+                if (dataValue < MIN_VALUE) {
+                    dataValue = MIN_VALUE;
                 }
             }
 
@@ -616,5 +617,9 @@ public class MyWaveView extends View {
 
     public void setMaxValue(int value) {
         this.MAX_VALUE = value;
+    }
+
+    public void setMinValue(int value) {
+        this.MIN_VALUE = value;
     }
 }

@@ -17,7 +17,7 @@ public interface DeviceInfoListener {
 
     void replyStopDataCollect(List<Integer> data);
 
-    void replyCapacitance(float capacitance);
+    void replyCapacitance(double capacitance);
 
     void replyDeviceStopped();
 }

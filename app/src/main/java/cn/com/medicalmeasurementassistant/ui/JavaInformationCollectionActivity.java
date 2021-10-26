@@ -80,7 +80,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         bytes[3] = (byte) 0x9A;
         float capacitance = CalculateUtils.getFloat(bytes, 0);
         LogUtils.d("capacitance=" + capacitance);
-
 //        simulateVoltageData();
     }
 
@@ -182,34 +181,34 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
     }
 
-//    private void simulateVoltageData() {
-//        Random random = new Random();
-//        if (timer1 != null) {
-//            timer1.cancel();
-//        }
-//        timer1 = new CountDownTimer(10000_000, 1) {
-//            @Override
-//            public void onTick(long millisUntilFinished) {
-//                for (int i = 0; i < 8; i++) {
-//                    double v = random.nextFloat() * 2 - 2;
-////                    replyVoltage(i, v);
-//                    mEmgWaveView.addData(i, v);
-//                    mEmgWaveView.updateWaveLine();
-//                }
-//            }
-//
-//            @Override
-//            public void onFinish() {
-//                for (int i = 0; i < 8; i++) {
-//                    float v = random.nextFloat() * 2 - 2;
-////                    replyVoltage(i, v);
-//                    mEmgWaveView.addData(i , v);
-//                    mEmgWaveView.updateWaveLine();
-//                }
-//            }
-//        };
-//        timer1.start();
-//    }
+    private void simulateVoltageData() {
+        Random random = new Random();
+        if (timer1 != null) {
+            timer1.cancel();
+        }
+        timer1 = new CountDownTimer(10000_000, 1) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                for (int i = 0; i < 8; i++) {
+                    double v = random.nextFloat() * 2 - 1;
+//                    replyVoltage(i, v);
+                    mEmgWaveView.addData(i, v);
+                    mEmgWaveView.updateWaveLine();
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                for (int i = 0; i < 8; i++) {
+                    float v = random.nextFloat() * 2 - 2;
+//                    replyVoltage(i, v);
+                    mEmgWaveView.addData(i , v);
+                    mEmgWaveView.updateWaveLine();
+                }
+            }
+        };
+        timer1.start();
+    }
 
     @Override
     public void replyHandshake(List<Integer> data) {
@@ -228,10 +227,19 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyVoltage(int channel, List<Double> data) {
         LogUtils.d(String.format("channel=%s, point=%s", channel, data));
-        mEmgWaveView.addData(channel, data);
-        if (channel == Constant.DEFAULT_CHANNEL - 1) {
+        for (int i = 0; i < data.size(); i++) {
+            mEmgWaveView.addData(channel, data.get(i));
             mEmgWaveView.updateWaveLine();
+            mEmgWaveView.setBackground(getResources().getDrawable(R.mipmap.icon_angle_90));
         }
+
+//        mEmgWaveView.addData(channel, data);
+//        mEmgWaveView.updateWaveLine();
+
+//        mEmgWaveView.addData(channel, data);
+//        if (channel == Constant.DEFAULT_CHANNEL - 1) {
+//            mEmgWaveView.updateWaveLine();
+//        }
     }
 
     @Override
@@ -241,7 +249,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     }
 
     @Override
-    public void replyCapacitance(float capacitance) {
+    public void replyCapacitance(double capacitance) {
         LogUtils.i("capacitance=" + capacitance);
         mCapacitanceWaveView.addData(0, capacitance);
         runOnUiThread(() -> {
@@ -274,8 +282,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mEmgWaveView.setxAxisDesc("时间/s");
         mEmgWaveView.setyAxisDesc("电压/mV");
         mEmgWaveView.setMaxValue(1);
+        mEmgWaveView.setMinValue(-1);
 //        mEmgWaveView.setWaveLineWidth(1.0F);
-//        mEmgWaveView.setRowNumber(20);
         mEmgWaveFrameLayout.addView(mEmgWaveView, layoutParams);
     }
 
@@ -285,6 +293,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mCapacitanceWaveView.setMaxValue(50);
+        mCapacitanceWaveView.setMinValue(0);
         for (int i = 1; i < Constant.DEFAULT_CHANNEL; i++) {
             mCapacitanceWaveView.changeChannelStatus(i, false);
         }
