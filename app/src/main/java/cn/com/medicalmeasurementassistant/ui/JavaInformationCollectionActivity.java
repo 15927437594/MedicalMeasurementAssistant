@@ -1,8 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
-import android.os.CountDownTimer;
-import android.os.Handler;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -15,7 +13,6 @@ import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
-import java.util.Random;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
@@ -52,14 +49,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private DeviceManager mDeviceManager;
     private FrameLayout mEmgWaveFrameLayout, mCapacitanceWaveFrameLayout;
     private RadioGroup mRadioGroup;
-    private MyWaveView mEmgWaveView;
-    private MyWaveView mCapacitanceWaveView;
-    private CountDownTimer timer1;
-    private Handler handler ;
+    private MyEMGWaveView mEmgWaveView;
+    private MyCapWaveView mCapacitanceWaveView;
     private TextView mTvSettingTimeScale;
     private TextView mTvSettingEMGScaleRange;
     private TextView mTvSettingCapScaleRange;
-    private CountDownTimer mTimer;
 
     @Override
     public int getLayoutId() {
@@ -75,8 +69,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
-        mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
+        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_parent);
+        mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_cap_wave_parent);
 
         mTvSettingTimeScale = findViewById(R.id.tv_show_time_length);
         mTvSettingEMGScaleRange = findViewById(R.id.tv_emg_scale_range);
@@ -93,8 +87,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         bytes[3] = (byte) 0x9A;
         float capacitance = CalculateUtils.getFloat(bytes, 0);
         LogUtils.d("capacitance=" + capacitance);
-//        simulateVoltageData();
-
     }
 
     @Override
@@ -134,8 +126,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         });
     }
 
-    int index;
-
     private void setClick(@IdRes int id) {
         findViewById(id).setOnClickListener(this);
     }
@@ -173,107 +163,61 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
-//                if (!mDeviceManager.isDeviceOpen()) {
-//                    ToastHelper.showShort("请打开设备");
-//                    return;
-//                }
+                if (!mDeviceManager.isDeviceOpen()) {
+                    ToastHelper.showShort("请打开设备");
+                    return;
+                }
 
                 if (!mCollectionStatus) {
                     // 启动
                     // 此处需要开始计时
                     ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
-
                     mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
-
-                    if (mTimer != null) {
-                        mTimer.cancel();
-                    }
-                    Random random = new Random();
-
-                    mTimer = new CountDownTimer(10_000, 40) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            index++;
-                            double v = random.nextDouble() * 2 - 1;
-                            replyVoltage(0, v);
-                            LogUtils.d("index----" + index);
-
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            double v = random.nextDouble() * 2 - 1;
-                            replyVoltage(0, v);
-                        }
-                    };
-                    mTimer.start();
-
                 } else {
                     // 停止
                     // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
-
-
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
-
-
-                    if (mTimer != null) {
-                        mTimer.cancel();
-                    }
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
             case R.id.srl_left_top:
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
                 ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_TIME_LENGTH, (settingValue) -> {
                     mTvSettingTimeScale.setText(String.valueOf(settingValue));
                     mEmgWaveView.setShowTimeLength(settingValue);
+                    mCapacitanceWaveView.setShowTimeLength(settingValue);
                 });
                 break;
             case R.id.srl_left_bottom:
-                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
-
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_CAP_SCALE_RANGE, (settingValue) -> {
+                    mTvSettingCapScaleRange.setText(String.valueOf(settingValue));
+                    mCapacitanceWaveView.setMaxValue(settingValue);
                 });
                 break;
             case R.id.srl_right_top:
-                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_CAP_SCALE_RANGE, (settingValue) -> {
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
                     mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
+                    mEmgWaveView.setMaxValue(settingValue);
                 });
                 break;
             default:
                 break;
         }
-    }
-
-    private void simulateVoltageData() {
-        Random random = new Random();
-        if (timer1 != null) {
-            timer1.cancel();
-        }
-        timer1 = new CountDownTimer(10000_000, 1) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                for (int i = 0; i < 8; i++) {
-                    double v = random.nextFloat() * 2 - 1;
-//                    replyVoltage(i, v);
-                    mEmgWaveView.addData(i, v);
-                    mEmgWaveView.updateWaveLine();
-                }
-            }
-
-            @Override
-            public void onFinish() {
-                for (int i = 0; i < 8; i++) {
-                    float v = random.nextFloat() * 2 - 2;
-//                    replyVoltage(i, v);
-                    mEmgWaveView.addData(i , v);
-                    mEmgWaveView.updateWaveLine();
-                }
-            }
-        };
-        timer1.start();
     }
 
     @Override
@@ -293,27 +237,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyVoltage(int channel, List<Double> data) {
         LogUtils.d(String.format("channel=%s, point=%s", channel, data));
-        for (int i = 0; i < data.size(); i++) {
-            mEmgWaveView.addData(channel, data.get(i));
-            mEmgWaveView.updateWaveLine();
-            mEmgWaveView.setBackground(getResources().getDrawable(R.mipmap.icon_angle_90));
-        }
-
-//        mEmgWaveView.addData(channel, data);
-//        mEmgWaveView.updateWaveLine();
-
-//        mEmgWaveView.addData(channel, data);
-//        if (channel == Constant.DEFAULT_CHANNEL - 1) {
-//            mEmgWaveView.updateWaveLine();
-//        }
-    }
-
-    public void replyVoltage(int channel, double data) {
-        LogUtils.d(String.format("channel=%s, point=%s", channel, data));
         mEmgWaveView.addData(channel, data);
-//        if (channel == Constant.DEFAULT_CHANNEL - 1) {
-        mEmgWaveView.updateWaveLine();
-//        }
+        if (channel == Constant.DEFAULT_CHANNEL - 1) {
+            mEmgWaveView.updateWaveLine();
+        }
     }
 
     @Override
@@ -325,8 +252,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyCapacitance(double capacitance) {
         LogUtils.i("capacitance=" + capacitance);
-        mCapacitanceWaveView.addData(0, capacitance);
-        runOnUiThread(() -> mCapacitanceWaveView.updateWaveLine());
+        mCapacitanceWaveView.addData(capacitance);
+        mCapacitanceWaveView.updateWaveLine();
     }
 
     @Override
@@ -341,34 +268,23 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void waveCountChange() {
-        List<SettingParamsBean.ChannelBean> chanelBeans = SettingParamsBean.getInstance().getChanelBeans();
-        mEmgWaveView.clearChannelData();
-        for (int position = 0, l = chanelBeans.size(); position < l; position++) {
-            mEmgWaveView.changeChannelStatus(position, chanelBeans.get(position).getChannelStatus());
-        }
+        List<SettingParamsBean.ChannelBean> channelBeans = SettingParamsBean.getInstance().getChanelBeans();
+        mEmgWaveView.changeChannelStatus(channelBeans);
     }
 
     private void initEmgView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        mEmgWaveView = new MyWaveView(getActivity());
+        mEmgWaveView = new MyEMGWaveView(getActivity());
         mEmgWaveView.setxAxisDesc("时间/s");
         mEmgWaveView.setyAxisDesc("电压/mV");
-        mEmgWaveView.setMaxValue(1);
-        mEmgWaveView.setMinValue(-1);
-//        mEmgWaveView.setWaveLineWidth(1.0F);
         mEmgWaveFrameLayout.addView(mEmgWaveView, layoutParams);
     }
 
     private void initCapacitanceView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        mCapacitanceWaveView = new MyWaveView(getActivity());
+        mCapacitanceWaveView = new MyCapWaveView(getActivity());
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
-        mCapacitanceWaveView.setMaxValue(50);
-        mCapacitanceWaveView.setMinValue(0);
-        for (int i = 1; i < Constant.DEFAULT_CHANNEL; i++) {
-            mCapacitanceWaveView.changeChannelStatus(i, false);
-        }
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
     }
 }
