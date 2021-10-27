@@ -20,18 +20,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.com.medicalmeasurementassistant.R;
+import cn.com.medicalmeasurementassistant.entity.SettingParamsBean;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.StringUtils;
 
-public class MyWaveView extends View {
+public class MyEMGWaveView extends View {
     private final String NAMESPACE = "http://schemas.android.com/apk/res-auto";
     // 示波器宽度
     private int mOscillographWidth;
     // 示波器高度
     private int mOscillographHeight;
     private final static int mOffsetX = 50;
-    private final static int mOffsetY = 50;
-    private final static int mOffsetBottom = 80;
+    private final static int mOffsetY = 60;
     /**
      * 常规绘制模式 不断往后推的方式
      */
@@ -45,7 +45,7 @@ public class MyWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = NORMAL_MODE;
+    private int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -71,9 +71,6 @@ public class MyWaveView extends View {
     /**
      * 保存已绘制的数据坐标
      */
-//    private float[] dataArray;
-//    private final LinkedList<Float> dataArray = new LinkedList<>();
-
     private final List<LinkedList<Double>> totalDataArray = new ArrayList<>();
 
     /**
@@ -84,27 +81,31 @@ public class MyWaveView extends View {
     /**
      * 线条的长度，可用于控制横坐标
      */
-    private final static int WAVE_LINE_WIDTH = 2;
+    private int wave_line_width = 2;
+
     /**
-     * 点的数量
+     * 每秒点数
      */
-    private int row = 20;
-    private final static int ROW_S = 100;
+    private final static int ROW = 50;
+    /**
+     * 点的总数量
+     */
+    private int totalRow = 20;
     /**
      * 网格线条的粗细
      */
-    private final static int GRID_LINE_WIDTH = 3;
+    private final static int GRID_LINE_WIDTH = 4;
     /**
      * 线条粗细
      */
-    private final static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
+    private  static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
     private final boolean[] mChannelStatus = {true, true, true, true, true, true, true, true};
 
     /**
      * 网格的横线和竖线的数量
      */
-    private int gridHorizontalNum;
+    private int mChannelCount;
 
     private int gridVerticalNum;
     private int mHorizontalLineScale, mVerticalLineScale;
@@ -140,15 +141,15 @@ public class MyWaveView extends View {
         this.yAxisDesc = yAxisDesc;
     }
 
-    public MyWaveView(Context context) {
+    public MyEMGWaveView(Context context) {
         this(context, null);
     }
 
-    public MyWaveView(Context context, @Nullable AttributeSet attrs) {
+    public MyEMGWaveView(Context context, @Nullable AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public MyWaveView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public MyEMGWaveView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         init();
     }
@@ -183,7 +184,7 @@ public class MyWaveView extends View {
         mWavePaintOne = new Paint();
         mWavePaintOne.setStyle(Paint.Style.STROKE);
         mWavePaintOne.setColor(getResources().getColor(R.color.theme_color));
-        mWavePaintOne.setStrokeWidth(WAVE_LINE_STROKE_WIDTH);
+
         /** 抗锯齿效果*/
         mWavePaintOne.setAntiAlias(true);
         /**
@@ -206,7 +207,7 @@ public class MyWaveView extends View {
         mTextPaint.setTextSize(SizeUtils.dp2px(12));
 
         mPath = new Path();
-        gridHorizontalNum = getChannelShowCount();
+        mChannelCount = getChannelShowCount();
 
         for (int i = 0; i < mChannelStatus.length; i++) {
             totalDataArray.add(new LinkedList<>());
@@ -220,12 +221,17 @@ public class MyWaveView extends View {
                 i++;
             }
         }
-
         return Math.max(2, i * 2);
     }
 
-    public void changeChannelStatus(int position, boolean status) {
-        mChannelStatus[position] = status;
+    public void changeChannelStatus(List<SettingParamsBean.ChannelBean> chanelBeans) {
+        if (chanelBeans == null) {
+            return;
+        }
+        clearChannelData();
+        for (int position = 0, l = chanelBeans.size(); position < l; position++) {
+            mChannelStatus[position] = chanelBeans.get(position).getChannelStatus();
+        }
         initLineNum();
         updateWaveLine();
     }
@@ -233,47 +239,58 @@ public class MyWaveView extends View {
 
     public void setShowTimeLength(int mShowTimeLength) {
         this.mShowTimeLength = mShowTimeLength;
+
+        initLineNum();
+        updateWaveLine();
     }
 
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
-//        mOscillographWidth = w;
-//        mOscillographHeight = h;
         super.onSizeChanged(w, h, oldw, oldh);
-        Log.i("MyWaveView---", "  onSizeChanged  w = " + w + "  h = " + h);
     }
 
+    private boolean isLoaded = false;
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         Log.i("MyWaveView---", "  onLayout  ");
-        /** 获取控件的宽高*/
-        int witdh = getMeasuredWidth() - mOffsetX;
-        gridVerticalNum = mShowTimeLength;
-//        gridVerticalNum = witdh / (ROW_S * WAVE_LINE_WIDTH) + 1;
-        mOscillographWidth = ROW_S * WAVE_LINE_WIDTH;
-        mOscillographHeight = getMeasuredHeight() - 2 * mOffsetY;
+
+        if(isLoaded){
+            return;
+        }
+        isLoaded = true;
         initLineNum();
     }
 
     private void initLineNum() {
-        /** 根据网格的单位长宽，获取能绘制网格横线和竖线的数量*/
-        // 获取每个
-        gridHorizontalNum = getChannelShowCount();
-
-        mHorizontalLineScale = mOscillographHeight / gridHorizontalNum;
-
-        mVerticalLineScale = ROW_S * WAVE_LINE_WIDTH;
-
-//        gridVerticalNum = mOscillographWidth / mVerticalLineScale + 2;
-
-
-        /** 根据线条长度，最多能绘制多少个数据点*/
+        clearChannelData();
         /**
-         * 数据点的数量
+         *  设置线条长度
+         */
+        gridVerticalNum = mShowTimeLength;
+        wave_line_width = 1020 / mShowTimeLength / ROW;
+        totalRow = gridVerticalNum * ROW;
+
+
+        mWavePaintOne.setStrokeWidth(4);
+        mWavePaintTwo.setStrokeWidth(4);
+        /** 获取控件的宽高*/
+        mOscillographWidth = totalRow * wave_line_width;
+        mOscillographHeight = getMeasuredHeight() - 2 * mOffsetY;
+
+
+        /***/
+        // 获取每个
+        mChannelCount = getChannelShowCount();
+
+        mHorizontalLineScale = mOscillographHeight / mChannelCount;
+
+        mVerticalLineScale = ROW * wave_line_width;
+        /**
+         * 总数据点的数量
          */
 
-        row = gridVerticalNum * ROW_S;
+
     }
 
 
@@ -292,20 +309,7 @@ public class MyWaveView extends View {
          */
         drawScale(canvas);
 
-//        try {
         drawWaveLineNormal(canvas);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        /** 绘制折线*/
-//        switch (drawMode) {
-//            case NORMAL_MODE:
-//                drawWaveLineNormal(canvas);
-//                break;
-//            case LOOP_MODE:
-//                drawWaveLineNormal(canvas);
-//                break;
-//        }
     }
 
     /**
@@ -314,19 +318,19 @@ public class MyWaveView extends View {
      * @param canvas
      */
     private void drawGrid(Canvas canvas) {
-        int bottom = gridHorizontalNum * mHorizontalLineScale + mOffsetY;
-        int right = mOffsetX + mOscillographWidth * gridVerticalNum;
+        int bottom = mChannelCount * mHorizontalLineScale + mOffsetY;
+        int right = mOffsetX + mOscillographWidth;
 
         /** 绘制横线*/
-        for (int i = 0; i < gridHorizontalNum + 1; i++) {
+        for (int i = 0; i < mChannelCount + 1; i++) {
             int startY = i * mHorizontalLineScale;
-            if (i == 0 || i == gridHorizontalNum) {
+            if (i == 0 || i == mChannelCount) {
                 Log.i("MyWaveView---", "  drawGrid_for  i " + i);
                 mLinePaint.setColor(gridLineColor);
                 mLinePaint.setAlpha(50);
                 if (i == 0) {
                     canvas.drawLine(mOffsetX, startY + mOffsetY,
-                            mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH, startY + mOffsetY, mLinePaint);
+                            right, startY + mOffsetY, mLinePaint);
                     continue;
                 }
                 canvas.drawLine(mOffsetX, startY + mOffsetY,
@@ -352,15 +356,15 @@ public class MyWaveView extends View {
 
         canvas.drawLine(mOffsetX, mOffsetY,
                 mOffsetX, bottom, mLinePaint);
-        canvas.drawLine(mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH,
-                mOffsetY, mOffsetX + gridVerticalNum * ROW_S * WAVE_LINE_WIDTH, bottom, mLinePaint);
+        canvas.drawLine(mOffsetX + gridVerticalNum * ROW * wave_line_width,
+                mOffsetY, mOffsetX + gridVerticalNum * ROW * wave_line_width, bottom, mLinePaint);
         /** 绘制竖线*/
         for (int i = 0; i < gridVerticalNum; i++) {
             if (i == gridVerticalNum - 1 && offsetIndex == 0) {
                 continue;
             }
             int startX;
-            int offset = offsetIndex > 0 ? (offsetIndex % ROW_S * WAVE_LINE_WIDTH) : 0;
+            int offset = offsetIndex > 0 ? (offsetIndex % ROW * wave_line_width) : 0;
             startX = (i + 1) * mVerticalLineScale - offset;
             canvas.drawLine(startX + mOffsetX, mOffsetY,
                     startX + mOffsetY, bottom, mLinePaint);
@@ -419,19 +423,20 @@ public class MyWaveView extends View {
         for (int i = 0; i < gridVerticalNum + 1; i++) {
             // 绘制横坐标刻度
             mLinePaint.setTextSize(SizeUtils.dp2px(10));
-            mLinePaint.getTextBounds(i + "", 0, 1, mTextRect);
+            String xScaleDesc = (i + offsetIndex / ROW) + "";
+            mLinePaint.getTextBounds(xScaleDesc, 0, xScaleDesc.length(), mTextRect);
             int left;
             if (i == 0) {
                 left = mOffsetX;
-                if (drawMode == NORMAL_MODE && offsetIndex % ROW_S > ROW_S >> 1) {
+                if (drawMode == NORMAL_MODE && offsetIndex % ROW > ROW >> 1) {
                     continue;
                 }
             } else {
-                int offset = offsetIndex > 0 ? (offsetIndex % ROW_S * WAVE_LINE_WIDTH) : 0;
+                int offset = offsetIndex > 0 ? (offsetIndex % ROW * wave_line_width) : 0;
                 left = i * mVerticalLineScale + mOffsetX - mTextRect.width() / 2 - offset;
             }
             int bottom = mOscillographHeight + mOffsetY + mTextRect.height() + 2;
-            canvas.drawText((i + offsetIndex / ROW_S) + "", left, bottom, mLinePaint);
+            canvas.drawText(xScaleDesc, left, bottom, mLinePaint);
 
         }
     }
@@ -525,28 +530,19 @@ public class MyWaveView extends View {
                 isRefresh = false;
                 return;
             }
-
-//            if (Math.abs(dataArray.get(i)) > MAX_VALUE) {
-//                continue;
-//            }
             /**
              * 当前的x，y坐标
              */
-            float nowX = i * WAVE_LINE_WIDTH + WAVE_LINE_WIDTH;
+            float nowX = i * wave_line_width;
             double dataValue = dataArray.get(i);
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
-            if (dataValue > 0) {
-                if (dataValue > MAX_VALUE) {
-                    dataValue = MAX_VALUE;
-                }
-            } else {
-                if (dataValue < -MAX_VALUE) {
-                    dataValue = -MAX_VALUE;
-                }
+            if (dataValue > MAX_VALUE) {
+                dataValue = MAX_VALUE;
+            } else if (dataValue < -MAX_VALUE) {
+                dataValue = -MAX_VALUE;
             }
 
-            float nowY = (float) (initOffsetY - dataValue * initOffsetY2);
-//            float nowY = mOscillographHeight / 2 - dataValue * (mOscillographHeight / (MAX_VALUE * 2));
+            float nowY = (float) (initOffsetY - dataValue * initOffsetY2*0.95);
             if (dataPosition == 0) {
                 LogUtils.d("line_data" + dataPosition + " index = " + i);
             }
@@ -575,7 +571,7 @@ public class MyWaveView extends View {
         switch (drawMode) {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位
-                if (dataArray.size() == row) {
+                if (dataArray.size() == totalRow) {
                     dataArray.removeFirst();
                     if (position == 0) {
                         offsetIndex++;
@@ -585,9 +581,9 @@ public class MyWaveView extends View {
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
-                if (dataArray.size() == row) {
+                if (dataArray.size() == totalRow) {
                     if (position == 0) {
-                        offsetIndex += row;
+                        offsetIndex += totalRow;
                         clearChannelData(false);
                     }
                 }
@@ -611,7 +607,7 @@ public class MyWaveView extends View {
         switch (drawMode) {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位
-                if (dataArray.size() == row) {
+                if (dataArray.size() == totalRow) {
                     if (position == 0) {
                         offsetIndex++;
                     }
@@ -621,9 +617,9 @@ public class MyWaveView extends View {
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
-                if (dataArray.size() == row) {
+                if (dataArray.size() == totalRow) {
                     if (position == 0) {
-                        offsetIndex += row;
+                        offsetIndex += totalRow;
                         clearChannelData(false);
                     }
                 }
@@ -634,5 +630,8 @@ public class MyWaveView extends View {
 
     public void setMaxValue(int value) {
         this.MAX_VALUE = value;
+        clearChannelData();
+        initLineNum();
+        updateWaveLine();
     }
 }

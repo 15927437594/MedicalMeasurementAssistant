@@ -1,7 +1,6 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
-import android.os.CountDownTimer;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -14,7 +13,6 @@ import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
 import java.util.List;
-import java.util.Random;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
@@ -51,12 +49,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private DeviceManager mDeviceManager;
     private FrameLayout mEmgWaveFrameLayout, mCapacitanceWaveFrameLayout;
     private RadioGroup mRadioGroup;
-    private MyWaveView mEmgWaveView;
-    private MyWaveView mCapacitanceWaveView;
+    private MyEMGWaveView mEmgWaveView;
+    private MyCapWaveView mCapacitanceWaveView;
     private TextView mTvSettingTimeScale;
     private TextView mTvSettingEMGScaleRange;
     private TextView mTvSettingCapScaleRange;
-    private CountDownTimer mTimer;
 
     @Override
     public int getLayoutId() {
@@ -72,8 +69,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
-        mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
+        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_parent);
+        mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_cap_wave_parent);
 
         mTvSettingTimeScale = findViewById(R.id.tv_show_time_length);
         mTvSettingEMGScaleRange = findViewById(R.id.tv_emg_scale_range);
@@ -132,6 +129,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     }
 
     int index;
+    int lastValue;
 
     private void setClick(@IdRes int id) {
         findViewById(id).setOnClickListener(this);
@@ -183,60 +181,47 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
 
-                    if (mTimer != null) {
-                        mTimer.cancel();
-                    }
-                    Random random = new Random();
-
-                    mTimer = new CountDownTimer(10_000, 40) {
-                        @Override
-                        public void onTick(long millisUntilFinished) {
-                            index++;
-                            double v = random.nextDouble() * 2 - 1;
-                            replyVoltage(0, v);
-                            LogUtils.d("index----" + index);
-
-                        }
-
-                        @Override
-                        public void onFinish() {
-                            double v = random.nextDouble() * 2 - 1;
-                            replyVoltage(0, v);
-                        }
-                    };
-                    mTimer.start();
 
                 } else {
                     // 停止
                     // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
 
-
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
-
-
-                    if (mTimer != null) {
-                        mTimer.cancel();
-                    }
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
             case R.id.srl_left_top:
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
                 ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_TIME_LENGTH, (settingValue) -> {
                     mTvSettingTimeScale.setText(String.valueOf(settingValue));
                     mEmgWaveView.setShowTimeLength(settingValue);
+                    mCapacitanceWaveView.setShowTimeLength(settingValue);
                 });
                 break;
             case R.id.srl_left_bottom:
-                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
-
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_CAP_SCALE_RANGE, (settingValue) -> {
+                    mTvSettingCapScaleRange.setText(String.valueOf(settingValue));
+                    mCapacitanceWaveView.setMaxValue(settingValue);
                 });
                 break;
             case R.id.srl_right_top:
-                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_CAP_SCALE_RANGE, (settingValue) -> {
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
                     mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
+                    mEmgWaveView.setMaxValue(settingValue);
                 });
                 break;
             default:
@@ -313,10 +298,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyCapacitance(float capacitance) {
         LogUtils.i("capacitance=" + capacitance);
-        mCapacitanceWaveView.addData(0, capacitance);
-        runOnUiThread(() -> {
-            mCapacitanceWaveView.updateWaveLine();
-        });
+        mCapacitanceWaveView.addData(capacitance);
+        mCapacitanceWaveView.updateWaveLine();
     }
 
     @Override
@@ -332,32 +315,23 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void waveCountChange() {
         List<SettingParamsBean.ChannelBean> chanelBeans = SettingParamsBean.getInstance().getChanelBeans();
-        mEmgWaveView.clearChannelData();
-        for (int position = 0, l = chanelBeans.size(); position < l; position++) {
-            mEmgWaveView.changeChannelStatus(position, chanelBeans.get(position).getChannelStatus());
-        }
+        mEmgWaveView.changeChannelStatus(chanelBeans);
     }
 
     private void initEmgView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        mEmgWaveView = new MyWaveView(getActivity());
+        mEmgWaveView = new MyEMGWaveView(getActivity());
         mEmgWaveView.setxAxisDesc("时间/s");
         mEmgWaveView.setyAxisDesc("电压/mV");
-        mEmgWaveView.setMaxValue(1);
-//        mEmgWaveView.setWaveLineWidth(1.0F);
-//        mEmgWaveView.setRowNumber(20);
         mEmgWaveFrameLayout.addView(mEmgWaveView, layoutParams);
     }
 
     private void initCapacitanceView() {
         FrameLayout.LayoutParams layoutParams = new FrameLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        mCapacitanceWaveView = new MyWaveView(getActivity());
+        mCapacitanceWaveView = new MyCapWaveView(getActivity());
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
-        mCapacitanceWaveView.setMaxValue(50);
-        for (int i = 1; i < Constant.DEFAULT_CHANNEL; i++) {
-            mCapacitanceWaveView.changeChannelStatus(i, false);
-        }
+
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
     }
 }

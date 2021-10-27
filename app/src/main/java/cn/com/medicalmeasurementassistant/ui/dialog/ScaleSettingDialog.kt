@@ -21,18 +21,16 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
     val tvTitle = view.findViewById<TextView>(R.id.tv_title)
     when (settingType) {
         Constant.SETTING_TYPE_TIME_LENGTH -> {
-            tvTitle.text = "显示时长"
-            etContent.hint = "(2~5)"
-            etContent.maxEms = 1
+            tvTitle.text = "显示时长/s"
+            etContent.hint = "输入范围(2~5)"
         }
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
-            tvTitle.text = "EMG刻度范围"
-            etContent.hint = "(1~5)"
-            etContent.maxEms = 1
+            tvTitle.text = "EMG刻度范围/mV"
+            etContent.hint = "输入范围(1~5)"
         }
         Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-            tvTitle.text = "电容刻度范围"
-            etContent.hint = "(1~60)"
+            tvTitle.text = "电容刻度范围/pF"
+            etContent.hint = "输入范围（1~60）"
             etContent.maxEms = 2
         }
 
@@ -40,46 +38,22 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
 
     etContent.addTextChangedListener(object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            var toInt: Int
-            toInt = if (s.toString().isEmpty()) {
-                0
-            } else {
-                s.toString().toInt()
-            }
+
+            val toString = s.toString()
+
             when (settingType) {
+                Constant.SETTING_TYPE_EMG_SCALE_RANGE,
                 Constant.SETTING_TYPE_TIME_LENGTH -> {
-                    if (toInt > 5) {
-                        toInt = 5
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
-                    } else if (toInt < 2) {
-                        toInt = 2
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
+                    if (toString.length > 1) {
+                        etContent.setText(toString.subSequence(0, 1))
+                        etContent.setSelection(1)
                     }
 
-                }
-                Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
-                    if (toInt > 5) {
-                        toInt = 5
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
-                    } else if (toInt < 1) {
-
-                        toInt = 2
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
-                    }
                 }
                 Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                    if (toInt > 60) {
-                        toInt = 60
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
-                    } else if (toInt < 1) {
-                        toInt = 1
-                        etContent.setText(toInt.toString())
-                        etContent.setSelection(toInt.toString().length)
+                    if (toString.length > 2) {
+                        etContent.setText(toString.subSequence(0, 2))
+                        etContent.setSelection(2)
                     }
                 }
             }
@@ -101,6 +75,33 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
         if (toString.isEmpty()) {
             ToastHelper.showShort("请输入内容")
             return@setOnClickListener
+        }
+        var settingValue = 0
+        try {
+            settingValue = toString.toInt()
+        } catch (e: Exception) {
+        }
+
+        when (settingType) {
+            Constant.SETTING_TYPE_TIME_LENGTH -> {
+                if (settingValue < 2 || settingValue > 5) {
+                    ToastHelper.showShort("输入范围（2~5）")
+                    return@setOnClickListener
+                }
+            }
+            Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
+                if (settingValue < 1 || settingValue > 5) {
+                    ToastHelper.showShort("输入范围（1~5）")
+                    return@setOnClickListener
+                }
+            }
+            Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
+                if (settingValue < 1 || settingValue > 60) {
+                    ToastHelper.showShort("输入范围（1~60）")
+                    return@setOnClickListener
+                }
+            }
+
         }
         dialog.dismiss()
         listen.settingComplete(toString.toInt())
