@@ -29,6 +29,7 @@ import cn.com.medicalmeasurementassistant.manager.WaveManager;
 import cn.com.medicalmeasurementassistant.protocol.send.SendStartDataCollect;
 import cn.com.medicalmeasurementassistant.protocol.send.SendStopDataCollect;
 import cn.com.medicalmeasurementassistant.ui.dialog.InputFileNameDialogKt;
+import cn.com.medicalmeasurementassistant.ui.dialog.ScaleSettingDialogKt;
 import cn.com.medicalmeasurementassistant.utils.CalculateUtils;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
@@ -55,6 +56,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private MyWaveView mCapacitanceWaveView;
     private CountDownTimer timer1;
     private Handler handler ;
+    private TextView mTvSettingTimeScale;
+    private TextView mTvSettingEMGScaleRange;
+    private TextView mTvSettingCapScaleRange;
+    private CountDownTimer mTimer;
 
     @Override
     public int getLayoutId() {
@@ -72,6 +77,12 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
         mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern);
         mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_wave_pattern2);
+
+        mTvSettingTimeScale = findViewById(R.id.tv_show_time_length);
+        mTvSettingEMGScaleRange = findViewById(R.id.tv_emg_scale_range);
+        mTvSettingCapScaleRange = findViewById(R.id.tv_cap_scale_range);
+
+
         WaveManager.getInstance().addCallback(this);
         initEmgView();
         initCapacitanceView();
@@ -95,6 +106,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         setClick(R.id.stv_collect_angle);
         setClick(R.id.iv_collect_operate);
 
+        setClick(R.id.srl_left_top);
+        setClick(R.id.srl_left_bottom);
+        setClick(R.id.srl_right_top);
+
+
         mConnectionSwitch.setOnCheckedChangeListener((compoundButton, isConnection) -> {
             LogUtils.i("isConnection=" + isConnection);
             if (isConnection) {
@@ -117,6 +133,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             }
         });
     }
+
+    int index;
 
     private void setClick(@IdRes int id) {
         findViewById(id).setOnClickListener(this);
@@ -155,29 +173,74 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
-                if (!mDeviceManager.isDeviceOpen()) {
-                    ToastHelper.showShort("请打开设备");
-                    return;
-                }
-                mCollectionStatus = !mCollectionStatus;
-                if (mCollectionStatus) {
+//                if (!mDeviceManager.isDeviceOpen()) {
+//                    ToastHelper.showShort("请打开设备");
+//                    return;
+//                }
+
+                if (!mCollectionStatus) {
                     // 启动
-                    mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
                     // 此处需要开始计时
                     ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
+
+                    mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
+                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
+
+                    if (mTimer != null) {
+                        mTimer.cancel();
+                    }
+                    Random random = new Random();
+
+                    mTimer = new CountDownTimer(10_000, 40) {
+                        @Override
+                        public void onTick(long millisUntilFinished) {
+                            index++;
+                            double v = random.nextDouble() * 2 - 1;
+                            replyVoltage(0, v);
+                            LogUtils.d("index----" + index);
+
+                        }
+
+                        @Override
+                        public void onFinish() {
+                            double v = random.nextDouble() * 2 - 1;
+                            replyVoltage(0, v);
+                        }
+                    };
+                    mTimer.start();
+
                 } else {
                     // 停止
-                    mCollectionIv.setImageResource(R.drawable.icon_collect_start);
-                    mCollectionTv.setText(getString(R.string.text_collect_start));
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
                     // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
 
-                    if (timer1 != null) {
-                        timer1.cancel();
+
+                    mCollectionIv.setImageResource(R.drawable.icon_collect_start);
+                    mCollectionTv.setText(getString(R.string.text_collect_start));
+                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
+
+
+                    if (mTimer != null) {
+                        mTimer.cancel();
                     }
                 }
+                mCollectionStatus = !mCollectionStatus;
+                break;
+            case R.id.srl_left_top:
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_TIME_LENGTH, (settingValue) -> {
+                    mTvSettingTimeScale.setText(String.valueOf(settingValue));
+                    mEmgWaveView.setShowTimeLength(settingValue);
+                });
+                break;
+            case R.id.srl_left_bottom:
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
+
+                });
+                break;
+            case R.id.srl_right_top:
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_CAP_SCALE_RANGE, (settingValue) -> {
+                    mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
+                });
                 break;
             default:
                 break;
@@ -245,6 +308,14 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 //        }
     }
 
+    public void replyVoltage(int channel, double data) {
+        LogUtils.d(String.format("channel=%s, point=%s", channel, data));
+        mEmgWaveView.addData(channel, data);
+//        if (channel == Constant.DEFAULT_CHANNEL - 1) {
+        mEmgWaveView.updateWaveLine();
+//        }
+    }
+
     @Override
     public void replyStopDataCollect(List<Integer> data) {
         runOnUiThread(() -> ToastHelper.showShort("设备停止采集数据"));
@@ -255,9 +326,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     public void replyCapacitance(double capacitance) {
         LogUtils.i("capacitance=" + capacitance);
         mCapacitanceWaveView.addData(0, capacitance);
-        runOnUiThread(() -> {
-            mCapacitanceWaveView.updateWaveLine();
-        });
+        runOnUiThread(() -> mCapacitanceWaveView.updateWaveLine());
     }
 
     @Override
