@@ -1,5 +1,7 @@
 package cn.com.medicalmeasurementassistant.ui
 
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -18,8 +20,10 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
     private val tvStepTip by lazy { findViewById<TextView>(R.id.tv_step_tip) }
     private val tvCalibrateSure by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_sure) }
     private val tvCalibrateNext by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_next) }
-    var stepOneExecuted = false
-    var stepTwoExecuted = false
+    private var stepOneExecuted = false
+    private var stepTwoExecuted = false
+    var handler: Handler = Handler(Looper.getMainLooper())
+
 
     override fun getLayoutId(): Int {
         return R.layout.activity_calibration_angle
@@ -36,6 +40,20 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
     override fun initListener() {
         tvCalibrateSure.setOnClickListener(this)
         tvCalibrateNext.setOnClickListener(this)
+        handler.postDelayed(updateCapacitanceRunnable,500L)
+    }
+
+    private fun updateRealCapacitance(){
+        LogUtils.i("updateRealCapacitance")
+        tvRealCapacitance.text = DeviceManager.getInstance().currentCapacitance.toString()
+    }
+
+
+    private val updateCapacitanceRunnable: Runnable = object : Runnable {
+        override fun run() {
+            updateRealCapacitance()
+            handler.postDelayed(this, 500L)
+        }
     }
 
     override fun onClick(v: View) {
@@ -53,13 +71,15 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
             ivCalibrate.background = resources.getDrawable(R.mipmap.icon_angle_90, null)
             tvCalibrateNext.text = getString(R.string.text_complete)
             tvCalibrateNext.isEnabled = false
+            stepOneExecuted = true
         } else {
             if (abs(DeviceManager.getInstance().p1 - DeviceManager.getInstance().p2) < 10) {
                 ToastHelper.showShort("两次测得的电容值过于接近, 校准失败")
+                handler.postDelayed({ onBackPressed() }, 2000L)
             } else {
                 ToastHelper.showShort("校准成功")
+                handler.postDelayed({ onBackPressed() }, 1000L)
             }
-            onBackPressed()
         }
     }
 
@@ -67,7 +87,6 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
         LogUtils.i("updateAngleCapacitance")
         tvCalibrateNext.isEnabled = true
         if (!stepOneExecuted) {
-            stepOneExecuted = true
             DeviceManager.getInstance().p1 = DeviceManager.getInstance().currentCapacitance
         } else {
             stepTwoExecuted = true

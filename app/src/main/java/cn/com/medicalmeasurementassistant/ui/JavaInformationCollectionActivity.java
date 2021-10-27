@@ -2,6 +2,7 @@ package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
 import android.os.CountDownTimer;
+import android.os.Handler;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -53,6 +54,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private MyWaveView mEmgWaveView;
     private MyWaveView mCapacitanceWaveView;
     private CountDownTimer timer1;
+    private Handler handler ;
 
     @Override
     public int getLayoutId() {
@@ -81,6 +83,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         float capacitance = CalculateUtils.getFloat(bytes, 0);
         LogUtils.d("capacitance=" + capacitance);
 //        simulateVoltageData();
+
     }
 
     @Override
