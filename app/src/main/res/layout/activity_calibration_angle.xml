@@ -30,8 +30,9 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toBottomOf="@id/ll_title_contain" />
 
-    <TextView
-        android:id="@+id/tv_real_angle"
+    <EditText
+        android:digits=".0123456789"
+        android:id="@+id/et_real_angle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -56,8 +57,9 @@
         app:layout_constraintLeft_toLeftOf="@id/guideline_one"
         app:layout_constraintTop_toBottomOf="@id/ll_title_contain" />
 
-    <TextView
-        android:id="@+id/tv_real_capacitance"
+    <EditText
+        android:digits=".0123456789"
+        android:id="@+id/et_real_capacitance"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="2dp"
@@ -78,7 +80,7 @@
         app:layout_constraintDimensionRatio="H,33:25"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_real_angle" />
+        app:layout_constraintTop_toBottomOf="@id/et_real_angle" />
 
     <TextView
         android:id="@+id/tv_step_tip"
@@ -93,13 +95,13 @@
         app:layout_constraintTop_toBottomOf="@id/iv_calibrate" />
 
     <com.hjq.shape.view.ShapeTextView
-        android:id="@+id/tv_calibrate_sure"
+        android:id="@+id/tv_calibrate_auto"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginBottom="15dp"
         android:gravity="center"
         android:padding="10dp"
-        android:text="@string/text_sure"
+        android:text="@string/text_calibrate_auto"
         android:textColor="@color/theme_color"
         android:textSize="15sp"
         app:layout_constraintBottom_toTopOf="@id/tv_calibrate_next"
@@ -109,7 +111,6 @@
         app:shape_solidColor="#337a5de8" />
 
     <com.hjq.shape.view.ShapeTextView
-        android:enabled="false"
         android:id="@+id/tv_calibrate_next"
         android:layout_width="0dp"
         android:layout_height="wrap_content"

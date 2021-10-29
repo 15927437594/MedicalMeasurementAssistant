@@ -14,14 +14,13 @@ import com.hjq.shape.view.ShapeTextView
 import kotlin.math.abs
 
 class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
-    private val tvRealAngle by lazy { findViewById<TextView>(R.id.tv_real_angle) }
-    private val tvRealCapacitance by lazy { findViewById<TextView>(R.id.tv_real_capacitance) }
+    private val etRealAngle by lazy { findViewById<TextView>(R.id.et_real_angle) }
+    private val etRealCapacitance by lazy { findViewById<TextView>(R.id.et_real_capacitance) }
     private val ivCalibrate by lazy { findViewById<ImageView>(R.id.iv_calibrate) }
     private val tvStepTip by lazy { findViewById<TextView>(R.id.tv_step_tip) }
-    private val tvCalibrateSure by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_sure) }
+    private val tvCalibrateAuto by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_auto) }
     private val tvCalibrateNext by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_next) }
     private var stepOneExecuted = false
-    private var stepTwoExecuted = false
     var handler: Handler = Handler(Looper.getMainLooper())
 
 
@@ -34,63 +33,69 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
     }
 
     override fun initView() {
-
+        updateRealCapacitance()
     }
 
     override fun initListener() {
-        tvCalibrateSure.setOnClickListener(this)
+        tvCalibrateAuto.setOnClickListener(this)
         tvCalibrateNext.setOnClickListener(this)
-        handler.postDelayed(updateCapacitanceRunnable,500L)
+//        handler.postDelayed(updateCapacitanceRunnable,500L)
     }
 
-    private fun updateRealCapacitance(){
+    private fun updateRealCapacitance() {
         LogUtils.i("updateRealCapacitance")
-        tvRealCapacitance.text = DeviceManager.getInstance().currentCapacitance.toString()
+        etRealCapacitance.text = DeviceManager.getInstance().currentCapacitance.toString()
     }
 
-
-    private val updateCapacitanceRunnable: Runnable = object : Runnable {
-        override fun run() {
-            updateRealCapacitance()
-            handler.postDelayed(this, 500L)
-        }
-    }
+//    private val updateCapacitanceRunnable: Runnable = object : Runnable {
+//        override fun run() {
+//            updateRealCapacitance()
+//            handler.postDelayed(this, 500L)
+//        }
+//    }
 
     override fun onClick(v: View) {
         when (v.id) {
-            R.id.tv_calibrate_sure -> updateAngleCapacitance()
-            R.id.tv_calibrate_next -> executeStepNext()
+            R.id.tv_calibrate_auto -> updateRealCapacitance()
+            R.id.tv_calibrate_next -> executeCalibrate()
         }
     }
 
-    private fun executeStepNext() {
-        LogUtils.i("executeStepNext")
-        if (!stepTwoExecuted) {
-            tvRealAngle.text = getString(R.string.text_value_ninety)
+    private fun executeCalibrate() {
+        LogUtils.i("executeCalibrate")
+        if (!stepOneExecuted) {
+            val angle = etRealAngle.text.toString().toDouble()
+            val capacitance = etRealCapacitance.text.toString().toDouble()
+            LogUtils.i("angle=$angle, capacitance=$capacitance")
+            DeviceManager.getInstance().angle1 = angle
+            DeviceManager.getInstance().p1 = capacitance
+            updateRealCapacitance()
+
+            etRealAngle.text = getString(R.string.text_value_ninety)
             tvStepTip.text = getString(R.string.text_step_two)
             ivCalibrate.background = resources.getDrawable(R.mipmap.icon_angle_90, null)
             tvCalibrateNext.text = getString(R.string.text_complete)
-            tvCalibrateNext.isEnabled = false
             stepOneExecuted = true
         } else {
-            if (abs(DeviceManager.getInstance().p1 - DeviceManager.getInstance().p2) < 10) {
+            val angle = etRealAngle.text.toString().toDouble()
+            val capacitance = etRealCapacitance.text.toString().toDouble()
+            LogUtils.i("angle=$angle, capacitance=$capacitance")
+            DeviceManager.getInstance().angle2 = angle
+            DeviceManager.getInstance().p2 = capacitance
+
+            if (abs(DeviceManager.getInstance().p2 - DeviceManager.getInstance().p1) < 10) {
+                DeviceManager.getInstance().calibrateState = false
+                DeviceManager.getInstance().calibrateFail()
                 ToastHelper.showShort("两次测得的电容值过于接近, 校准失败")
                 handler.postDelayed({ onBackPressed() }, 2000L)
+                DeviceManager.getInstance().resetCalibrate()
             } else {
+                DeviceManager.getInstance().calibrateState = true
+                DeviceManager.getInstance().calibrateSuccess()
                 ToastHelper.showShort("校准成功")
                 handler.postDelayed({ onBackPressed() }, 1000L)
             }
         }
     }
 
-    private fun updateAngleCapacitance() {
-        LogUtils.i("updateAngleCapacitance")
-        tvCalibrateNext.isEnabled = true
-        if (!stepOneExecuted) {
-            DeviceManager.getInstance().p1 = DeviceManager.getInstance().currentCapacitance
-        } else {
-            stepTwoExecuted = true
-            DeviceManager.getInstance().p2 = DeviceManager.getInstance().currentCapacitance
-        }
-    }
 }

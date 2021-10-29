@@ -19,5 +19,7 @@ public interface DeviceInfoListener {
 
     void replyCapacitance(double capacitance);
 
+    void replyAngle(double angle);
+
     void replyDeviceStopped();
 }

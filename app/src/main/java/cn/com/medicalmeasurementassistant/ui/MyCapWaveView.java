@@ -78,7 +78,7 @@ public class MyCapWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 50;
+    private final static int ROW = 5;
     /**
      * 点的总数量
      */

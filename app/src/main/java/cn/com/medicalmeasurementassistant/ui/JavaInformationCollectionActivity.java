@@ -18,6 +18,7 @@ import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.entity.Constant;
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean;
+import cn.com.medicalmeasurementassistant.listener.CalibrateListener;
 import cn.com.medicalmeasurementassistant.listener.DeviceInfoListener;
 import cn.com.medicalmeasurementassistant.listener.OnWaveCountChangeListener;
 import cn.com.medicalmeasurementassistant.manager.DeviceManager;
@@ -33,7 +34,7 @@ import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 import cn.com.medicalmeasurementassistant.utils.ToastHelper;
 
-public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, OnWaveCountChangeListener {
+public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, CalibrateListener, OnWaveCountChangeListener {
     // 右上角链接按钮
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch mConnectionSwitch;
@@ -92,6 +93,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void initListener() {
         mDeviceManager.setDeviceInfoListener(this);
+        mDeviceManager.setCalibrateListener(this);
         setClick(R.id.iv_file_list);
         setClick(R.id.iv_file_save);
         setClick(R.id.stv_setting_params);
@@ -160,6 +162,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 break;
             case R.id.stv_collect_angle:
                 // 角度校准
+                if (!mDeviceManager.isDeviceStart()) {
+                    ToastHelper.showShort("请启动设备采集");
+                    return;
+                }
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
@@ -178,6 +184,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     // 停止
                     // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
+                    DeviceManager.getInstance().setCurrentCapacitance(0);
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
@@ -257,6 +264,13 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     }
 
     @Override
+    public void replyAngle(double angle) {
+        LogUtils.i("angle=" + angle);
+        mCapacitanceWaveView.addData(angle);
+        mCapacitanceWaveView.updateWaveLine();
+    }
+
+    @Override
     public void replyDeviceStopped() {
         LogUtils.i("replyDeviceStopped");
         DeviceManager.getInstance().setDeviceOpen(false);
@@ -286,5 +300,17 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
+    }
+
+    @Override
+    public void calibrateSuccess() {
+        LogUtils.i("calibrateSuccess");
+        mCapacitanceWaveView.setyAxisDesc("角度/°");
+        mCapacitanceWaveView.setMaxValue(90);
+    }
+
+    @Override
+    public void calibrateFail() {
+        LogUtils.i("calibrateFail");
     }
 }

@@ -24,7 +24,7 @@
   <string name="text_capacitance_tip">电容值（pF）</string>
   <string name="text_step_one">第一步: 腿伸直, 保持膝盖关节角度为0度</string>
   <string name="text_step_two">第二步: 腿伸直, 保持膝盖关节角度为90度</string>
-  <string name="text_sure">确定</string>
+  <string name="text_calibrate_auto">自动检测</string>
   <string name="text_next_step">下一步</string>
   <string name="text_emg">EMG</string>
   <string name="text_capacitance">电容</string>
