@@ -26,11 +26,12 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
         }
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
             tvTitle.text = "EMG刻度范围/mV"
-            etContent.hint = "输入范围(1~5)"
+            etContent.hint = "输入范围(1~400)"
+            etContent.maxEms = 2
         }
         Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
             tvTitle.text = "电容刻度范围/pF"
-            etContent.hint = "输入范围（1~60）"
+            etContent.hint = "输入范围（1~100）"
             etContent.maxEms = 2
         }
 
@@ -90,14 +91,14 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
                 }
             }
             Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
-                if (settingValue < 1 || settingValue > 5) {
-                    ToastHelper.showShort("输入范围（1~5）")
+                if (settingValue < 1 || settingValue > 400) {
+                    ToastHelper.showShort("输入范围（1~400）")
                     return@setOnClickListener
                 }
             }
             Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                if (settingValue < 1 || settingValue > 60) {
-                    ToastHelper.showShort("输入范围（1~60）")
+                if (settingValue < 1 || settingValue > 100) {
+                    ToastHelper.showShort("输入范围（1~100）")
                     return@setOnClickListener
                 }
             }

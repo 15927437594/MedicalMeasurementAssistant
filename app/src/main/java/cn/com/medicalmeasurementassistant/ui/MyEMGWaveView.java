@@ -76,7 +76,7 @@ public class MyEMGWaveView extends View {
     /**
      * 数据最大值，默认-1~1之间
      */
-    private int MAX_VALUE = 2;
+    private int MAX_VALUE = 1;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -86,7 +86,7 @@ public class MyEMGWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 50;
+    private final static int ROW = 200;
     /**
      * 点的总数量
      */
@@ -98,7 +98,7 @@ public class MyEMGWaveView extends View {
     /**
      * 线条粗细
      */
-    private  static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
+    private static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
     private final boolean[] mChannelStatus = {true, true, true, true, true, true, true, true};
 
@@ -250,12 +250,13 @@ public class MyEMGWaveView extends View {
     }
 
     private boolean isLoaded = false;
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         Log.i("MyWaveView---", "  onLayout  ");
 
-        if(isLoaded){
+        if (isLoaded) {
             return;
         }
         isLoaded = true;
@@ -542,7 +543,7 @@ public class MyEMGWaveView extends View {
                 dataValue = -MAX_VALUE;
             }
 
-            float nowY = (float) (initOffsetY - dataValue * initOffsetY2*0.95);
+            float nowY = (float) (initOffsetY - dataValue * initOffsetY2 * 0.95);
             if (dataPosition == 0) {
                 LogUtils.d("line_data" + dataPosition + " index = " + i);
             }
@@ -581,17 +582,18 @@ public class MyEMGWaveView extends View {
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
+                LogUtils.d("totalRow=" + totalRow);
                 if (dataArray.size() == totalRow) {
                     if (position == 0) {
                         offsetIndex += totalRow;
                         clearChannelData(false);
+                        postInvalidate();
                     }
                 }
-//                dataArray.addLast(line);
                 for (int i = 0; i < data.size(); i++) {
                     dataArray.addLast(data.get(i));
+//                    postInvalidate();
                 }
-//                dataArray.addAll(data);
                 break;
         }
     }
