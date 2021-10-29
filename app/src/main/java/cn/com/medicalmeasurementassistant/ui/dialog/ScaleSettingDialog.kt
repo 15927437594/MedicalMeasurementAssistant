@@ -10,7 +10,6 @@ import android.widget.TextView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.Constant
 import cn.com.medicalmeasurementassistant.utils.ToastHelper
-import java.lang.Exception
 
 
 fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDialogListener) {
@@ -27,12 +26,12 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
             tvTitle.text = "EMG刻度范围/mV"
             etContent.hint = "输入范围(1~400)"
-            etContent.maxEms = 2
+            etContent.maxEms = 3
         }
         Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
             tvTitle.text = "电容刻度范围/pF"
             etContent.hint = "输入范围（1~100）"
-            etContent.maxEms = 2
+            etContent.maxEms = 3
         }
 
     }
@@ -43,23 +42,25 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
             val toString = s.toString()
 
             when (settingType) {
-                Constant.SETTING_TYPE_EMG_SCALE_RANGE,
                 Constant.SETTING_TYPE_TIME_LENGTH -> {
                     if (toString.length > 1) {
                         etContent.setText(toString.subSequence(0, 1))
                         etContent.setSelection(1)
                     }
-
+                }
+                Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
+                    if (toString.length > 3) {
+                        etContent.setText(toString.subSequence(0, 3))
+                        etContent.setSelection(3)
+                    }
                 }
                 Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                    if (toString.length > 2) {
-                        etContent.setText(toString.subSequence(0, 2))
-                        etContent.setSelection(2)
+                    if (toString.length > 3) {
+                        etContent.setText(toString.subSequence(0, 3))
+                        etContent.setSelection(3)
                     }
                 }
             }
-
-
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {

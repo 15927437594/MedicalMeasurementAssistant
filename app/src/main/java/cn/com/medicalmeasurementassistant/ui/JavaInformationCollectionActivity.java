@@ -70,13 +70,12 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
         mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_parent);
+        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_emg_wave_parent);
         mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_cap_wave_parent);
 
         mTvSettingTimeScale = findViewById(R.id.tv_show_time_length);
         mTvSettingEMGScaleRange = findViewById(R.id.tv_emg_scale_range);
         mTvSettingCapScaleRange = findViewById(R.id.tv_cap_scale_range);
-
 
         WaveManager.getInstance().addCallback(this);
         initEmgView();
@@ -219,7 +218,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 }
                 ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
                     mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
-                    mEmgWaveView.setMaxValue(settingValue);
+                    double maxValue = (double) settingValue / 2;
+                    mEmgWaveView.setMaxValue(maxValue);
                 });
                 break;
             default:

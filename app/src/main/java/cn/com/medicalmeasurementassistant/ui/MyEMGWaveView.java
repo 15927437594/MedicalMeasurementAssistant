@@ -57,6 +57,8 @@ public class MyEMGWaveView extends View {
 
     private Paint mTextPaint;
 
+    private Paint mScalePaint;
+
     /**
      * 数据线画笔
      */
@@ -74,9 +76,9 @@ public class MyEMGWaveView extends View {
     private final List<LinkedList<Double>> totalDataArray = new ArrayList<>();
 
     /**
-     * 数据最大值，默认-1~1之间
+     * 数据最大值，默认-0.5~0.5之间
      */
-    private int MAX_VALUE = 1;
+    private double MAX_VALUE = 0.5;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -94,7 +96,7 @@ public class MyEMGWaveView extends View {
     /**
      * 网格线条的粗细
      */
-    private final static int GRID_LINE_WIDTH = 4;
+    private final static int GRID_LINE_WIDTH = 2;
     /**
      * 线条粗细
      */
@@ -206,6 +208,11 @@ public class MyEMGWaveView extends View {
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
         mTextPaint.setTextSize(SizeUtils.dp2px(12));
 
+        mScalePaint = new Paint();
+        mScalePaint.setAntiAlias(true);
+        mScalePaint.setColor(getResources().getColor(R.color.theme_color));
+        mScalePaint.setTextSize(SizeUtils.dp2px(8));
+
         mPath = new Path();
         mChannelCount = getChannelShowCount();
 
@@ -290,8 +297,6 @@ public class MyEMGWaveView extends View {
         /**
          * 总数据点的数量
          */
-
-
     }
 
 
@@ -411,12 +416,12 @@ public class MyEMGWaveView extends View {
                 mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
                 int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
                 int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
-                canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mLinePaint);
+                canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mScalePaint);
 
                 mLinePaint.getTextBounds(minValue, 0, minValue.length(), mTextRect);
                 int scaleTwoLeft = mOffsetX - mTextRect.width() - 8;
                 int scaleTwoTop = mOffsetY + (index + 1) * 2 * mHorizontalLineScale - 3;
-                canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mLinePaint);
+                canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mScalePaint);
                 index++;
             }
         }
@@ -437,7 +442,7 @@ public class MyEMGWaveView extends View {
                 left = i * mVerticalLineScale + mOffsetX - mTextRect.width() / 2 - offset;
             }
             int bottom = mOscillographHeight + mOffsetY + mTextRect.height() + 2;
-            canvas.drawText(xScaleDesc, left, bottom, mLinePaint);
+            canvas.drawText(xScaleDesc, left, bottom, mScalePaint);
 
         }
     }
@@ -630,7 +635,7 @@ public class MyEMGWaveView extends View {
         }
     }
 
-    public void setMaxValue(int value) {
+    public void setMaxValue(double value) {
         this.MAX_VALUE = value;
         clearChannelData();
         initLineNum();
