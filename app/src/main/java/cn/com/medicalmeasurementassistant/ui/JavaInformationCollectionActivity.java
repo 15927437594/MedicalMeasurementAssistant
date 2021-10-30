@@ -1,6 +1,8 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -12,6 +14,7 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import cn.com.medicalmeasurementassistant.R;
@@ -55,6 +58,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mTvSettingTimeScale;
     private TextView mTvSettingEMGScaleRange;
     private TextView mTvSettingCapScaleRange;
+    private TextView mTvSaveTime;
+    private Handler mHandler;
+    private int saveTime = 0;
+    private static final long UPDATE_WAVE_VIEW_INTERVAL = 100L;
+    private long UPDATE_TIME = 0L;
 
     @Override
     public int getLayoutId() {
@@ -63,20 +71,20 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void initView() {
+        mHandler = new Handler(Looper.getMainLooper());
         mDeviceManager = DeviceManager.getInstance();
         mConnectionSwitch = findViewById(R.id.iv_collect_operate_top);
         mSaveDataSwitch = findViewById(R.id.iv_save_data);
         mRadioGroup = findViewById(R.id.rg_contain);
         mCollectionIv = findViewById(R.id.iv_collect_operate);
         mCollectionTv = findViewById(R.id.tv_collection_status);
-        mDeviceManager.setSaveSampleData(mSaveDataSwitch.isChecked());
-        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_wave_parent);
+        mEmgWaveFrameLayout = findViewById(R.id.frameLayout_emg_wave_parent);
         mCapacitanceWaveFrameLayout = findViewById(R.id.frameLayout_cap_wave_parent);
 
         mTvSettingTimeScale = findViewById(R.id.tv_show_time_length);
         mTvSettingEMGScaleRange = findViewById(R.id.tv_emg_scale_range);
         mTvSettingCapScaleRange = findViewById(R.id.tv_cap_scale_range);
-
+        mTvSaveTime = findViewById(R.id.tv_save_time);
 
         WaveManager.getInstance().addCallback(this);
         initEmgView();
@@ -90,8 +98,26 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         LogUtils.d("capacitance=" + capacitance);
     }
 
+    private final Runnable mUpdateSaveTimeRunnable = new Runnable() {
+        @Override
+        public void run() {
+            saveTime += 1;
+            mTvSaveTime.setText(String.valueOf(saveTime));
+            mHandler.postDelayed(this, 1000L);
+        }
+    };
+
+    private void startSaveTime() {
+        mHandler.postDelayed(mUpdateSaveTimeRunnable, 1000L);
+    }
+
+    private void stopSaveTime() {
+        mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
+    }
+
     @Override
     public void initListener() {
+        mDeviceManager.setHandler(mHandler);
         mDeviceManager.setDeviceInfoListener(this);
         mDeviceManager.setCalibrateListener(this);
         setClick(R.id.iv_file_list);
@@ -99,11 +125,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         setClick(R.id.stv_setting_params);
         setClick(R.id.stv_collect_angle);
         setClick(R.id.iv_collect_operate);
-
         setClick(R.id.srl_left_top);
         setClick(R.id.srl_left_bottom);
         setClick(R.id.srl_right_top);
-
 
         mConnectionSwitch.setOnCheckedChangeListener((compoundButton, isConnection) -> {
             LogUtils.i("isConnection=" + isConnection);
@@ -116,7 +140,14 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             }
         });
 
-        mSaveDataSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mDeviceManager.setSaveSampleData(isChecked));
+        mSaveDataSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            mDeviceManager.setSaveDataState(isChecked);
+            if (isChecked) {
+                saveTime = 0;
+                mTvSaveTime.setText(String.valueOf(saveTime));
+            }
+        });
+
         mRadioGroup.setOnCheckedChangeListener((radioGroup, i) -> {
             if (i == R.id.rb_option_one) {
                 mCapacitanceWaveFrameLayout.setVisibility(View.INVISIBLE);
@@ -150,7 +181,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     return;
                 }
                 InputFileNameDialogKt.showInputFileNameDialog(this,
-                        fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getHighPassFilterData()));
+                        fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getFilterData()));
                 break;
             case R.id.stv_setting_params:
                 if (mCollectionStatus) {
@@ -188,6 +219,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
+                    mSaveDataSwitch.setEnabled(true);
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
@@ -219,7 +251,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 }
                 ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_EMG_SCALE_RANGE, (settingValue) -> {
                     mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
-                    mEmgWaveView.setMaxValue(settingValue);
+                    double maxValue = (double) settingValue / 2;
+                    mEmgWaveView.setMaxValue(maxValue);
                 });
                 break;
             default:
@@ -237,14 +270,25 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     public void replyStartDataCollect(List<Integer> data) {
         mDeviceManager.setDeviceStart(true);
         mDeviceManager.getOriginalData().clear();
-        mDeviceManager.getHighPassFilterData().clear();
+        mDeviceManager.getFilterData().clear();
+        mDeviceManager.resetParams();
         runOnUiThread(() -> ToastHelper.showShort("设备开始采集数据"));
+        if (mDeviceManager.getSaveDataState()) {
+            startSaveTime();
+        }
+        mSaveDataSwitch.setEnabled(false);
     }
 
     @Override
     public void replyVoltage(int channel, List<Double> data) {
         LogUtils.d(String.format("channel=%s, point=%s", channel, data));
-        mEmgWaveView.addData(channel, data);
+        List<Double> filterData = new ArrayList<>();
+        for (int i = 0; i < data.size(); i++) {
+            if (i % 2 == 0) {
+                filterData.add(data.get(i));
+            }
+        }
+        mEmgWaveView.addData(channel, filterData);
         if (channel == Constant.DEFAULT_CHANNEL - 1) {
             mEmgWaveView.updateWaveLine();
         }
@@ -254,6 +298,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     public void replyStopDataCollect(List<Integer> data) {
         runOnUiThread(() -> ToastHelper.showShort("设备停止采集数据"));
         mDeviceManager.setDeviceStart(false);
+        if (mDeviceManager.getSaveDataState()) {
+            stopSaveTime();
+        }
+        mSaveDataSwitch.setEnabled(true);
     }
 
     @Override
@@ -282,7 +330,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void waveCountChange() {
-        List<SettingParamsBean.ChannelBean> channelBeans = SettingParamsBean.getInstance().getChanelBeans();
+        LogUtils.i("waveCountChange");
+        List<SettingParamsBean.ChannelBean> channelBeans = SettingParamsBean.getInstance().getChannelBeans();
         mEmgWaveView.changeChannelStatus(channelBeans);
     }
 
