@@ -28,16 +28,16 @@ public class SettingParamsBean {
         for (int i = 0; i < 8; i++) {
             ChannelBean channelBean = new ChannelBean();
             channelBean.setChannelName("通道" + (i + 1));
-            mChanelBeans.add(channelBean);
+            mChannelBeans.add(channelBean);
         }
-        settingBeans.addAll(mChanelBeans);
+        settingBeans.addAll(mChannelBeans);
         settingBeans.add(new ChannelBean());
     }
 
-    private final List<ChannelBean> mChanelBeans = new ArrayList<>();
+    private final List<ChannelBean> mChannelBeans = new ArrayList<>();
 
-    public List<ChannelBean> getChanelBeans() {
-        return mChanelBeans;
+    public List<ChannelBean> getChannelBeans() {
+        return mChannelBeans;
     }
 
 

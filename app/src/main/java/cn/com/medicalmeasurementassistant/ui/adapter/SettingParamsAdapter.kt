@@ -2,11 +2,9 @@ package cn.com.medicalmeasurementassistant.ui.adapter
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.view.View
 import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
 import cn.com.medicalmeasurementassistant.manager.DeviceManager
@@ -21,7 +19,8 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
         return 0
     }
 
-    private val channelStatus = booleanArrayOf(false, false, false, false, false, false, false, false)
+    private val channelStatus =
+        booleanArrayOf(false, false, false, false, false, false, false, false)
 
     override fun getItemViewType(position: Int): Int {
         return when (position) {
@@ -70,12 +69,12 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
 
                 // 电极状态View样式设置
                 val solidColor =
-                        if (globalBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
+                    if (globalBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
                 shapeTextView.solidColor = ContextCompat.getColor(holder.context, solidColor)
                 shapeTextView.solidPressedColor = shapeTextView.solidColor
 
                 val textColor =
-                        if (globalBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
+                    if (globalBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
                 electrodeStatusTip.setTextColor(ContextCompat.getColor(holder.context, textColor))
                 electrodeStatusTv.setTextColor(ContextCompat.getColor(holder.context, textColor))
 
@@ -87,22 +86,20 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
             }
             isTheLast -> {
                 // 最后一个
-                holder.setOnClickListener(R.id.stv_params_submit, object : View.OnClickListener {
-                    override fun onClick(v: View?) {
-                        var flag = false
-                        val channelBeans = SettingParamsBean.getInstance().chanelBeans
-                        for (i in 0..7) {
-                            if (channelStatus[i] != channelBeans[i].channelStatus) {
-                                channelBeans[i].channelStatus = channelStatus[i]
-                                flag = true
-                            }
+                holder.setOnClickListener(R.id.stv_params_submit) {
+                    var flag = false
+                    val channelBeans = SettingParamsBean.getInstance().channelBeans
+                    for (i in 0..7) {
+                        if (channelStatus[i] != channelBeans[i].channelStatus) {
+                            channelBeans[i].channelStatus = channelStatus[i]
+                            flag = true
                         }
-                        if (flag) {
-                            WaveManager.getInstance().WaveCountChange()
-                        }
-                        (holder.context as Activity).finish()
                     }
-                })
+                    if (flag) {
+                        WaveManager.getInstance().WaveCountChange()
+                    }
+                    (holder.context as Activity).finish()
+                }
                 return
             }
             else -> {
@@ -118,11 +115,11 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 val shapeTextView = holder.getView<ShapeTextView>(R.id.tv_status_desc)
                 // 电极状态View样式设置
                 val solidColor =
-                        if (channelBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
+                    if (channelBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
                 shapeTextView.solidColor = ContextCompat.getColor(holder.context, solidColor)
                 shapeTextView.solidPressedColor = shapeTextView.solidColor
                 val textColor =
-                        if (channelBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
+                    if (channelBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
                 shapeTextView.setTextColor(ContextCompat.getColor(holder.context, textColor))
 //                val electrodeStatus = if (channelBean.electrodeStatus) R.string.text_electrode_on else R.string.text_electrode_off
 //                shapeTextView.text = holder.context.getString(electrodeStatus)
@@ -139,8 +136,6 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 }
             }
         }
-
     }
-
 
 }

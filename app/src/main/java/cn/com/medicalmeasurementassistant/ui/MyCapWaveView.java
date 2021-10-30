@@ -59,7 +59,7 @@ public class MyCapWaveView extends View {
      */
     private Path mPath;
 
-    private int mShowTimeLength = 5;
+    private int mShowTimeLength = 4;
 
     /**
      * 保存已绘制的数据坐标

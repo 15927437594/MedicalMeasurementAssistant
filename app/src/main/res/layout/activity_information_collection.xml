@@ -254,7 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tv_show_time_length_tip"
                     android:layout_marginTop="15dp"
-                    android:text="5"
+                    android:text="4"
                     android:textColor="@color/theme_color"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -378,12 +378,12 @@
                     android:textSize="14sp" />
 
                 <TextView
-
+                    android:id="@+id/tv_save_time"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tv_save_data_tip"
                     android:layout_marginTop="15dp"
-                    android:text="@string/text_heng"
+                    android:text="@string/text_value_zero"
                     android:textColor="@color/theme_color"
                     android:textSize="20sp"
                     android:textStyle="bold" />

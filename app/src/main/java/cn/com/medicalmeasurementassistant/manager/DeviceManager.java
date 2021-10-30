@@ -1,5 +1,7 @@
 package cn.com.medicalmeasurementassistant.manager;
 
+import android.os.Handler;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -23,7 +25,7 @@ public class DeviceManager {
     private CalibrateListener mCalibrateListener = null;
     private boolean isDeviceOpen = false;
     private boolean isDeviceStart = false;
-    private boolean mSaveSampleData = false;
+    private boolean mSaveDataState = false;
     private boolean mHighPassFilterState = true;
     private boolean mNotchFilterState = false;
     private List<Double> mOriginalData;
@@ -48,14 +50,44 @@ public class DeviceManager {
     private final Map<Integer, Boolean> mNotchFilteredMap;
     private final Map<Integer, List<Double>> lastFilteredDataMap;
     private final Map<Integer, List<Double>> lastFilteringDataMap;
-    private static final long UPDATE_WAVE_VIEW_INTERVAL = 200L;
-    private long REPLY_SAMPLE_TIME = 0L;
     private double angle1 = 0;
     private double angle2 = 0;
     private double p1 = 0;
     private double p2 = 0;
     private double mCurrentCapacitance = 0;
     private boolean mCalibrateState = false;
+    private final Map<Integer, List<Double>> mChannelDataMap;
+    private Handler mHandler;
+    private static final long UPDATE_INTERVAL = 200L;
+    private final Map<Integer, Long> mUpdateTimeMap;
+
+    public void setHandler(Handler handler) {
+        this.mHandler = handler;
+    }
+
+    public void resetParams() {
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            mHighPassFilteredMap.put(i, false);
+        }
+
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            mNotchFilteredMap.put(i, false);
+        }
+
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            List<Double> doubles = lastFilteredDataMap.get(i);
+            if (doubles != null) {
+                doubles.clear();
+            }
+        }
+
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            List<Double> doubles = lastFilteringDataMap.get(i);
+            if (doubles != null) {
+                doubles.clear();
+            }
+        }
+    }
 
     private DeviceManager() {
         mHighPassFilteredMap = new HashMap<>();
@@ -78,8 +110,19 @@ public class DeviceManager {
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
             lastFilteringDataMap.put(i, lastFilteringData);
         }
+
+        mChannelDataMap = new HashMap<>();
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            mChannelDataMap.put(i, new ArrayList<>());
+        }
+
         mOriginalData = new ArrayList<>();
         mFilterData = new ArrayList<>();
+
+        mUpdateTimeMap = new HashMap<>();
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL + 1; i++) {
+            mUpdateTimeMap.put(i, 0L);
+        }
     }
 
     public static DeviceManager getInstance() {
@@ -101,14 +144,14 @@ public class DeviceManager {
         this.mCalibrateListener = listener;
     }
 
-    public void calibrateSuccess(){
-        if (mCalibrateListener!=null){
+    public void calibrateSuccess() {
+        if (mCalibrateListener != null) {
             mCalibrateListener.calibrateSuccess();
         }
     }
 
-    public void calibrateFail(){
-        if (mCalibrateListener!=null){
+    public void calibrateFail() {
+        if (mCalibrateListener != null) {
             mCalibrateListener.calibrateFail();
         }
     }
@@ -134,9 +177,11 @@ public class DeviceManager {
         }
     }
 
+    // 获取高通滤波数据
     public List<Double> getHighPassFilteredData(int channel, List<Double> srcData) {
         List<Double> filteredData;
         LogUtils.d("getHighPassFilteredData srcDataSize=" + srcData.size());
+        // 获取channel的过滤状态
         boolean filtered = false;
         Boolean highPassFiltered = mHighPassFilteredMap.get(channel);
         if (highPassFiltered != null) {
@@ -153,16 +198,20 @@ public class DeviceManager {
         if (filtered) {
             List<Double> channelFilteredData = new ArrayList<>(lastFilteredData);
             List<Double> channelFilteringData = new ArrayList<>(lastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
             lastFilteredData.clear();
             lastFilteringData.clear();
+            // 初始化channel的已过滤数据
             for (int i = 0; i < srcData.size(); i++) {
                 channelFilteredData.add(0.0);
             }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
             channelFilteringData.addAll(srcData);
             LogUtils.d("getFilterData channelFilteredDataSize=" + channelFilteredData.size());
-            LogUtils.d("getFilterData channelFilteringData=" + channelFilteringData.size());
+            LogUtils.d("getFilterData channelFilteringDataSize=" + channelFilteringData.size());
             for (int i = orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
                 if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
                     channelFilteredData.set(i, 0.0);
                 } else {
                     double filteredPointChannelB = highPassFilterB0 * channelFilteringData.get(i) + highPassFilterB1 * channelFilteringData.get(i - 1) + highPassFilterB2 * channelFilteringData.get(i - 2) + highPassFilterB3 * channelFilteringData.get(i - 3);
@@ -171,11 +220,12 @@ public class DeviceManager {
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
-
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
             for (int i = channelFilteredData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
                 lastFilteredData.add(channelFilteredData.get(i));
                 lastFilteringData.add(channelFilteringData.get(i));
             }
+            //此次实际的已过滤数据为第四位到最后一位
             filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighPassFilter, channelFilteredData.size()));
         } else {
             List<Double> channelFilteredData = new ArrayList<>();
@@ -184,7 +234,9 @@ public class DeviceManager {
             }
 
             for (int i = orderOfHighPassFilter; i < srcData.size(); i++) {
+                // 没有保存的过滤数据,高通滤波从第四个数据开始计算
                 if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
                     channelFilteredData.set(i, 0.0);
                 } else {
                     double filteredPointChannelB = highPassFilterB0 * srcData.get(i) + highPassFilterB1 * srcData.get(i - 1) + highPassFilterB2 * srcData.get(i - 2) + highPassFilterB3 * srcData.get(i - 3);
@@ -193,16 +245,20 @@ public class DeviceManager {
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
             for (int i = srcData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
                 lastFilteredData.add(channelFilteredData.get(i));
                 lastFilteringData.add(srcData.get(i));
             }
+
+            // 设置channel的过滤状态为true
             mHighPassFilteredMap.put(channel, true);
             filteredData = new ArrayList<>(channelFilteredData);
         }
         return filteredData;
     }
 
+    // 获取工频陷波数据(计算逻辑和高通滤波一致,区别为参数不同)
     public List<Double> getNotchFilteredData(int channel, List<Double> srcData) {
         List<Double> filteredData;
         LogUtils.d("getNotchFilteredData srcDataSize=" + srcData.size());
@@ -231,10 +287,15 @@ public class DeviceManager {
             LogUtils.d("getFilterData channelFilteredDataSize=" + channelFilteredData.size());
             LogUtils.d("getFilterData channelFilteringData=" + channelFilteringData.size());
             for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
-                double filteredPointChannelB = notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2);
-                double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
-                double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                channelFilteredData.set(i, filteredPointChannel);
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0);
+                } else {
+                    double filteredPointChannelB = notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2);
+                    double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
+                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
             }
 
             for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
@@ -249,10 +310,15 @@ public class DeviceManager {
             }
 
             for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
-                double filteredPointChannelB = notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2);
-                double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
-                double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                channelFilteredData.set(i, filteredPointChannel);
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0);
+                } else {
+                    double filteredPointChannelB = notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2);
+                    double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
+                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
             }
             for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
                 lastFilteredData.add(channelFilteredData.get(i));
@@ -265,94 +331,103 @@ public class DeviceManager {
     }
 
     public void replySampledData(List<Integer> data) {
-        long currentTimeMillis = System.currentTimeMillis();
-        LogUtils.d("UPDATE_WAVE_VIEW_INTERVAL=" + (currentTimeMillis));
-        LogUtils.d("UPDATE_WAVE_VIEW_INTERVAL=" + (currentTimeMillis - REPLY_SAMPLE_TIME));
-        if (currentTimeMillis - REPLY_SAMPLE_TIME > UPDATE_WAVE_VIEW_INTERVAL) {
-            REPLY_SAMPLE_TIME = currentTimeMillis;
-        } else {
-            return;
+        // 清空mChannelDataMap容器中保存的数据
+        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            List<Double> channelData = mChannelDataMap.get(i);
+            if (channelData != null) {
+                channelData.clear();
+            }
         }
 
         LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
-        Map<Integer, List<Double>> map = new HashMap<>();
-        List<Double> channel1Data = new ArrayList<>();
-        List<Double> channel2Data = new ArrayList<>();
-        List<Double> channel3Data = new ArrayList<>();
-        List<Double> channel4Data = new ArrayList<>();
-        List<Double> channel5Data = new ArrayList<>();
-        List<Double> channel6Data = new ArrayList<>();
-        List<Double> channel7Data = new ArrayList<>();
-        List<Double> channel8Data = new ArrayList<>();
 
         for (int i = 0; i < data.size() - 24; i += 24) {
-            double pointChannel1 = calculateVoltage(data.get(i), data.get(i + 1), data.get(i + 2));
-            double pointChannel2 = calculateVoltage(data.get(i + 3), data.get(i + 4), data.get(i + 5));
-            double pointChannel3 = calculateVoltage(data.get(i + 6), data.get(i + 7), data.get(i + 8));
-            double pointChannel4 = calculateVoltage(data.get(i + 9), data.get(i + 10), data.get(i + 11));
-            double pointChannel5 = calculateVoltage(data.get(i + 12), data.get(i + 13), data.get(i + 14));
-            double pointChannel6 = calculateVoltage(data.get(i + 15), data.get(i + 16), data.get(i + 17));
-            double pointChannel7 = calculateVoltage(data.get(i + 18), data.get(i + 19), data.get(i + 20));
-            double pointChannel8 = calculateVoltage(data.get(i + 21), data.get(i + 22), data.get(i + 23));
-            if (isSaveSampleData()) {
-                mOriginalData.add(pointChannel1);
-                mOriginalData.add(pointChannel2);
-                mOriginalData.add(pointChannel3);
-                mOriginalData.add(pointChannel4);
-                mOriginalData.add(pointChannel5);
-                mOriginalData.add(pointChannel6);
-                mOriginalData.add(pointChannel7);
-                mOriginalData.add(pointChannel8);
+            for (int j = 0; j < 8; j++) {
+                double channelPoint = calculateVoltage(data.get(j * 3 + i), data.get(j * 3 + i + 1), data.get(j * 3 + i + 2));
+                if (getSaveDataState()) {
+                    mOriginalData.add(channelPoint);
+                }
+                List<Double> channelData = mChannelDataMap.get(j);
+                if (channelData != null) {
+                    channelData.add(channelPoint);
+                }
             }
-
-            channel1Data.add(pointChannel1);
-            channel2Data.add(pointChannel2);
-            channel3Data.add(pointChannel3);
-            channel4Data.add(pointChannel4);
-            channel5Data.add(pointChannel5);
-            channel6Data.add(pointChannel6);
-            channel7Data.add(pointChannel7);
-            channel8Data.add(pointChannel8);
         }
-        map.put(0, channel1Data);
-        map.put(1, channel2Data);
-        map.put(2, channel3Data);
-        map.put(3, channel4Data);
-        map.put(4, channel5Data);
-        map.put(5, channel6Data);
-        map.put(6, channel7Data);
-        map.put(7, channel8Data);
 
-        if (getHighPassFilterState()) {
+        if (getHighPassFilterState() && !getNotchFilterState()) {
+            // 高通滤波开启
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = map.get(i);
+                List<Double> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
                     List<Double> filteredData = getHighPassFilteredData(i, channelData);
-                    LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
-                    LogUtils.d("filteredData=" + filteredData.size());
-                    if (mDeviceInfoListener != null) {
-                        mDeviceInfoListener.replyVoltage(i, filteredData);
+                    if (filteredData != null) {
+                        LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
+                        LogUtils.d("filteredData=" + filteredData.size());
+                        Long updateTime = mUpdateTimeMap.get(i);
+                        if (updateTime != null) {
+                            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                                mUpdateTimeMap.put(i, System.currentTimeMillis());
+                                if (mDeviceInfoListener != null) {
+                                    mDeviceInfoListener.replyVoltage(i, filteredData);
+                                }
+                            }
+                        }
                     }
                 }
             }
-        } else if (getNotchFilterState()) {
+        } else if (getNotchFilterState() && !getHighPassFilterState()) {
+            // 工频陷波开启
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = map.get(i);
+                List<Double> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
                     List<Double> filteredData = getNotchFilteredData(i, channelData);
                     LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
                     LogUtils.d("filteredData=" + filteredData.size());
-                    if (mDeviceInfoListener != null) {
-                        mDeviceInfoListener.replyVoltage(i, filteredData);
+                    Long updateTime = mUpdateTimeMap.get(i);
+                    if (updateTime != null) {
+                        if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                            mUpdateTimeMap.put(i, System.currentTimeMillis());
+                            if (mDeviceInfoListener != null) {
+                                mDeviceInfoListener.replyVoltage(i, filteredData);
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (getHighPassFilterState() && getNotchFilterState()) {
+            // 高通滤波和工频陷波同时开启,先计算高通滤波,再讲高通滤波过滤后的数据用来做工频陷波
+            for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+                List<Double> channelData = mChannelDataMap.get(i);
+                if (channelData != null) {
+                    List<Double> highPassFilteredData = getHighPassFilteredData(i, channelData);
+                    if (highPassFilteredData != null) {
+                        LogUtils.d(String.format("filteredData i=%s, highPassFilteredData=%s", i, highPassFilteredData));
+                        List<Double> notchFilteredData = getNotchFilteredData(i, highPassFilteredData);
+                        LogUtils.d(String.format("filteredData i=%s, notchFilteredData=%s", i, notchFilteredData));
+                        LogUtils.d("filteredData=" + notchFilteredData.size());
+                        Long updateTime = mUpdateTimeMap.get(i);
+                        if (updateTime != null) {
+                            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                                mUpdateTimeMap.put(i, System.currentTimeMillis());
+                                if (mDeviceInfoListener != null) {
+                                    mDeviceInfoListener.replyVoltage(i, notchFilteredData);
+                                }
+                            }
+                        }
                     }
                 }
             }
         } else {
+            // 不做任何滤波操作
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = map.get(i);
-                if (channelData != null) {
-                    if (mDeviceInfoListener != null) {
-                        mDeviceInfoListener.replyVoltage(i, channelData);
+                List<Double> channelData = mChannelDataMap.get(i);
+                Long updateTime = mUpdateTimeMap.get(i);
+                if (updateTime != null && channelData != null) {
+                    if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                        mUpdateTimeMap.put(i, System.currentTimeMillis());
+                        if (mDeviceInfoListener != null) {
+                            mDeviceInfoListener.replyVoltage(i, channelData);
+                        }
                     }
                 }
             }
@@ -366,15 +441,21 @@ public class DeviceManager {
         if (capacitance < 0) {
             capacitance = 0;
         }
-        mCurrentCapacitance = capacitance;
-        if (getCalibrateState()) {
-            double angle = convertCapacitanceToAngle(capacitance);
-            if (mDeviceInfoListener != null) {
-                mDeviceInfoListener.replyAngle(angle);
-            }
-        } else {
-            if (mDeviceInfoListener != null) {
-                mDeviceInfoListener.replyCapacitance(capacitance);
+        Long updateTime = mUpdateTimeMap.get(Constant.DEFAULT_CHANNEL);
+        if (updateTime != null){
+            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                mUpdateTimeMap.put(Constant.DEFAULT_CHANNEL, System.currentTimeMillis());
+                mCurrentCapacitance = capacitance;
+                if (getCalibrateState()) {
+                    double angle = convertCapacitanceToAngle(capacitance);
+                    if (mDeviceInfoListener != null) {
+                        mDeviceInfoListener.replyAngle(angle);
+                    }
+                } else {
+                    if (mDeviceInfoListener != null) {
+                        mDeviceInfoListener.replyCapacitance(capacitance);
+                    }
+                }
             }
         }
     }
@@ -411,7 +492,7 @@ public class DeviceManager {
         for (int i = 0; i < data.size() - 24; i += 24) {
             for (int m = 0; m < 8; m++) {
                 double pointChannel = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
-                if (isSaveSampleData()) {
+                if (getSaveDataState()) {
                     mOriginalData.add(pointChannel);
                     mFilterData.add(pointChannel);
                 }
@@ -426,12 +507,12 @@ public class DeviceManager {
         replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
     }
 
-    public boolean isSaveSampleData() {
-        return mSaveSampleData;
+    public boolean getSaveDataState() {
+        return mSaveDataState;
     }
 
-    public void setSaveSampleData(boolean save) {
-        this.mSaveSampleData = save;
+    public void setSaveDataState(boolean save) {
+        this.mSaveDataState = save;
     }
 
     public List<Double> getOriginalData() {
@@ -442,7 +523,7 @@ public class DeviceManager {
         this.mOriginalData = data;
     }
 
-    public List<Double> getHighPassFilterData() {
+    public List<Double> getFilterData() {
         return this.mFilterData;
     }
 

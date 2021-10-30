@@ -68,7 +68,7 @@ public class MyEMGWaveView extends View {
      */
     private Path mPath;
 
-    private int mShowTimeLength = 5;
+    private int mShowTimeLength = 4;
 
     /**
      * 保存已绘制的数据坐标
@@ -88,7 +88,7 @@ public class MyEMGWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 200;
+    private final static int ROW = 100;
     /**
      * 点的总数量
      */
@@ -589,15 +589,17 @@ public class MyEMGWaveView extends View {
                 // 循环模式数据添加至当前绘制的位
                 LogUtils.d("totalRow=" + totalRow);
                 if (dataArray.size() == totalRow) {
-                    if (position == 0) {
-                        offsetIndex += totalRow;
-                        clearChannelData(false);
-                        postInvalidate();
-                    }
+//                    if (position == 0) {
+//                        offsetIndex += totalRow;
+//                        clearChannelData(false);
+//                        postInvalidate();
+//                    }
+                    offsetIndex += totalRow;
+                    clearChannelData(false);
+                    postInvalidate();
                 }
                 for (int i = 0; i < data.size(); i++) {
                     dataArray.addLast(data.get(i));
-//                    postInvalidate();
                 }
                 break;
         }

@@ -21,7 +21,7 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
     when (settingType) {
         Constant.SETTING_TYPE_TIME_LENGTH -> {
             tvTitle.text = "显示时长/s"
-            etContent.hint = "输入范围(2~5)"
+            etContent.hint = "输入范围(2~4)"
         }
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
             tvTitle.text = "EMG刻度范围/mV"
@@ -86,8 +86,8 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
 
         when (settingType) {
             Constant.SETTING_TYPE_TIME_LENGTH -> {
-                if (settingValue < 2 || settingValue > 5) {
-                    ToastHelper.showShort("输入范围（2~5）")
+                if (settingValue < 2 || settingValue > 4) {
+                    ToastHelper.showShort("输入范围（2~4）")
                     return@setOnClickListener
                 }
             }

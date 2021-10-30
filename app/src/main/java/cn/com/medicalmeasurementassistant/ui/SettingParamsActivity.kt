@@ -24,7 +24,5 @@ class SettingParamsActivity : BaseKotlinActivity() {
         val paramsAdapter = SettingParamsAdapter()
         recyclerView.adapter = paramsAdapter
         paramsAdapter.datas = SettingParamsBean.getInstance().settingBeans
-
-
     }
 }
