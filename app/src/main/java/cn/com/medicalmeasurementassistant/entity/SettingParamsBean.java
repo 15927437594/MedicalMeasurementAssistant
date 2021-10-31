@@ -72,7 +72,7 @@ public class SettingParamsBean {
         // 高通虑波状态
         private boolean highPassFilterStatus = true;
         // 工频陷波状态
-        private boolean frequencyNotchStatus = true;
+        private boolean frequencyNotchStatus = false;
         // REF电极状态
         private boolean electrodeStatus;
         // 通道量程

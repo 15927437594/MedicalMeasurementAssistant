@@ -1,7 +1,10 @@
 package cn.com.medicalmeasurementassistant.utils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -224,6 +227,12 @@ public class CalculateUtils {
                 (0x00ff0000 & (arr[index + 1] << 16)) |
                 (0x0000ff00 & (arr[index + 2] << 8)) |
                 (0x000000ff & arr[index + 3]);
+    }
+
+    public static String getTime() {
+        Date date = new Date();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
+        return simpleDateFormat.format(date);
     }
 }
 
