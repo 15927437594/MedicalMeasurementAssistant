@@ -17,8 +17,19 @@ import com.hjq.shape.view.ShapeTextView
 class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.SettingBean>() {
     private val channelStatus =
             booleanArrayOf(true, true, true, true, true, true, true, true)
+    private var allChannelStatus = true
     init {
-        channelStatus
+        val settingBeans = SettingParamsBean.getInstance().channelBeans
+        var status = false
+        for (m in settingBeans.indices) {
+            val channelStatus1 = (settingBeans[m] as SettingParamsBean.ChannelBean).channelStatus
+
+            if (channelStatus1) {
+                status = true
+            }
+            channelStatus[m] = channelStatus1
+        }
+        allChannelStatus = status
     }
 
     override fun getLayoutId(): Int {
@@ -27,8 +38,6 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
 
 
 
-
-    private var allChannelStatus = true
 
     override fun getItemViewType(position: Int): Int {
         return when (position) {
@@ -56,14 +65,15 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 channelSwitch.setOnCheckedChangeListener { _, isChecked ->
                     channelSwitch.setOnCheckedChangeListener(null)
                     allChannelStatus = isChecked
-//                    for (m in channelStatus.indices) {
-//                        channelStatus[m] = isChecked
-//                    }
+                    for (m in channelStatus.indices) {
+                        channelStatus[m] = isChecked
+                    }
 //                    globalBean.channelStatus = isChecked
-//                    channelSwitch.post {
+                    channelSwitch.post {
+                        notifyDataSetChanged()
 //                    notifyItemRangeChanged(1,8)
-//
-//                    }
+
+                    }
                 }
 
                 highPassFilter.isChecked = globalBean.highPassFilterStatus
@@ -148,7 +158,6 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 val channelSwitch = holder.getView<Switch>(R.id.switch_status_desc)
                 channelSwitch.setOnCheckedChangeListener(null)
                 channelSwitch.isChecked = channelStatus[position - 1]
-                channelStatus[position - 1] = channelBean.channelStatus
                 channelSwitch.setOnCheckedChangeListener { _, isChecked ->
                     channelStatus[position - 1] = isChecked
                 }
