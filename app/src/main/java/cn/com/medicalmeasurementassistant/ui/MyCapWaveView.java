@@ -505,4 +505,9 @@ public class MyCapWaveView extends View {
         initLineNum();
         updateWaveLine();
     }
+
+    public void resetStartTime() {
+        offsetIndex = 0;
+    }
+
 }

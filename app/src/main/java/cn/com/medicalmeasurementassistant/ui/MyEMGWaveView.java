@@ -307,14 +307,8 @@ public class MyEMGWaveView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Log.i("MyWaveView---", "  onDraw  w = " + getWidth() + " hei = " + getHeight());
-
-        /** 绘制网格*/
         drawGrid(canvas);
-        /**
-         *  绘制刻度
-         */
         drawScale(canvas);
-
         drawWaveLineNormal(canvas);
     }
 
@@ -505,17 +499,6 @@ public class MyEMGWaveView extends View {
         postInvalidate();
     }
 
-//    /**
-//     * 循环模式绘制折线
-//     *
-//     * @param canvas
-//     */
-//    private void drawWaveLineLoop(Canvas canvas) {
-//        drawPathFromDatas(canvas, (row - 1) - draw_index > 8 ? 0 : 8 - ((row - 1) - draw_index), draw_index);
-//        drawPathFromDatas(canvas, Math.min(draw_index + 8, row - 1), row - 1);
-//    }
-
-
     /**
      * 取数组中的指定一段数据来绘制折线
      *
@@ -643,4 +626,9 @@ public class MyEMGWaveView extends View {
         initLineNum();
         updateWaveLine();
     }
+
+    public void resetStartTime() {
+        offsetIndex = 0;
+    }
+
 }

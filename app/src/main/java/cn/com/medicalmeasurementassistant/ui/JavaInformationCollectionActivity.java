@@ -60,9 +60,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mTvSettingCapScaleRange;
     private TextView mTvSaveTime;
     private Handler mHandler;
-    private int saveTime = 0;
-    private static final long UPDATE_WAVE_VIEW_INTERVAL = 100L;
-    private long UPDATE_TIME = 0L;
+    private int mSaveTime = 0;
 
     @Override
     public int getLayoutId() {
@@ -101,13 +99,14 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private final Runnable mUpdateSaveTimeRunnable = new Runnable() {
         @Override
         public void run() {
-            saveTime += 1;
-            mTvSaveTime.setText(String.valueOf(saveTime));
+            mSaveTime += 1;
+            runOnUiThread(() -> mTvSaveTime.setText(String.valueOf(mSaveTime)));
             mHandler.postDelayed(this, 1000L);
         }
     };
 
     private void startSaveTime() {
+        stopSaveTime();
         mHandler.postDelayed(mUpdateSaveTimeRunnable, 1000L);
     }
 
@@ -140,13 +139,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             }
         });
 
-        mSaveDataSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            mDeviceManager.setSaveDataState(isChecked);
-            if (isChecked) {
-                saveTime = 0;
-                mTvSaveTime.setText(String.valueOf(saveTime));
-            }
-        });
+        mSaveDataSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> mDeviceManager.setSaveDataState(isChecked));
 
         mRadioGroup.setOnCheckedChangeListener((radioGroup, i) -> {
             if (i == R.id.rb_option_one) {
@@ -220,6 +213,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
                     mSaveDataSwitch.setEnabled(true);
+                    if (mDeviceManager.getSaveDataState()) {
+                        stopSaveTime();
+                    }
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
@@ -268,15 +264,18 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void replyStartDataCollect(List<Integer> data) {
+        LogUtils.i("replyStartDataCollect");
         mDeviceManager.setDeviceStart(true);
-        mDeviceManager.getOriginalData().clear();
-        mDeviceManager.getFilterData().clear();
         mDeviceManager.resetParams();
         runOnUiThread(() -> ToastHelper.showShort("设备开始采集数据"));
+        mSaveTime = 0;
+        runOnUiThread(() -> mTvSaveTime.setText(String.valueOf(mSaveTime)));
         if (mDeviceManager.getSaveDataState()) {
             startSaveTime();
         }
         mSaveDataSwitch.setEnabled(false);
+        mEmgWaveView.resetStartTime();
+        mCapacitanceWaveView.resetStartTime();
     }
 
     @Override
@@ -296,6 +295,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
     @Override
     public void replyStopDataCollect(List<Integer> data) {
+        LogUtils.i("replyStopDataCollect");
         runOnUiThread(() -> ToastHelper.showShort("设备停止采集数据"));
         mDeviceManager.setDeviceStart(false);
         if (mDeviceManager.getSaveDataState()) {
