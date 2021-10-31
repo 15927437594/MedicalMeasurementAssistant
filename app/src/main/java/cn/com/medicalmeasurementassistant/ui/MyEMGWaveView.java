@@ -30,7 +30,7 @@ public class MyEMGWaveView extends View {
     private int mOscillographWidth;
     // 示波器高度
     private int mOscillographHeight;
-    private final static int mOffsetX = 50;
+    private static int mOffsetX = 60;
     private final static int mOffsetY = 60;
     /**
      * 常规绘制模式 不断往后推的方式
@@ -206,7 +206,7 @@ public class MyEMGWaveView extends View {
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
-        mTextPaint.setTextSize(SizeUtils.dp2px(12));
+        mTextPaint.setTextSize(SizeUtils.dp2px(10));
 
         mScalePaint = new Paint();
         mScalePaint.setAntiAlias(true);
@@ -272,11 +272,20 @@ public class MyEMGWaveView extends View {
 
     private void initLineNum() {
         clearChannelData();
+
+        String yDesc;
+        if (MAX_VALUE % 2 == 0) {
+            yDesc = String.valueOf(-MAX_VALUE);
+        } else {
+            yDesc = -MAX_VALUE * 1.0f + "";
+        }
+        mScalePaint.getTextBounds(yDesc, 0, yDesc.length(), mScaleTextRect);
+        mOffsetX = mScaleTextRect.width()+2;
         /**
          *  设置线条长度
          */
         gridVerticalNum = mShowTimeLength;
-        wave_line_width = 1020 / mShowTimeLength / ROW;
+        wave_line_width = (1080 - mOffsetX) / mShowTimeLength / ROW;
         totalRow = gridVerticalNum * ROW;
 
 
@@ -356,8 +365,8 @@ public class MyEMGWaveView extends View {
 
         canvas.drawLine(mOffsetX, mOffsetY,
                 mOffsetX, bottom, mLinePaint);
-        canvas.drawLine(mOffsetX + gridVerticalNum * ROW * wave_line_width,
-                mOffsetY, mOffsetX + gridVerticalNum * ROW * wave_line_width, bottom, mLinePaint);
+        int i1 = mOffsetX + gridVerticalNum * ROW * wave_line_width;
+        canvas.drawLine(i1, mOffsetY, i1, bottom, mLinePaint);
         /** 绘制竖线*/
         for (int i = 0; i < gridVerticalNum; i++) {
             if (i == gridVerticalNum - 1 && offsetIndex == 0) {
@@ -367,7 +376,7 @@ public class MyEMGWaveView extends View {
             int offset = offsetIndex > 0 ? (offsetIndex % ROW * wave_line_width) : 0;
             startX = (i + 1) * mVerticalLineScale - offset;
             canvas.drawLine(startX + mOffsetX, mOffsetY,
-                    startX + mOffsetY, bottom, mLinePaint);
+                    startX + mOffsetX, bottom, mLinePaint);
         }
     }
 
@@ -393,6 +402,7 @@ public class MyEMGWaveView extends View {
         }
 
         int index = 0;
+
         for (int i = 0, l = mChannelStatus.length; i < l; i++) {
             boolean status = this.mChannelStatus[i];
             if (status) {
@@ -400,20 +410,27 @@ public class MyEMGWaveView extends View {
                 String desc = (i + 1) + "";
 
                 mTextPaint.getTextBounds(desc, 0, desc.length(), mTextRect);
-                int height = mTextRect.height() / 2 + mOffsetX + (2 * index + 1) * mHorizontalLineScale;
+                int height = mTextRect.height() / 2 + mOffsetY + (2 * index + 1) * mHorizontalLineScale;
                 int left = (mOffsetX - mTextRect.height()) / 2;
                 canvas.drawText(desc, left, height, mTextPaint);
                 // 绘制区间标志
-                mLinePaint.setTextSize(SizeUtils.dp2px(10));
-                String maxValue = String.valueOf(MAX_VALUE);
-                String minValue = String.valueOf(-MAX_VALUE);
-                mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
-                int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
-                int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
+
+                String maxValue, minValue;
+                if (MAX_VALUE % 2 == 0) {
+                    maxValue = MAX_VALUE + "";
+                    minValue = -MAX_VALUE + "";
+                } else {
+                    maxValue = MAX_VALUE * 1.0f + "";
+                    minValue = -MAX_VALUE * 1.0f + "";
+                }
+                mScalePaint.getTextBounds(maxValue, 0, maxValue.length(), mScaleTextRect);
+                int scaleOneLeft = (mOffsetX - mScaleTextRect.width())/2;
+                int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mScaleTextRect.height() + 2;
                 canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mScalePaint);
 
-                mLinePaint.getTextBounds(minValue, 0, minValue.length(), mTextRect);
-                int scaleTwoLeft = mOffsetX - mTextRect.width() - 8;
+                mScalePaint.getTextBounds(minValue, 0, minValue.length(), mScaleTextRect);
+//                int scaleTwoLeft = mOffsetX - mScaleTextRect.width();
+                int scaleTwoLeft = (mOffsetX - mScaleTextRect.width())/2;
                 int scaleTwoTop = mOffsetY + (index + 1) * 2 * mHorizontalLineScale - 3;
                 canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mScalePaint);
                 index++;

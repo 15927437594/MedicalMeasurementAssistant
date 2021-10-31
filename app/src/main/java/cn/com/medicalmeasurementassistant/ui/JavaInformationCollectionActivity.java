@@ -1,6 +1,7 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
@@ -61,6 +63,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mTvSaveTime;
     private Handler mHandler;
     private int mSaveTime = 0;
+    private CountDownTimer countDownTimer;
 
     @Override
     public int getLayoutId() {
@@ -193,6 +196,28 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
+//                if(countDownTimer != null){
+//                    countDownTimer.cancel();
+//                    countDownTimer = null;
+//                    return;
+//                }
+//                Random random = new Random();
+//                countDownTimer = new CountDownTimer(10_000, 50){
+//                    @Override
+//                    public void onTick(long l) {
+//                        mEmgWaveView.addData(0,random.nextFloat());
+//                        mEmgWaveView.updateWaveLine();
+////                        replyVoltage(1,);
+//
+//                    }
+//
+//                    @Override
+//                    public void onFinish() {
+//
+//                    }
+//                };
+//                countDownTimer.start();
+
                 if (!mDeviceManager.isDeviceOpen()) {
                     ToastHelper.showShort("请打开设备");
                     return;
