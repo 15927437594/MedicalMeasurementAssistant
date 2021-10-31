@@ -87,6 +87,9 @@ public class DeviceManager {
                 doubles.clear();
             }
         }
+
+        mOriginalData.clear();
+        mFilterData.clear();
     }
 
     private DeviceManager() {
@@ -342,7 +345,7 @@ public class DeviceManager {
         LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
 
         for (int i = 0; i < data.size() - 24; i += 24) {
-            for (int j = 0; j < 8; j++) {
+            for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
                 double channelPoint = calculateVoltage(data.get(j * 3 + i), data.get(j * 3 + i + 1), data.get(j * 3 + i + 2));
                 if (getSaveDataState()) {
                     mOriginalData.add(channelPoint);
@@ -363,9 +366,12 @@ public class DeviceManager {
                     if (filteredData != null) {
                         LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
                         LogUtils.d("filteredData=" + filteredData.size());
+                        if (getSaveDataState()) {
+                            mFilterData.addAll(filteredData);
+                        }
                         Long updateTime = mUpdateTimeMap.get(i);
                         if (updateTime != null) {
-                            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
                                 mUpdateTimeMap.put(i, System.currentTimeMillis());
                                 if (mDeviceInfoListener != null) {
                                     mDeviceInfoListener.replyVoltage(i, filteredData);
@@ -383,9 +389,12 @@ public class DeviceManager {
                     List<Double> filteredData = getNotchFilteredData(i, channelData);
                     LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
                     LogUtils.d("filteredData=" + filteredData.size());
+                    if (getSaveDataState()){
+                        mFilterData.addAll(filteredData);
+                    }
                     Long updateTime = mUpdateTimeMap.get(i);
                     if (updateTime != null) {
-                        if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                        if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
                             mUpdateTimeMap.put(i, System.currentTimeMillis());
                             if (mDeviceInfoListener != null) {
                                 mDeviceInfoListener.replyVoltage(i, filteredData);
@@ -402,15 +411,18 @@ public class DeviceManager {
                     List<Double> highPassFilteredData = getHighPassFilteredData(i, channelData);
                     if (highPassFilteredData != null) {
                         LogUtils.d(String.format("filteredData i=%s, highPassFilteredData=%s", i, highPassFilteredData));
-                        List<Double> notchFilteredData = getNotchFilteredData(i, highPassFilteredData);
-                        LogUtils.d(String.format("filteredData i=%s, notchFilteredData=%s", i, notchFilteredData));
-                        LogUtils.d("filteredData=" + notchFilteredData.size());
+                        List<Double> filteredData = getNotchFilteredData(i, highPassFilteredData);
+                        LogUtils.d(String.format("filteredData i=%s, notchFilteredData=%s", i, filteredData));
+                        LogUtils.d("filteredData=" + filteredData.size());
+                        if (getSaveDataState()){
+                            mFilterData.addAll(filteredData);
+                        }
                         Long updateTime = mUpdateTimeMap.get(i);
                         if (updateTime != null) {
-                            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
                                 mUpdateTimeMap.put(i, System.currentTimeMillis());
                                 if (mDeviceInfoListener != null) {
-                                    mDeviceInfoListener.replyVoltage(i, notchFilteredData);
+                                    mDeviceInfoListener.replyVoltage(i, filteredData);
                                 }
                             }
                         }
@@ -423,7 +435,7 @@ public class DeviceManager {
                 List<Double> channelData = mChannelDataMap.get(i);
                 Long updateTime = mUpdateTimeMap.get(i);
                 if (updateTime != null && channelData != null) {
-                    if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+                    if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
                         mUpdateTimeMap.put(i, System.currentTimeMillis());
                         if (mDeviceInfoListener != null) {
                             mDeviceInfoListener.replyVoltage(i, channelData);
@@ -442,8 +454,8 @@ public class DeviceManager {
             capacitance = 0;
         }
         Long updateTime = mUpdateTimeMap.get(Constant.DEFAULT_CHANNEL);
-        if (updateTime != null){
-            if (System.currentTimeMillis() - updateTime > UPDATE_INTERVAL) {
+        if (updateTime != null) {
+            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
                 mUpdateTimeMap.put(Constant.DEFAULT_CHANNEL, System.currentTimeMillis());
                 mCurrentCapacitance = capacitance;
                 if (getCalibrateState()) {
@@ -480,31 +492,6 @@ public class DeviceManager {
         long combine = CalculateUtils.threeLongCombine(first, second, third);
         long l = -(0xFFFFFF - combine + 1);
         return (float) (l * 400) / 0x7FFFFF;
-    }
-
-
-    public void analysisSampledData2(List<Integer> data) {
-        Map<Integer, List<Double>> map = new HashMap<>();
-        ArrayList<Double> objects = new ArrayList<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            map.put(i, objects);
-        }
-        for (int i = 0; i < data.size() - 24; i += 24) {
-            for (int m = 0; m < 8; m++) {
-                double pointChannel = calculateVoltage(data.get(m * 3 + i), data.get(m * 3 + i + 1), data.get(m * 3 + i + 2));
-                if (getSaveDataState()) {
-                    mOriginalData.add(pointChannel);
-                    mFilterData.add(pointChannel);
-                }
-                List<Double> doubles = map.get(i);
-                if (doubles != null) {
-                    doubles.add(pointChannel);
-                }
-            }
-        }
-
-        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
-        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
     }
 
     public boolean getSaveDataState() {
@@ -564,7 +551,6 @@ public class DeviceManager {
     }
 
     public double convertCapacitanceToAngle(double capacitance) {
-        LogUtils.d("capacitance=" + capacitance);
         return (angle1 - angle2) / (p1 - p2) * capacitance + angle1 - p1 * (angle1 - angle2) / (p1 - p2);
     }
 
