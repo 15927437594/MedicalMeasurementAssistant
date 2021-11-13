@@ -9,6 +9,7 @@ import android.widget.EditText
 import android.widget.TextView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.Constant
+import cn.com.medicalmeasurementassistant.manager.DeviceManager
 import cn.com.medicalmeasurementassistant.utils.ToastHelper
 
 
@@ -21,7 +22,7 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
     when (settingType) {
         Constant.SETTING_TYPE_TIME_LENGTH -> {
             tvTitle.text = "显示时长/s"
-            etContent.hint = "输入范围(2~4)"
+            etContent.hint = "输入范围(1~5)"
         }
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
             tvTitle.text = "EMG刻度范围/mV"
@@ -29,11 +30,16 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
             etContent.maxEms = 3
         }
         Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-            tvTitle.text = "电容刻度范围/pF"
-            etContent.hint = "输入范围（1~100）"
-            etContent.maxEms = 3
+            if (DeviceManager.getInstance().calibrateState) {
+                tvTitle.text = "角度刻度范围/度"
+                etContent.hint = "输入范围（-19~160）"
+                etContent.maxEms = 3
+            } else {
+                tvTitle.text = "电容刻度范围/pF"
+                etContent.hint = "输入范围（1~200）"
+                etContent.maxEms = 3
+            }
         }
-
     }
 
     etContent.addTextChangedListener(object : TextWatcher {
@@ -86,8 +92,8 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
 
         when (settingType) {
             Constant.SETTING_TYPE_TIME_LENGTH -> {
-                if (settingValue < 2 || settingValue > 4) {
-                    ToastHelper.showShort("输入范围（2~4）")
+                if (settingValue < 2 || settingValue > 5) {
+                    ToastHelper.showShort("输入范围（2~5）")
                     return@setOnClickListener
                 }
             }
@@ -98,12 +104,18 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
                 }
             }
             Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                if (settingValue < 1 || settingValue > 100) {
-                    ToastHelper.showShort("输入范围（1~100）")
-                    return@setOnClickListener
+                if (DeviceManager.getInstance().calibrateState) {
+                    if (settingValue < -19 || settingValue > 160) {
+                        ToastHelper.showShort("输入范围（-19~160）")
+                        return@setOnClickListener
+                    }
+                } else {
+                    if (settingValue < 1 || settingValue > 200) {
+                        ToastHelper.showShort("输入范围（1~200）")
+                        return@setOnClickListener
+                    }
                 }
             }
-
         }
         dialog.dismiss()
         listen.settingComplete(toString.toInt())
