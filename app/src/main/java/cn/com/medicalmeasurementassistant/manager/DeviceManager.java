@@ -57,6 +57,7 @@ public class DeviceManager {
     private final Map<Integer, List<Double>> mChannelDataMap;
     private static final long UPDATE_INTERVAL = 200L;
     private final Map<Integer, Long> mUpdateTimeMap;
+    private int mSaveTime = 0;
 
     public void resetParams() {
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
@@ -656,5 +657,13 @@ public class DeviceManager {
 
     public void setCalibrateState(boolean mCalibrateState) {
         this.mCalibrateState = mCalibrateState;
+    }
+
+    public int getSaveTIme() {
+        return this.mSaveTime;
+    }
+
+    public void setSaveTime(int value) {
+        this.mSaveTime = value;
     }
 }

@@ -40,7 +40,7 @@ public class MyCapWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private final int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -59,7 +59,7 @@ public class MyCapWaveView extends View {
      */
     private Path mPath;
 
-    private int mShowTimeLength = 4;
+    private int mShowTimeLength = 5;
 
     /**
      * 保存已绘制的数据坐标

@@ -134,6 +134,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         setClick(R.id.srl_left_top);
         setClick(R.id.srl_left_bottom);
         setClick(R.id.srl_right_top);
+        setClick(R.id.srl_right_bottom);
 
         mConnectionSwitch.setOnCheckedChangeListener((compoundButton, isConnection) -> {
             LogUtils.i("isConnection=" + isConnection);
@@ -276,6 +277,16 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     mTvSettingEMGScaleRange.setText(String.valueOf(settingValue));
                     double maxValue = (double) settingValue / 2;
                     mEmgWaveView.setMaxValue(maxValue);
+                });
+                break;
+            case R.id.srl_right_bottom:
+                if (mCollectionStatus) {
+                    ToastHelper.showShort("请先停止数据采集");
+                    return;
+                }
+                ScaleSettingDialogKt.showTimeScaleDialog(getActivity(), Constant.SETTING_TYPE_RECORD_CAPTURE_TIME, (settingValue) -> {
+                    DeviceManager.getInstance().setSaveTime(settingValue);
+                    mTvSaveTime.setText(String.valueOf(settingValue));
                 });
                 break;
             default:
