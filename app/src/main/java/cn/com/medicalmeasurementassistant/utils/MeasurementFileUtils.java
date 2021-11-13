@@ -7,9 +7,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 
+import cn.com.medicalmeasurementassistant.entity.Constant;
+
 public class MeasurementFileUtils {
 
-    public synchronized static void saveMeasurementFile(String fileName, List<Double> originalData, List<Double> filterData) {
+    public synchronized static void saveMeasurementFile(String fileName, List<String> originalData, List<String> filterData) {
         String originalFileName = fileName + "-original.csv";
         String filterFileName = fileName + "-filter.csv";
         // 保存内容到文件
@@ -19,12 +21,21 @@ public class MeasurementFileUtils {
         LogUtils.i("filterDataSize=" + filterData.size());
         File originalFile = new File(storePath, originalFileName);
         File filterFile = new File(storePath, filterFileName);
-        saveMeasurementFileForFile(originalFile, originalData);
-        saveMeasurementFileForFile(filterFile, filterData);
-    }
-
-    public synchronized static void saveMeasurementFileForFile(File file, List<Double> data) {
-        FileIOUtils.writeFileFromString(file, data.toString());
+        String saveTime = "Saving DateTime: " + CalculateUtils.getTime() + "\n";
+        String sampleFrequency = "Sampling frequency: 2000" + "\n";
+        String channels = "Number of channels: " + Constant.DEFAULT_CHANNEL + "\n";
+        String originDataNumber = "Number of data: " + originalData.size() + "\n";
+        String filterDataNumber = "Number of data: " + originalData.size() + "\n";
+        String unit = "Unit: mV" + "\n";
+        String title = "CH1,CH2,CH3,CH4,CH5,CH6,CH7,CH8,Capacitor/pF\n";
+        String originContent = originalData.toString().replace("[", "").replace("]", "").replace(" ", "")
+                .replace("\n,", "\n");
+        String filterContent = filterData.toString().replace("[", "").replace("]", "").replace(" ", "")
+                .replace("\n,", "\n");
+        String originContentWrite = saveTime + sampleFrequency + channels + originDataNumber + unit + title + originContent;
+        String filterContentWrite = saveTime + sampleFrequency + channels + filterDataNumber + unit + title + filterContent;
+        FileIOUtils.writeFileFromString(originalFile, originContentWrite);
+        FileIOUtils.writeFileFromString(filterFile, filterContentWrite);
     }
 
     /**

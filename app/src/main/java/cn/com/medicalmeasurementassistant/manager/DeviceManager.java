@@ -28,8 +28,8 @@ public class DeviceManager {
     private boolean mSaveDataState = false;
     private boolean mHighPassFilterState = true;
     private boolean mNotchFilterState = false;
-    private List<Double> mOriginalData;
-    private List<Double> mFilterData;
+    private List<String> mOriginalData;
+    private List<String> mFilterData;
     private final double highPassFilterA0 = 1.0;
     private static final double highPassFilterA1 = -2.937170728449890;
     private static final double highPassFilterA2 = 2.876299723479331;
@@ -343,55 +343,36 @@ public class DeviceManager {
         }
 
         LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
-
-        for (int i = 0; i < data.size() - 24; i += 24) {
+        // defaultChannelSize: 默认8个通道数据所占用字节的长度
+        int defaultChannelsSize = 3 * Constant.DEFAULT_CHANNEL;
+        for (int i = 0; i < data.size() - defaultChannelsSize; i += defaultChannelsSize) {
             for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
                 double channelPoint = calculateVoltage(data.get(j * 3 + i), data.get(j * 3 + i + 1), data.get(j * 3 + i + 2));
                 if (getSaveDataState()) {
-                    mOriginalData.add(channelPoint);
+                    mOriginalData.add(String.valueOf(channelPoint));
                 }
                 List<Double> channelData = mChannelDataMap.get(j);
                 if (channelData != null) {
                     channelData.add(channelPoint);
                 }
             }
+            if (getSaveDataState()) {
+                // 最后一帧数据不换行
+                if (i != defaultChannelsSize * (data.size() / defaultChannelsSize - 1)) {
+                    mOriginalData.add("\n");
+                }
+            }
         }
 
         if (getHighPassFilterState() && !getNotchFilterState()) {
+            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
             // 高通滤波开启
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
                 List<Double> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
                     List<Double> filteredData = getHighPassFilteredData(i, channelData);
-                    if (filteredData != null) {
-                        LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
-                        LogUtils.d("filteredData=" + filteredData.size());
-                        if (getSaveDataState()) {
-                            mFilterData.addAll(filteredData);
-                        }
-                        Long updateTime = mUpdateTimeMap.get(i);
-                        if (updateTime != null) {
-                            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
-                                mUpdateTimeMap.put(i, System.currentTimeMillis());
-                                if (mDeviceInfoListener != null) {
-                                    mDeviceInfoListener.replyVoltage(i, filteredData);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if (getNotchFilterState() && !getHighPassFilterState()) {
-            // 工频陷波开启
-            for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = mChannelDataMap.get(i);
-                if (channelData != null) {
-                    List<Double> filteredData = getNotchFilteredData(i, channelData);
-                    LogUtils.d(String.format("filteredData i=%s, filteredData=%s", i, filteredData));
-                    LogUtils.d("filteredData=" + filteredData.size());
-                    if (getSaveDataState()){
-                        mFilterData.addAll(filteredData);
-                    }
+                    filteredDataMap.put(i, filteredData);
+
                     Long updateTime = mUpdateTimeMap.get(i);
                     if (updateTime != null) {
                         if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
@@ -403,20 +384,71 @@ public class DeviceManager {
                     }
                 }
             }
+
+            if (getSaveDataState()) {
+                // 一帧数据包含8个通道数据的个数
+                int channelsCount = data.size() / defaultChannelsSize;
+                for (int i = 0; i < channelsCount; i++) {
+                    for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
+                        List<Double> doubles = filteredDataMap.get(j);
+                        if (doubles != null) {
+                            mFilterData.add(String.valueOf(doubles.get(i)));
+                        }
+                    }
+                    // 最后一帧数据不换行
+                    if (i != channelsCount - 1) {
+                        mFilterData.add("\n");
+                    }
+                }
+            }
+        } else if (getNotchFilterState() && !getHighPassFilterState()) {
+            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
+            // 工频陷波开启
+            for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+                List<Double> channelData = mChannelDataMap.get(i);
+                if (channelData != null) {
+                    List<Double> filteredData = getNotchFilteredData(i, channelData);
+                    filteredDataMap.put(i, filteredData);
+
+                    Long updateTime = mUpdateTimeMap.get(i);
+                    if (updateTime != null) {
+                        if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+                            mUpdateTimeMap.put(i, System.currentTimeMillis());
+                            if (mDeviceInfoListener != null) {
+                                mDeviceInfoListener.replyVoltage(i, filteredData);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (getSaveDataState()) {
+                // 一帧数据包含8个通道数据的个数
+                int channelsCount = data.size() / defaultChannelsSize;
+                for (int i = 0; i < channelsCount; i++) {
+                    for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
+                        List<Double> doubles = filteredDataMap.get(j);
+                        if (doubles != null) {
+                            mFilterData.add(String.valueOf(doubles.get(i)));
+                        }
+                    }
+                    // 最后一帧数据不换行
+                    if (i != channelsCount - 1) {
+                        mFilterData.add("\n");
+                    }
+                }
+            }
         } else if (getHighPassFilterState() && getNotchFilterState()) {
+            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
             // 高通滤波和工频陷波同时开启,先计算高通滤波,再讲高通滤波过滤后的数据用来做工频陷波
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
                 List<Double> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
                     List<Double> highPassFilteredData = getHighPassFilteredData(i, channelData);
                     if (highPassFilteredData != null) {
-                        LogUtils.d(String.format("filteredData i=%s, highPassFilteredData=%s", i, highPassFilteredData));
                         List<Double> filteredData = getNotchFilteredData(i, highPassFilteredData);
-                        LogUtils.d(String.format("filteredData i=%s, notchFilteredData=%s", i, filteredData));
-                        LogUtils.d("filteredData=" + filteredData.size());
-                        if (getSaveDataState()){
-                            mFilterData.addAll(filteredData);
-                        }
+                        filteredDataMap.put(i, filteredData);
+
                         Long updateTime = mUpdateTimeMap.get(i);
                         if (updateTime != null) {
                             if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
@@ -426,6 +458,23 @@ public class DeviceManager {
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+            if (getSaveDataState()) {
+                // 一帧数据包含8个通道数据的个数
+                int channelsCount = data.size() / defaultChannelsSize;
+                for (int i = 0; i < channelsCount; i++) {
+                    for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
+                        List<Double> doubles = filteredDataMap.get(j);
+                        if (doubles != null) {
+                            mFilterData.add(String.valueOf(doubles.get(i)));
+                        }
+                    }
+                    // 最后一帧数据不换行
+                    if (i != channelsCount - 1) {
+                        mFilterData.add("\n");
                     }
                 }
             }
@@ -452,6 +501,12 @@ public class DeviceManager {
         double capacitance = CalculateUtils.getFloat(data, 0) - Constant.DEFAULT_CAPACITANCE;
         if (capacitance < 0) {
             capacitance = 0;
+        }
+        if (getSaveDataState()) {
+            mOriginalData.add(String.valueOf(capacitance));
+            mOriginalData.add("\n");
+            mFilterData.add(String.valueOf(capacitance));
+            mFilterData.add("\n");
         }
         Long updateTime = mUpdateTimeMap.get(Constant.DEFAULT_CHANNEL);
         if (updateTime != null) {
@@ -502,19 +557,19 @@ public class DeviceManager {
         this.mSaveDataState = save;
     }
 
-    public List<Double> getOriginalData() {
+    public List<String> getOriginalData() {
         return this.mOriginalData;
     }
 
-    public void setOriginData(List<Double> data) {
+    public void setOriginData(List<String> data) {
         this.mOriginalData = data;
     }
 
-    public List<Double> getFilterData() {
+    public List<String> getFilterData() {
         return this.mFilterData;
     }
 
-    public void setFilterData(List<Double> data) {
+    public void setFilterData(List<String> data) {
         this.mFilterData = data;
     }
 
