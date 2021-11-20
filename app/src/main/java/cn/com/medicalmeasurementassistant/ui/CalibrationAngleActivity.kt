@@ -5,6 +5,7 @@ import android.os.Looper
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.res.ResourcesCompat
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
 import cn.com.medicalmeasurementassistant.manager.DeviceManager
@@ -73,7 +74,8 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
 
             etRealAngle.text = getString(R.string.text_value_ninety)
             tvStepTip.text = getString(R.string.text_step_two)
-            ivCalibrate.background = resources.getDrawable(R.mipmap.icon_angle_90, null)
+            ivCalibrate.background =
+                ResourcesCompat.getDrawable(resources, R.mipmap.icon_angle_90, null)
             tvCalibrateNext.text = getString(R.string.text_complete)
             stepOneExecuted = true
         } else {
@@ -83,7 +85,7 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
             DeviceManager.getInstance().angle2 = angle
             DeviceManager.getInstance().p2 = capacitance
 
-            if (abs(DeviceManager.getInstance().p2 - DeviceManager.getInstance().p1) < 10) {
+            if (abs(DeviceManager.getInstance().p2 - DeviceManager.getInstance().p1) < 0.1) {
                 DeviceManager.getInstance().calibrateState = false
                 DeviceManager.getInstance().calibrateFail()
                 ToastHelper.showShort("两次测得的电容值过于接近, 校准失败")

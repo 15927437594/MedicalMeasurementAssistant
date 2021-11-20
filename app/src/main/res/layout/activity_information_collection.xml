@@ -254,7 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tv_show_time_length_tip"
                     android:layout_marginTop="15dp"
-                    android:text="4"
+                    android:text="5"
                     android:textColor="@color/theme_color"
                     android:textSize="20sp"
                     android:textStyle="bold" />

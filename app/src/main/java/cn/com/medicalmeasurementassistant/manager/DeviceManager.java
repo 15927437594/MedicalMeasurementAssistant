@@ -1,7 +1,5 @@
 package cn.com.medicalmeasurementassistant.manager;
 
-import android.os.Handler;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,13 +55,9 @@ public class DeviceManager {
     private double mCurrentCapacitance = 0;
     private boolean mCalibrateState = false;
     private final Map<Integer, List<Double>> mChannelDataMap;
-    private Handler mHandler;
     private static final long UPDATE_INTERVAL = 200L;
     private final Map<Integer, Long> mUpdateTimeMap;
-
-    public void setHandler(Handler handler) {
-        this.mHandler = handler;
-    }
+    private int mSaveTime = 0;
 
     public void resetParams() {
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
@@ -498,7 +492,8 @@ public class DeviceManager {
     }
 
     public void replyCapacitanceData(byte[] data) {
-        double capacitance = CalculateUtils.getFloat(data, 0) - Constant.DEFAULT_CAPACITANCE;
+        double capacitance = (double) (Math.round((CalculateUtils.getFloat(data, 0) - Constant.DEFAULT_CAPACITANCE) * 100)) / 100;
+        LogUtils.d("replyCapacitanceData capacitance=" + capacitance);
         if (capacitance < 0) {
             capacitance = 0;
         }
@@ -662,5 +657,13 @@ public class DeviceManager {
 
     public void setCalibrateState(boolean mCalibrateState) {
         this.mCalibrateState = mCalibrateState;
+    }
+
+    public int getSaveTime() {
+        return this.mSaveTime;
+    }
+
+    public void setSaveTime(int value) {
+        this.mSaveTime = value;
     }
 }

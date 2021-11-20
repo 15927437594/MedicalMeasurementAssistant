@@ -32,5 +32,6 @@ public class Constant {
     public static final int SETTING_TYPE_TIME_LENGTH = 1;
     public static final int SETTING_TYPE_EMG_SCALE_RANGE = 2;
     public static final int SETTING_TYPE_CAP_SCALE_RANGE = 3;
-    public static final double DEFAULT_CAPACITANCE = 69.7;
+    public static final int SETTING_TYPE_RECORD_CAPTURE_TIME = 4;
+    public static final double DEFAULT_CAPACITANCE = 34.4;
 }

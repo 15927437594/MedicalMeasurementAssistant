@@ -5,7 +5,6 @@ import android.content.Intent;
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity;
 import cn.com.medicalmeasurementassistant.ui.FileSelectorActivity;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
-import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.PermissionHelper;
 
 public class MainActivity extends BaseKotlinActivity {

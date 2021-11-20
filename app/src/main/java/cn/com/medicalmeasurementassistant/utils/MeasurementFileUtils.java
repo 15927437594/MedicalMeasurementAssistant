@@ -12,8 +12,8 @@ import cn.com.medicalmeasurementassistant.entity.Constant;
 public class MeasurementFileUtils {
 
     public synchronized static void saveMeasurementFile(String fileName, List<String> originalData, List<String> filterData) {
-        String originalFileName = fileName + "-original.csv";
-        String filterFileName = fileName + "-filter.csv";
+        String originalFileName = fileName + "-RawData.csv";
+        String filterFileName = fileName + "-FilteredData.csv";
         // 保存内容到文件
         String storePath = PathUtils.getMeasurementDataPath();
         LogUtils.i("storePath=" + storePath);

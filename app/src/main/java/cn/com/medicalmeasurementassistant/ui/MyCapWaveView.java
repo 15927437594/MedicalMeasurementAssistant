@@ -40,7 +40,7 @@ public class MyCapWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private final int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -59,7 +59,7 @@ public class MyCapWaveView extends View {
      */
     private Path mPath;
 
-    private int mShowTimeLength = 4;
+    private int mShowTimeLength = 5;
 
     /**
      * 保存已绘制的数据坐标
@@ -67,7 +67,12 @@ public class MyCapWaveView extends View {
     private final LinkedList<Double> dataArray = new LinkedList<>();
 
     /**
-     * 数据最大值，默认-1~1之间
+     * 数据最小值
+     */
+    private int MIN_VALUE = 0;
+
+    /**
+     * 数据最大值
      */
     private int MAX_VALUE = 60;
 
@@ -228,7 +233,6 @@ public class MyCapWaveView extends View {
 
     }
 
-
     private final Rect mTextRect = new Rect();
     private final Rect mScaleTextRect = new Rect();
 
@@ -314,12 +318,12 @@ public class MyCapWaveView extends View {
             if (i == 0) {
                 yScaleDesc = MAX_VALUE + "";
             } else if (i == mHorizontalLineNum) {
-                yScaleDesc = "0";
+                yScaleDesc = MIN_VALUE + "";
             } else {
                 if (isZero) {
-                    yScaleDesc = MAX_VALUE / 2 + "";
+                    yScaleDesc = (MAX_VALUE + MIN_VALUE) / 2 + "";
                 } else {
-                    yScaleDesc = MAX_VALUE * 1.0f / 2 + "";
+                    yScaleDesc = (MAX_VALUE + MIN_VALUE) * 1.0f / 2 + "";
                 }
             }
             mTextPaint.getTextBounds(yScaleDesc, 0, yScaleDesc.length(), mTextRect);
@@ -497,6 +501,13 @@ public class MyCapWaveView extends View {
                 dataArray.addLast(data);
                 break;
         }
+    }
+
+    public void setMinValue(int value) {
+        this.MIN_VALUE = value;
+        clearChannelData();
+        initLineNum();
+        updateWaveLine();
     }
 
     public void setMaxValue(int value) {

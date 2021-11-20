@@ -45,7 +45,7 @@ public class MyEMGWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private final int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -68,7 +68,7 @@ public class MyEMGWaveView extends View {
      */
     private Path mPath;
 
-    private int mShowTimeLength = 4;
+    private int mShowTimeLength = 5;
 
     /**
      * 保存已绘制的数据坐标
@@ -206,7 +206,7 @@ public class MyEMGWaveView extends View {
         mTextPaint = new Paint();
         mTextPaint.setAntiAlias(true);
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
-        mTextPaint.setTextSize(SizeUtils.dp2px(10));
+        mTextPaint.setTextSize(SizeUtils.dp2px(12));
 
         mScalePaint = new Paint();
         mScalePaint.setAntiAlias(true);
