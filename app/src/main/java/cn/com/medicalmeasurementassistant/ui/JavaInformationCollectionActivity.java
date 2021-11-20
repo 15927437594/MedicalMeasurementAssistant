@@ -108,18 +108,26 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         @Override
         public void run() {
             mSaveTime += 1;
-            runOnUiThread(() -> mTvSaveTime.setText(String.valueOf(mSaveTime)));
+            LogUtils.i("mSaveTime=" + mSaveTime);
             mHandler.postDelayed(this, 1000L);
+            if (mSaveTime == mDeviceManager.getSaveTime()) {
+                mDeviceManager.setSaveDataState(false);
+                mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
+            }
         }
     };
 
-//    private void startSaveTime() {
-//        stopSaveTime();
-//        mHandler.postDelayed(mUpdateSaveTimeRunnable, 1000L);
-//    }
-
-    private void stopSaveTime() {
-        mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
+    /**
+     * 开启保存采样数据按钮
+     * case1: 当采样时间大于0的时候, 超过设置的采样时间之后的数据不记录
+     * case2: 当采样时间等于0的时候, 一直记录采样数据
+     */
+    private void startRecordSampleData() {
+        if (mDeviceManager.getSaveDataState() && mDeviceManager.getSaveTime() > 0) {
+            mSaveTime = 0;
+            mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
+            mHandler.postDelayed(mUpdateSaveTimeRunnable, 1000L);
+        }
     }
 
     @Override
@@ -194,10 +202,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 break;
             case R.id.stv_collect_angle:
                 // 角度校准
-//                if (!mDeviceManager.isDeviceStart()) {
-//                    ToastHelper.showShort("请启动设备采集");
-//                    return;
-//                }
+                if (!mDeviceManager.isDeviceStart()) {
+                    ToastHelper.showShort("请启动设备采集");
+                    return;
+                }
                 BaseKotlinActivity.Companion.launcherActivity(this, CalibrationAngleActivity.class);
                 break;
             case R.id.iv_collect_operate:
@@ -228,22 +236,19 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
                 if (!mCollectionStatus) {
                     // 启动
-                    // 此处需要开始计时
                     ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
                     mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
+                    mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
+                    startRecordSampleData();
                 } else {
                     // 停止
-                    // 此处需要停止计时
                     ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
                     DeviceManager.getInstance().setCurrentCapacitance(0);
                     mCollectionIv.setImageResource(R.drawable.icon_collect_start);
                     mCollectionTv.setText(getString(R.string.text_collect_start));
                     mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
                     mSaveDataSwitch.setEnabled(true);
-//                    if (mDeviceManager.getSaveDataState()) {
-//                        stopSaveTime();
-//                    }
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
@@ -294,6 +299,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
     }
 
+    /**
+     * 设备回复TCP握手信号
+     */
     @Override
     public void replyHandshake(List<Integer> data) {
         mDeviceManager.setDeviceOpen(true);
@@ -301,21 +309,23 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         runOnUiThread(() -> ToastHelper.showShort("设备打开成功"));
     }
 
+    /**
+     * 设备回复开始采集数据
+     */
     @Override
     public void replyStartDataCollect(List<Integer> data) {
         LogUtils.i("replyStartDataCollect");
         mDeviceManager.setDeviceStart(true);
         runOnUiThread(() -> ToastHelper.showShort("设备开始采集数据"));
-//        mSaveTime = 0;
-//        runOnUiThread(() -> mTvSaveTime.setText(String.valueOf(mSaveTime)));
-//        if (mDeviceManager.getSaveDataState()) {
-//            startSaveTime();
-//        }
         mSaveDataSwitch.setEnabled(false);
-//        mEmgWaveView.resetStartTime();
-//        mCapacitanceWaveView.resetStartTime();
     }
 
+    /**
+     * 设备回复电压值
+     *
+     * @param channel 电压通道 1~8
+     * @param data    电压数据
+     */
     @Override
     public void replyVoltage(int channel, List<Double> data) {
         LogUtils.d(String.format("channel=%s, point=%s", channel, data));
@@ -331,17 +341,22 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
     }
 
+    /**
+     * 设备回复停止采集数据
+     */
     @Override
     public void replyStopDataCollect(List<Integer> data) {
         LogUtils.i("replyStopDataCollect");
         runOnUiThread(() -> ToastHelper.showShort("设备停止采集数据"));
         mDeviceManager.setDeviceStart(false);
-        if (mDeviceManager.getSaveDataState()) {
-            stopSaveTime();
-        }
         mSaveDataSwitch.setEnabled(true);
     }
 
+    /**
+     * 设备回复电容值
+     *
+     * @param capacitance 电容值
+     */
     @Override
     public void replyCapacitance(double capacitance) {
         LogUtils.i("capacitance=" + capacitance);
@@ -349,6 +364,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.updateWaveLine();
     }
 
+    /**
+     * 设备回复角度值
+     *
+     * @param angle 角度值
+     */
     @Override
     public void replyAngle(double angle) {
         LogUtils.i("angle=" + angle);
@@ -356,6 +376,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.updateWaveLine();
     }
 
+    /**
+     * 设备回复停止
+     */
     @Override
     public void replyDeviceStopped() {
         LogUtils.i("replyDeviceStopped");

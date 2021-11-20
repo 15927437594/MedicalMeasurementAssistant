@@ -659,7 +659,7 @@ public class DeviceManager {
         this.mCalibrateState = mCalibrateState;
     }
 
-    public int getSaveTIme() {
+    public int getSaveTime() {
         return this.mSaveTime;
     }
 
