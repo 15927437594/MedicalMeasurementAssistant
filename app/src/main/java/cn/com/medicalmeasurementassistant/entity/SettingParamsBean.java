@@ -76,7 +76,7 @@ public class SettingParamsBean {
         // REF电极状态
         private boolean electrodeStatus;
         // 通道量程
-        private int angle = Constant.DEFAULT_ANGLE;
+        private int angle = Constant.DEFAULT_RANGE;
 
         public int getAngle() {
             return angle;
@@ -131,7 +131,7 @@ public class SettingParamsBean {
         //通道名称
         private String channelName;
         // 通道量程
-        private int channelAngle = Constant.DEFAULT_ANGLE;
+        private int channelAngle = Constant.DEFAULT_RANGE;
         // 电极状态  true 未脱落，false 脱落
         private boolean electrodeStatus = true;
         /**
