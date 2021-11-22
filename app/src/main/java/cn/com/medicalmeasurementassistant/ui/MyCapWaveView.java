@@ -84,7 +84,7 @@ public class MyCapWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 5;
+    private final static int ROW = 20;
     /**
      * 点的总数量
      */
@@ -331,35 +331,6 @@ public class MyCapWaveView extends View {
 
             canvas.drawText(yScaleDesc, left, mOffsetY + mHorizontalLineScale * i + (mTextRect.height() >> 1), mScalePaint);
         }
-
-
-//        int index = 0;
-//        for (int i = 0, l = mChannelStatus.length; i < l; i++) {
-//            boolean status = this.mChannelStatus[i];
-//            if (status) {
-//                // 绘制通道名称
-//                String desc = (i + 1) + "";
-//
-//                mTextPaint.getTextBounds(desc, 0, desc.length(), mTextRect);
-//                int height = mTextRect.height() / 2 + mOffsetX + (2 * index + 1) * mHorizontalLineScale;
-//                int left = (mOffsetX - mTextRect.height()) / 2;
-//                canvas.drawText(desc, left, height, mTextPaint);
-//                // 绘制区间标志
-//                mLinePaint.setTextSize(SizeUtils.dp2px(10));
-//                String maxValue = String.valueOf(MAX_VALUE);
-//                String minValue = String.valueOf(-MAX_VALUE);
-//                mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
-//                int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
-//                int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
-//                canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mLinePaint);
-//
-//                mLinePaint.getTextBounds(minValue, 0, minValue.length(), mTextRect);
-//                int scaleTwoLeft = mOffsetX - mTextRect.width() - 8;
-//                int scaleTwoTop = mOffsetY + (index + 1) * 2 * mHorizontalLineScale - 3;
-//                canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mLinePaint);
-//                index++;
-//            }
-//        }
 
         for (int i = 0; i < gridVerticalNum + 1; i++) {
             // 绘制横坐标刻度
