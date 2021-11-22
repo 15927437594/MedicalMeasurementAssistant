@@ -102,6 +102,24 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         LogUtils.d("capacitance=" + capacitance);
         double i = (double) (Math.round((28.12296541941 - Constant.DEFAULT_CAPACITANCE) * 100)) / 100;
         LogUtils.d("capacitance=" + i);
+
+        long combine = CalculateUtils.threeLongCombine(0x04, 0x89, 0x62);
+        LogUtils.i("combine=" + combine);
+        float voltage = (float) combine * 400 / 0x7FFFFF;
+        LogUtils.i("voltage=" + voltage);
+        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0xFF, 0xA3, 0x48));
+        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0x04, 0x89, 0x62));
+
+//        List<Double> readResult = new ArrayList<>();
+//        for (int a = 0; a < 40; a++) {
+//            double srcVoltage = 1 + 0.1 * Math.sin(a / 4.0);
+//            LogUtils.i("srcVoltage=" + srcVoltage);
+//            readResult.add(srcVoltage);
+//        }
+//        List<Double> highPassFilteredData = mDeviceManager.getHighPassFilteredData(0, readResult);
+//        LogUtils.i("highPassFilteredData=" + highPassFilteredData);
+//        List<Double> highPassFilteredData1 = mDeviceManager.getHighPassFilteredData(0, readResult);
+//        LogUtils.i("highPassFilteredData=" + highPassFilteredData1);
     }
 
     private final Runnable mUpdateSaveTimeRunnable = new Runnable() {
@@ -113,16 +131,25 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             if (mSaveTime == mDeviceManager.getSaveTime()) {
                 mDeviceManager.setSaveDataState(false);
                 mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
+                stopDeviceCollect();
+                saveSampleData();
             }
         }
     };
 
+    private void saveSampleData(){
+        InputFileNameDialogKt.showInputFileNameDialog(this,
+                fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getFilterData()));
+    }
+
     /**
      * 开启保存采样数据按钮
-     * case1: 当采样时间大于0的时候, 超过设置的采样时间之后的数据不记录
+     * case1: 当采样时间大于0的时候, 超过设置的采样时间之后停止采集数据并且记录采样数据
      * case2: 当采样时间等于0的时候, 一直记录采样数据
      */
     private void startRecordSampleData() {
+        mDeviceManager.getOriginalData().clear();
+        mDeviceManager.getFilterData().clear();
         if (mDeviceManager.getSaveDataState() && mDeviceManager.getSaveTime() > 0) {
             mSaveTime = 0;
             mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
@@ -189,8 +216,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     ToastHelper.showShort("请采集数据后再保存");
                     return;
                 }
-                InputFileNameDialogKt.showInputFileNameDialog(this,
-                        fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getFilterData()));
+                saveSampleData();
                 break;
             case R.id.stv_setting_params:
                 if (mCollectionStatus) {
@@ -236,19 +262,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 
                 if (!mCollectionStatus) {
                     // 启动
-                    ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
-                    mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
-                    mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
-                    startRecordSampleData();
+                    startDeviceCollect();
                 } else {
                     // 停止
-                    ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
-                    DeviceManager.getInstance().setCurrentCapacitance(0);
-                    mCollectionIv.setImageResource(R.drawable.icon_collect_start);
-                    mCollectionTv.setText(getString(R.string.text_collect_start));
-                    mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
-                    mSaveDataSwitch.setEnabled(true);
+                    stopDeviceCollect();
                 }
                 mCollectionStatus = !mCollectionStatus;
                 break;
@@ -297,6 +314,23 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             default:
                 break;
         }
+    }
+
+    private void startDeviceCollect(){
+        ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
+        mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
+        mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
+        mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
+        startRecordSampleData();
+    }
+
+    private void stopDeviceCollect(){
+        ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
+        DeviceManager.getInstance().setCurrentCapacitance(0);
+        mCollectionIv.setImageResource(R.drawable.icon_collect_start);
+        mCollectionTv.setText(getString(R.string.text_collect_start));
+        mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
+        mSaveDataSwitch.setEnabled(true);
     }
 
     /**
@@ -426,5 +460,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void calibrateFail() {
         LogUtils.i("calibrateFail");
+        mCapacitanceWaveView.setyAxisDesc("电容/pF");
+        mTvSettingCapScaleRangeTip.setText(getString(R.string.cap_scale_range));
+        mTvSettingCapUnit.setText(getString(R.string.pf));
+        mTvSettingCapScaleRange.setText(String.valueOf(90));
+        mCapacitanceWaveView.setMinValue(0);
+        mCapacitanceWaveView.setMaxValue(60);
     }
 }

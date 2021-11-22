@@ -1,5 +1,7 @@
 package cn.com.medicalmeasurementassistant.manager;
 
+import android.annotation.SuppressLint;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +30,7 @@ public class DeviceManager {
     private boolean mNotchFilterState = false;
     private List<String> mOriginalData;
     private List<String> mFilterData;
-    private final double highPassFilterA0 = 1.0;
+    private static final double highPassFilterA0 = 1.0;
     private static final double highPassFilterA1 = -2.937170728449890;
     private static final double highPassFilterA2 = 2.876299723479331;
     private static final double highPassFilterA3 = -0.939098940325283;
@@ -55,9 +57,11 @@ public class DeviceManager {
     private double mCurrentCapacitance = 0;
     private boolean mCalibrateState = false;
     private final Map<Integer, List<Double>> mChannelDataMap;
-    private static final long UPDATE_INTERVAL = 200L;
+    private static final long EMG_UPDATE_INTERVAL = 200L;
+    private static final long CAP_UPDATE_INTERVAL = 50L;
     private final Map<Integer, Long> mUpdateTimeMap;
     private int mSaveTime = 0;
+    private boolean mFilterState = true;
 
     public void resetParams() {
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
@@ -189,12 +193,15 @@ public class DeviceManager {
             return null;
         }
         List<Double> lastFilteringData = lastFilteringDataMap.get(channel);
+        LogUtils.i("lastFilteringData=" + lastFilteringData);
         if (lastFilteringData == null) {
             return null;
         }
         if (filtered) {
             List<Double> channelFilteredData = new ArrayList<>(lastFilteredData);
             List<Double> channelFilteringData = new ArrayList<>(lastFilteringData);
+            LogUtils.i("channelFilteredData=" + channelFilteredData);
+            LogUtils.i("channelFilteringData=" + channelFilteringData);
             // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
             lastFilteredData.clear();
             lastFilteringData.clear();
@@ -204,18 +211,18 @@ public class DeviceManager {
             }
             // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
             channelFilteringData.addAll(srcData);
+            if (channel == 0) {
+                LogUtils.i("channelFilteredData=" + channelFilteredData);
+                LogUtils.i("channelFilteringData=" + channelFilteringData);
+            }
             LogUtils.d("getFilterData channelFilteredDataSize=" + channelFilteredData.size());
             LogUtils.d("getFilterData channelFilteringDataSize=" + channelFilteringData.size());
             for (int i = orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
-                if (channelFilteringData.get(i) == 0.0) {
-                    //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
-                } else {
-                    double filteredPointChannelB = highPassFilterB0 * channelFilteringData.get(i) + highPassFilterB1 * channelFilteringData.get(i - 1) + highPassFilterB2 * channelFilteringData.get(i - 2) + highPassFilterB3 * channelFilteringData.get(i - 3);
-                    double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                    channelFilteredData.set(i, filteredPointChannel);
-                }
+                double filteredPointChannelB = highPassFilterB0 * channelFilteringData.get(i) + highPassFilterB1 * channelFilteringData.get(i - 1) + highPassFilterB2 * channelFilteringData.get(i - 2) + highPassFilterB3 * channelFilteringData.get(i - 3);
+                double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
+                double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                LogUtils.i("getHighPassFilteredData filteredPointChannel=" + filteredPointChannel);
+                channelFilteredData.set(i, filteredPointChannel);
             }
             // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
             for (int i = channelFilteredData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
@@ -230,18 +237,24 @@ public class DeviceManager {
                 channelFilteredData.add(0.0);
             }
 
+            if (channel == 0) {
+                LogUtils.i("channelFilteringData=" + srcData);
+            }
+
             for (int i = orderOfHighPassFilter; i < srcData.size(); i++) {
                 // 没有保存的过滤数据,高通滤波从第四个数据开始计算
-                if (srcData.get(i) == 0.0) {
-                    //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
-                } else {
-                    double filteredPointChannelB = highPassFilterB0 * srcData.get(i) + highPassFilterB1 * srcData.get(i - 1) + highPassFilterB2 * srcData.get(i - 2) + highPassFilterB3 * srcData.get(i - 3);
-                    double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                    channelFilteredData.set(i, filteredPointChannel);
-                }
+                double filteredPointChannelB = highPassFilterB0 * srcData.get(i) + highPassFilterB1 * srcData.get(i - 1) + highPassFilterB2 * srcData.get(i - 2) + highPassFilterB3 * srcData.get(i - 3);
+                LogUtils.i("getHighPassFilteredData filteredPointChannelB=" + filteredPointChannelB);
+                double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
+                LogUtils.i("getHighPassFilteredData filteredPointChannelA=" + filteredPointChannelA);
+                double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                LogUtils.i("getHighPassFilteredData filteredPointChannel=" + filteredPointChannel);
+                channelFilteredData.set(i, filteredPointChannel);
             }
+
+            lastFilteredData.clear();
+            lastFilteringData.clear();
+
             // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
             for (int i = srcData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
                 lastFilteredData.add(channelFilteredData.get(i));
@@ -251,6 +264,7 @@ public class DeviceManager {
             // 设置channel的过滤状态为true
             mHighPassFilteredMap.put(channel, true);
             filteredData = new ArrayList<>(channelFilteredData);
+            LogUtils.i("getHighPassFilteredData filteredData=" + filteredData);
         }
         return filteredData;
     }
@@ -327,7 +341,11 @@ public class DeviceManager {
         return filteredData;
     }
 
+    @SuppressLint("DefaultLocale")
     public void replySampledData(List<Integer> data) {
+        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
+        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
+
         // 清空mChannelDataMap容器中保存的数据
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
             List<Double> channelData = mChannelDataMap.get(i);
@@ -351,25 +369,31 @@ public class DeviceManager {
                 }
             }
             if (getSaveDataState()) {
-                // 最后一帧数据不换行
-                if (i != defaultChannelsSize * (data.size() / defaultChannelsSize - 1)) {
-                    mOriginalData.add("\n");
-                }
+                mOriginalData.add(String.valueOf(mCurrentCapacitance));
+                mOriginalData.add("\n");
             }
+//            if (getSaveDataState()) {
+//                // 最后一帧数据不换行
+//                if (i != defaultChannelsSize * (data.size() / defaultChannelsSize - 1)) {
+//                    mOriginalData.add("\n");
+//                }
+//            }
         }
 
         if (getHighPassFilterState() && !getNotchFilterState()) {
             Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
             // 高通滤波开启
-            for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
+            for (int i = 0; i < Constant.DEFAULT_CHANNEL - 4; i++) {
                 List<Double> channelData = mChannelDataMap.get(i);
+                LogUtils.i(String.format("i=%d, channelData=%s", i, channelData));
                 if (channelData != null) {
+                    LogUtils.i(String.format("i=%d, channelData=%s", i, channelData.size()));
                     List<Double> filteredData = getHighPassFilteredData(i, channelData);
                     filteredDataMap.put(i, filteredData);
 
                     Long updateTime = mUpdateTimeMap.get(i);
                     if (updateTime != null) {
-                        if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+                        if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
                             mUpdateTimeMap.put(i, System.currentTimeMillis());
                             if (mDeviceInfoListener != null) {
                                 mDeviceInfoListener.replyVoltage(i, filteredData);
@@ -389,10 +413,8 @@ public class DeviceManager {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
                     }
-                    // 最后一帧数据不换行
-                    if (i != channelsCount - 1) {
-                        mFilterData.add("\n");
-                    }
+                    mFilterData.add(String.valueOf(mCurrentCapacitance));
+                    mFilterData.add("\n");
                 }
             }
         } else if (getNotchFilterState() && !getHighPassFilterState()) {
@@ -406,7 +428,7 @@ public class DeviceManager {
 
                     Long updateTime = mUpdateTimeMap.get(i);
                     if (updateTime != null) {
-                        if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+                        if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
                             mUpdateTimeMap.put(i, System.currentTimeMillis());
                             if (mDeviceInfoListener != null) {
                                 mDeviceInfoListener.replyVoltage(i, filteredData);
@@ -426,10 +448,8 @@ public class DeviceManager {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
                     }
-                    // 最后一帧数据不换行
-                    if (i != channelsCount - 1) {
-                        mFilterData.add("\n");
-                    }
+                    mFilterData.add(String.valueOf(mCurrentCapacitance));
+                    mFilterData.add("\n");
                 }
             }
         } else if (getHighPassFilterState() && getNotchFilterState()) {
@@ -445,7 +465,7 @@ public class DeviceManager {
 
                         Long updateTime = mUpdateTimeMap.get(i);
                         if (updateTime != null) {
-                            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+                            if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
                                 mUpdateTimeMap.put(i, System.currentTimeMillis());
                                 if (mDeviceInfoListener != null) {
                                     mDeviceInfoListener.replyVoltage(i, filteredData);
@@ -466,10 +486,8 @@ public class DeviceManager {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
                     }
-                    // 最后一帧数据不换行
-                    if (i != channelsCount - 1) {
-                        mFilterData.add("\n");
-                    }
+                    mFilterData.add(String.valueOf(mCurrentCapacitance));
+                    mFilterData.add("\n");
                 }
             }
         } else {
@@ -478,7 +496,7 @@ public class DeviceManager {
                 List<Double> channelData = mChannelDataMap.get(i);
                 Long updateTime = mUpdateTimeMap.get(i);
                 if (updateTime != null && channelData != null) {
-                    if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+                    if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
                         mUpdateTimeMap.put(i, System.currentTimeMillis());
                         if (mDeviceInfoListener != null) {
                             mDeviceInfoListener.replyVoltage(i, channelData);
@@ -487,8 +505,6 @@ public class DeviceManager {
                 }
             }
         }
-        List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
-        replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
     }
 
     public void replyCapacitanceData(byte[] data) {
@@ -497,17 +513,12 @@ public class DeviceManager {
         if (capacitance < 0) {
             capacitance = 0;
         }
-        if (getSaveDataState()) {
-            mOriginalData.add(String.valueOf(capacitance));
-            mOriginalData.add("\n");
-            mFilterData.add(String.valueOf(capacitance));
-            mFilterData.add("\n");
-        }
+        mCurrentCapacitance = capacitance;
+
         Long updateTime = mUpdateTimeMap.get(Constant.DEFAULT_CHANNEL);
         if (updateTime != null) {
-            if (Math.abs(System.currentTimeMillis() - updateTime) > UPDATE_INTERVAL) {
+            if (Math.abs(System.currentTimeMillis() - updateTime) > CAP_UPDATE_INTERVAL) {
                 mUpdateTimeMap.put(Constant.DEFAULT_CHANNEL, System.currentTimeMillis());
-                mCurrentCapacitance = capacitance;
                 if (getCalibrateState()) {
                     double angle = convertCapacitanceToAngle(capacitance);
                     if (mDeviceInfoListener != null) {
@@ -539,9 +550,18 @@ public class DeviceManager {
         if (first == 0x00 && second == 0x00 && third == 0x00) {
             return 0.0F;
         }
+
         long combine = CalculateUtils.threeLongCombine(first, second, third);
-        long l = -(0xFFFFFF - combine + 1);
-        return (float) (l * 400) / 0x7FFFFF;
+        float voltage;
+        if (first >= 0x80) {
+            // 第一个字节的最高位大于等于8 电压为负数(正数最大值为0x7F)
+            long l = -(0xFFFFFF - combine + 1);
+            voltage = (float) (l * Constant.DEFAULT_RANGE) / 0x7FFFFF;
+        } else {
+            voltage = (float) (combine * Constant.DEFAULT_RANGE) / 0x7FFFFF;
+        }
+
+        return voltage;
     }
 
     public boolean getSaveDataState() {
@@ -666,4 +686,9 @@ public class DeviceManager {
     public void setSaveTime(int value) {
         this.mSaveTime = value;
     }
+
+    public boolean getFilterState() {
+        return this.mHighPassFilterState || this.mNotchFilterState;
+    }
+
 }

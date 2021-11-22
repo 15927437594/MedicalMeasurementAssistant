@@ -234,5 +234,6 @@ public class CalculateUtils {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
         return simpleDateFormat.format(date);
     }
+
 }
 
