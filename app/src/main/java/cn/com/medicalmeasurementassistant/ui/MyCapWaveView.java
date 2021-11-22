@@ -102,6 +102,15 @@ public class MyCapWaveView extends View {
     private int gridVerticalNum;
     private int mHorizontalLineScale, mVerticalLineScale;
 
+    public static final int CAP = 1;
+    public static final int ANGLE = 2;
+
+    private int currentWaveType = 1;
+
+    public void setWaveType(int type) {
+        currentWaveType = type;
+    }
+
     /**
      * 网格颜色
      */
@@ -339,9 +348,6 @@ public class MyCapWaveView extends View {
             int left;
             if (i == 0) {
                 left = mOffsetX;
-                if (drawMode == NORMAL_MODE && offsetIndex % ROW > ROW >> 1) {
-                    continue;
-                }
             } else {
                 int offset = offsetIndex > 0 ? (offsetIndex % ROW * wave_line_width) : 0;
                 left = i * mVerticalLineScale + mOffsetX - mTextRect.width() / 2 - offset;
@@ -417,7 +423,9 @@ public class MyCapWaveView extends View {
     private void drawPathFromDatas(Canvas canvas, int start, int end) {
         mPath.reset();
 
-        double initOffsetY2 = mOscillographHeight * 1.0f / (MAX_VALUE);
+        int i1 = (currentWaveType == CAP) ? MAX_VALUE : (MAX_VALUE - MIN_VALUE);
+
+        double initOffsetY2 = mOscillographHeight * 1.0f / (i1);
         for (int i = 0; i < end; i++) {
             if (isRefresh) {
                 isRefresh = false;
@@ -428,14 +436,20 @@ public class MyCapWaveView extends View {
              */
             float nowX = i * wave_line_width;
             double dataValue = dataArray.get(i);
+            if (currentWaveType == ANGLE) {
+                dataValue -= MIN_VALUE;
+            }
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
-            if (dataValue < 0) {
+            if (dataValue < MIN_VALUE) {
                 dataValue = 0;
             } else if (dataValue > MAX_VALUE) {
                 dataValue = MAX_VALUE;
             }
 
+
             float nowY = (float) (mOffsetY + mOscillographHeight - dataValue * initOffsetY2);
+
+
             if (i == 0) {
                 mPath.moveTo(nowX + mOffsetX, nowY);
             }

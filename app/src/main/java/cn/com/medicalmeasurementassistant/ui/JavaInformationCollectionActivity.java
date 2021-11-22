@@ -137,7 +137,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
     };
 
-    private void saveSampleData(){
+    private void saveSampleData() {
         InputFileNameDialogKt.showInputFileNameDialog(this,
                 fileName -> MeasurementFileUtils.saveMeasurementFile(fileName, mDeviceManager.getOriginalData(), mDeviceManager.getFilterData()));
     }
@@ -227,6 +227,29 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, SettingParamsActivity.class);
                 break;
             case R.id.stv_collect_angle:
+//                calibrateSuccess();
+//
+//
+//                if (countDownTimer != null) {
+//                    countDownTimer.cancel();
+//                    countDownTimer = null;
+//                    return;
+//                }
+//                Random random = new Random();
+//                countDownTimer = new CountDownTimer(10_000, 50) {
+//                    @Override
+//                    public void onTick(long l) {
+//                        replyAngle(0);
+//                    }
+//
+//                    @Override
+//                    public void onFinish() {
+//
+//                    }
+//                };
+//                countDownTimer.start();
+//
+
                 // 角度校准
                 if (!mDeviceManager.isDeviceStart()) {
                     ToastHelper.showShort("请启动设备采集");
@@ -316,7 +339,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
     }
 
-    private void startDeviceCollect(){
+    private void startDeviceCollect() {
         ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
         mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
@@ -324,7 +347,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         startRecordSampleData();
     }
 
-    private void stopDeviceCollect(){
+    private void stopDeviceCollect() {
         ServerManager.getInstance().sendData(new SendStopDataCollect().pack());
         DeviceManager.getInstance().setCurrentCapacitance(0);
         mCollectionIv.setImageResource(R.drawable.icon_collect_start);
@@ -443,6 +466,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView = new MyCapWaveView(getActivity());
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
+        mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
     }
 
@@ -452,6 +476,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.setyAxisDesc("角度/度");
         mTvSettingCapScaleRangeTip.setText("角度刻度范围");
         mTvSettingCapUnit.setText("度");
+        mCapacitanceWaveView.setWaveType(MyCapWaveView.ANGLE);
         mTvSettingCapScaleRange.setText(String.valueOf(90));
         mCapacitanceWaveView.setMinValue(-20);
         mCapacitanceWaveView.setMaxValue(90);

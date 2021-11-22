@@ -75,7 +75,7 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
             etRealAngle.text = getString(R.string.text_value_ninety)
             tvStepTip.text = getString(R.string.text_step_two)
             ivCalibrate.background =
-                ResourcesCompat.getDrawable(resources, R.mipmap.icon_angle_90, null)
+                    ResourcesCompat.getDrawable(resources, R.mipmap.icon_angle_90, null)
             tvCalibrateNext.text = getString(R.string.text_complete)
             stepOneExecuted = true
         } else {
