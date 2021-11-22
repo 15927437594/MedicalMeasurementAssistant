@@ -3,6 +3,8 @@ package cn.com.medicalmeasurementassistant.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static cn.com.medicalmeasurementassistant.entity.Constant.CHANNEL_STATUS;
+
 public class SettingParamsBean {
     public static final int GLOBAL_SETTING = 1;
     public static final int CHANNEL_SETTING = 2;
@@ -29,6 +31,7 @@ public class SettingParamsBean {
         for (int i = 0; i < 8; i++) {
             ChannelBean channelBean = new ChannelBean();
             channelBean.setChannelName("通道" + (i + 1));
+            channelBean.setChannelStatus(CHANNEL_STATUS[i]);
             mChannelBeans.add(channelBean);
         }
         settingBeans.addAll(mChannelBeans);

@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.com.medicalmeasurementassistant.R;
+import cn.com.medicalmeasurementassistant.entity.Constant;
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean;
 import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.StringUtils;
@@ -102,7 +103,7 @@ public class MyEMGWaveView extends View {
      */
     private static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
-    private final boolean[] mChannelStatus = {true, true, true, true, true, true, true, true};
+    private final boolean[] mChannelStatus = Constant.getDefaultChannelStatus();
 
     /**
      * 网格的横线和竖线的数量

@@ -1,5 +1,7 @@
 package cn.com.medicalmeasurementassistant.entity;
 
+import java.util.Arrays;
+
 /**
  * user: Created by DuJi on 2021/8/25 21:21
  * email: 18571762595@13.com
@@ -33,5 +35,18 @@ public class Constant {
     public static final int SETTING_TYPE_CAP_SCALE_RANGE = 3;
     public static final int SETTING_TYPE_RECORD_CAPTURE_TIME = 4;
     public static final double DEFAULT_CAPACITANCE = 34.4;
+
+
+
+
+
+    /**
+     * 默认通道状态
+     */
+    public static final boolean[] CHANNEL_STATUS = {true, true, true, true, false, false, false, false};
+
+    public static boolean[] getDefaultChannelStatus() {
+        return Arrays.copyOfRange(CHANNEL_STATUS, 0, CHANNEL_STATUS.length);
+    }
 
 }

@@ -6,6 +6,7 @@ import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import cn.com.medicalmeasurementassistant.R
+import cn.com.medicalmeasurementassistant.entity.Constant
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
 import cn.com.medicalmeasurementassistant.manager.DeviceManager
 import cn.com.medicalmeasurementassistant.manager.WaveManager
@@ -16,8 +17,9 @@ import com.hjq.shape.view.ShapeTextView
 
 class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.SettingBean>() {
     private val channelStatus =
-            booleanArrayOf(true, true, true, true, true, true, true, true)
+            Constant.getDefaultChannelStatus()
     private var allChannelStatus = true
+
     init {
         val settingBeans = SettingParamsBean.getInstance().channelBeans
         var status = false
@@ -35,8 +37,6 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
     override fun getLayoutId(): Int {
         return 0
     }
-
-
 
 
     override fun getItemViewType(position: Int): Int {
