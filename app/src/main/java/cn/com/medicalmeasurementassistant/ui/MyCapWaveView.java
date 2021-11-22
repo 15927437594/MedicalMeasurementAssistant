@@ -40,7 +40,7 @@ public class MyCapWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private final int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -48,6 +48,7 @@ public class MyCapWaveView extends View {
     private Paint mLinePaint;
 
     private Paint mTextPaint;
+    private Paint mScalePaint;
 
     /**
      * 数据线画笔
@@ -66,7 +67,12 @@ public class MyCapWaveView extends View {
     private final LinkedList<Double> dataArray = new LinkedList<>();
 
     /**
-     * 数据最大值，默认-1~1之间
+     * 数据最小值
+     */
+    private int MIN_VALUE = 0;
+
+    /**
+     * 数据最大值
      */
     private int MAX_VALUE = 60;
 
@@ -78,7 +84,7 @@ public class MyCapWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 50;
+    private final static int ROW = 5;
     /**
      * 点的总数量
      */
@@ -86,7 +92,7 @@ public class MyCapWaveView extends View {
     /**
      * 网格线条的粗细
      */
-    private final static int GRID_LINE_WIDTH = 4;
+    private final static int GRID_LINE_WIDTH = 2;
 
     /**
      * 网格的横线和竖线的数量
@@ -164,6 +170,12 @@ public class MyCapWaveView extends View {
         mTextPaint.setAntiAlias(true);
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
         mTextPaint.setTextSize(SizeUtils.dp2px(12));
+
+        mScalePaint = new Paint();
+        mScalePaint.setAntiAlias(true);
+        mScalePaint.setColor(getResources().getColor(R.color.theme_color));
+        mScalePaint.setTextSize(SizeUtils.dp2px(8));
+
         mPath = new Path();
 
     }
@@ -220,7 +232,6 @@ public class MyCapWaveView extends View {
 
 
     }
-
 
     private final Rect mTextRect = new Rect();
     private final Rect mScaleTextRect = new Rect();
@@ -307,18 +318,18 @@ public class MyCapWaveView extends View {
             if (i == 0) {
                 yScaleDesc = MAX_VALUE + "";
             } else if (i == mHorizontalLineNum) {
-                yScaleDesc = "0";
+                yScaleDesc = MIN_VALUE + "";
             } else {
                 if (isZero) {
-                    yScaleDesc = MAX_VALUE / 2 + "";
+                    yScaleDesc = (MAX_VALUE + MIN_VALUE) / 2 + "";
                 } else {
-                    yScaleDesc = MAX_VALUE * 1.0f / 2 + "";
+                    yScaleDesc = (MAX_VALUE + MIN_VALUE) * 1.0f / 2 + "";
                 }
             }
             mTextPaint.getTextBounds(yScaleDesc, 0, yScaleDesc.length(), mTextRect);
             int left = mOffsetX < mTextRect.width() >> 1 ? 0 : (mOffsetX - mTextRect.width() / 2) / 2;
 
-            canvas.drawText(yScaleDesc, left, mOffsetY + mHorizontalLineScale * i + (mTextRect.height() >> 1), mLinePaint);
+            canvas.drawText(yScaleDesc, left, mOffsetY + mHorizontalLineScale * i + (mTextRect.height() >> 1), mScalePaint);
         }
 
 
@@ -365,7 +376,7 @@ public class MyCapWaveView extends View {
                 left = i * mVerticalLineScale + mOffsetX - mTextRect.width() / 2 - offset;
             }
             int bottom = mOscillographHeight + mOffsetY + mTextRect.height() + 2;
-            canvas.drawText(textStr, left, bottom, mLinePaint);
+            canvas.drawText(textStr, left, bottom, mScalePaint);
 
         }
     }
@@ -492,10 +503,22 @@ public class MyCapWaveView extends View {
         }
     }
 
+    public void setMinValue(int value) {
+        this.MIN_VALUE = value;
+        clearChannelData();
+        initLineNum();
+        updateWaveLine();
+    }
+
     public void setMaxValue(int value) {
         this.MAX_VALUE = value;
         clearChannelData();
         initLineNum();
         updateWaveLine();
     }
+
+    public void resetStartTime() {
+        offsetIndex = 0;
+    }
+
 }

@@ -9,8 +9,8 @@ import android.widget.EditText
 import android.widget.TextView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.Constant
+import cn.com.medicalmeasurementassistant.manager.DeviceManager
 import cn.com.medicalmeasurementassistant.utils.ToastHelper
-import java.lang.Exception
 
 
 fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDialogListener) {
@@ -22,18 +22,29 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
     when (settingType) {
         Constant.SETTING_TYPE_TIME_LENGTH -> {
             tvTitle.text = "显示时长/s"
-            etContent.hint = "输入范围(2~5)"
+            etContent.hint = "输入范围(1~5)"
         }
         Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
             tvTitle.text = "EMG刻度范围/mV"
-            etContent.hint = "输入范围(1~5)"
+            etContent.hint = "输入范围(1~400)"
+            etContent.maxEms = 3
         }
         Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-            tvTitle.text = "电容刻度范围/pF"
-            etContent.hint = "输入范围（1~60）"
-            etContent.maxEms = 2
+            if (DeviceManager.getInstance().calibrateState) {
+                tvTitle.text = "角度刻度范围/度"
+                etContent.hint = "输入范围(-19~160)"
+                etContent.maxEms = 3
+            } else {
+                tvTitle.text = "电容刻度范围/pF"
+                etContent.hint = "输入范围(1~200)"
+                etContent.maxEms = 3
+            }
         }
-
+        Constant.SETTING_TYPE_RECORD_CAPTURE_TIME -> {
+            tvTitle.text = "记录采样数据/s"
+            etContent.hint = "输入范围(1~1000)"
+            etContent.maxEms = 3
+        }
     }
 
     etContent.addTextChangedListener(object : TextWatcher {
@@ -42,23 +53,31 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
             val toString = s.toString()
 
             when (settingType) {
-                Constant.SETTING_TYPE_EMG_SCALE_RANGE,
                 Constant.SETTING_TYPE_TIME_LENGTH -> {
                     if (toString.length > 1) {
                         etContent.setText(toString.subSequence(0, 1))
                         etContent.setSelection(1)
                     }
-
+                }
+                Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
+                    if (toString.length > 3) {
+                        etContent.setText(toString.subSequence(0, 3))
+                        etContent.setSelection(3)
+                    }
                 }
                 Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                    if (toString.length > 2) {
-                        etContent.setText(toString.subSequence(0, 2))
-                        etContent.setSelection(2)
+                    if (toString.length > 3) {
+                        etContent.setText(toString.subSequence(0, 3))
+                        etContent.setSelection(3)
+                    }
+                }
+                Constant.SETTING_TYPE_RECORD_CAPTURE_TIME -> {
+                    if (toString.length > 4) {
+                        etContent.setText(toString.subSequence(0, 4))
+                        etContent.setSelection(4)
                     }
                 }
             }
-
-
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
@@ -85,23 +104,35 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
         when (settingType) {
             Constant.SETTING_TYPE_TIME_LENGTH -> {
                 if (settingValue < 2 || settingValue > 5) {
-                    ToastHelper.showShort("输入范围（2~5）")
+                    ToastHelper.showShort("输入范围(2~5)")
                     return@setOnClickListener
                 }
             }
             Constant.SETTING_TYPE_EMG_SCALE_RANGE -> {
-                if (settingValue < 1 || settingValue > 5) {
-                    ToastHelper.showShort("输入范围（1~5）")
+                if (settingValue < 1 || settingValue > 400) {
+                    ToastHelper.showShort("输入范围(1~400)")
                     return@setOnClickListener
                 }
             }
             Constant.SETTING_TYPE_CAP_SCALE_RANGE -> {
-                if (settingValue < 1 || settingValue > 60) {
-                    ToastHelper.showShort("输入范围（1~60）")
+                if (DeviceManager.getInstance().calibrateState) {
+                    if (settingValue < -19 || settingValue > 160) {
+                        ToastHelper.showShort("输入范围(-19~160)")
+                        return@setOnClickListener
+                    }
+                } else {
+                    if (settingValue < 1 || settingValue > 200) {
+                        ToastHelper.showShort("输入范围(1~200)")
+                        return@setOnClickListener
+                    }
+                }
+            }
+            Constant.SETTING_TYPE_RECORD_CAPTURE_TIME -> {
+                if (settingValue < 1 || settingValue > 1000) {
+                    ToastHelper.showShort("输入范围(1~1000)")
                     return@setOnClickListener
                 }
             }
-
         }
         dialog.dismiss()
         listen.settingComplete(toString.toInt())

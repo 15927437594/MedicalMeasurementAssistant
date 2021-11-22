@@ -2,11 +2,9 @@ package cn.com.medicalmeasurementassistant.ui.adapter
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.view.View
 import android.widget.Switch
 import android.widget.TextView
 import androidx.core.content.ContextCompat
-import androidx.recyclerview.widget.RecyclerView
 import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean
 import cn.com.medicalmeasurementassistant.manager.DeviceManager
@@ -17,11 +15,29 @@ import com.hjq.shape.layout.ShapeLinearLayout
 import com.hjq.shape.view.ShapeTextView
 
 class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.SettingBean>() {
+    private val channelStatus =
+            booleanArrayOf(true, true, true, true, true, true, true, true)
+    private var allChannelStatus = true
+    init {
+        val settingBeans = SettingParamsBean.getInstance().channelBeans
+        var status = false
+        for (m in settingBeans.indices) {
+            val channelStatus1 = (settingBeans[m] as SettingParamsBean.ChannelBean).channelStatus
+
+            if (channelStatus1) {
+                status = true
+            }
+            channelStatus[m] = channelStatus1
+        }
+        allChannelStatus = status
+    }
+
     override fun getLayoutId(): Int {
         return 0
     }
 
-    private val channelStatus = booleanArrayOf(false, false, false, false, false, false, false, false)
+
+
 
     override fun getItemViewType(position: Int): Int {
         return when (position) {
@@ -44,9 +60,20 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 // 工频陷波
                 val frequencySwitch = holder.getView<Switch>(R.id.switch_frequency_status)
 
-                channelSwitch.isChecked = globalBean.channelStatus
+                channelSwitch.isChecked = allChannelStatus
+
                 channelSwitch.setOnCheckedChangeListener { _, isChecked ->
-                    globalBean.channelStatus = isChecked
+                    channelSwitch.setOnCheckedChangeListener(null)
+                    allChannelStatus = isChecked
+                    for (m in channelStatus.indices) {
+                        channelStatus[m] = isChecked
+                    }
+//                    globalBean.channelStatus = isChecked
+                    channelSwitch.post {
+                        notifyDataSetChanged()
+//                    notifyItemRangeChanged(1,8)
+
+                    }
                 }
 
                 highPassFilter.isChecked = globalBean.highPassFilterStatus
@@ -87,22 +114,20 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
             }
             isTheLast -> {
                 // 最后一个
-                holder.setOnClickListener(R.id.stv_params_submit, object : View.OnClickListener {
-                    override fun onClick(v: View?) {
-                        var flag = false
-                        val channelBeans = SettingParamsBean.getInstance().chanelBeans
-                        for (i in 0..7) {
-                            if (channelStatus[i] != channelBeans[i].channelStatus) {
-                                channelBeans[i].channelStatus = channelStatus[i]
-                                flag = true
-                            }
+                holder.setOnClickListener(R.id.stv_params_submit) {
+                    var flag = false
+                    val channelBeans = SettingParamsBean.getInstance().channelBeans
+                    for (i in 0..7) {
+                        if (channelStatus[i] != channelBeans[i].channelStatus) {
+                            channelBeans[i].channelStatus = channelStatus[i]
+                            flag = true
                         }
-                        if (flag) {
-                            WaveManager.getInstance().WaveCountChange()
-                        }
-                        (holder.context as Activity).finish()
                     }
-                })
+                    if (flag) {
+                        WaveManager.getInstance().WaveCountChange()
+                    }
+                    (holder.context as Activity).finish()
+                }
                 return
             }
             else -> {
@@ -132,14 +157,12 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 // 电极状态SwitchView 设置监听
                 val channelSwitch = holder.getView<Switch>(R.id.switch_status_desc)
                 channelSwitch.setOnCheckedChangeListener(null)
-                channelSwitch.isChecked = channelBean.channelStatus
-                channelStatus[position - 1] = channelBean.channelStatus
+                channelSwitch.isChecked = channelStatus[position - 1]
                 channelSwitch.setOnCheckedChangeListener { _, isChecked ->
                     channelStatus[position - 1] = isChecked
                 }
             }
         }
-
     }
 
 

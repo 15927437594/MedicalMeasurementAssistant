@@ -30,7 +30,7 @@ public class MyEMGWaveView extends View {
     private int mOscillographWidth;
     // 示波器高度
     private int mOscillographHeight;
-    private final static int mOffsetX = 50;
+    private static int mOffsetX = 60;
     private final static int mOffsetY = 60;
     /**
      * 常规绘制模式 不断往后推的方式
@@ -45,7 +45,7 @@ public class MyEMGWaveView extends View {
     /**
      * 绘制模式
      */
-    private int drawMode = LOOP_MODE;
+    private final int drawMode = LOOP_MODE;
 
     /**
      * 网格画笔
@@ -56,6 +56,8 @@ public class MyEMGWaveView extends View {
 
 
     private Paint mTextPaint;
+
+    private Paint mScalePaint;
 
     /**
      * 数据线画笔
@@ -74,9 +76,9 @@ public class MyEMGWaveView extends View {
     private final List<LinkedList<Double>> totalDataArray = new ArrayList<>();
 
     /**
-     * 数据最大值，默认-1~1之间
+     * 数据最大值，默认-0.5~0.5之间
      */
-    private int MAX_VALUE = 2;
+    private double MAX_VALUE = 0.5;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -86,7 +88,7 @@ public class MyEMGWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 50;
+    private final static int ROW = 100;
     /**
      * 点的总数量
      */
@@ -94,11 +96,11 @@ public class MyEMGWaveView extends View {
     /**
      * 网格线条的粗细
      */
-    private final static int GRID_LINE_WIDTH = 4;
+    private final static int GRID_LINE_WIDTH = 2;
     /**
      * 线条粗细
      */
-    private  static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
+    private static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
     private final boolean[] mChannelStatus = {true, true, true, true, true, true, true, true};
 
@@ -206,6 +208,11 @@ public class MyEMGWaveView extends View {
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
         mTextPaint.setTextSize(SizeUtils.dp2px(12));
 
+        mScalePaint = new Paint();
+        mScalePaint.setAntiAlias(true);
+        mScalePaint.setColor(getResources().getColor(R.color.theme_color));
+        mScalePaint.setTextSize(SizeUtils.dp2px(8));
+
         mPath = new Path();
         mChannelCount = getChannelShowCount();
 
@@ -250,12 +257,13 @@ public class MyEMGWaveView extends View {
     }
 
     private boolean isLoaded = false;
+
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         super.onLayout(changed, left, top, right, bottom);
         Log.i("MyWaveView---", "  onLayout  ");
 
-        if(isLoaded){
+        if (isLoaded) {
             return;
         }
         isLoaded = true;
@@ -264,11 +272,20 @@ public class MyEMGWaveView extends View {
 
     private void initLineNum() {
         clearChannelData();
+
+        String yDesc;
+        if (MAX_VALUE % 2 == 0) {
+            yDesc = String.valueOf(-MAX_VALUE);
+        } else {
+            yDesc = -MAX_VALUE * 1.0f + "";
+        }
+        mScalePaint.getTextBounds(yDesc, 0, yDesc.length(), mScaleTextRect);
+        mOffsetX = mScaleTextRect.width()+2;
         /**
          *  设置线条长度
          */
         gridVerticalNum = mShowTimeLength;
-        wave_line_width = 1020 / mShowTimeLength / ROW;
+        wave_line_width = (1080 - mOffsetX) / mShowTimeLength / ROW;
         totalRow = gridVerticalNum * ROW;
 
 
@@ -289,8 +306,6 @@ public class MyEMGWaveView extends View {
         /**
          * 总数据点的数量
          */
-
-
     }
 
 
@@ -301,14 +316,8 @@ public class MyEMGWaveView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         Log.i("MyWaveView---", "  onDraw  w = " + getWidth() + " hei = " + getHeight());
-
-        /** 绘制网格*/
         drawGrid(canvas);
-        /**
-         *  绘制刻度
-         */
         drawScale(canvas);
-
         drawWaveLineNormal(canvas);
     }
 
@@ -356,8 +365,8 @@ public class MyEMGWaveView extends View {
 
         canvas.drawLine(mOffsetX, mOffsetY,
                 mOffsetX, bottom, mLinePaint);
-        canvas.drawLine(mOffsetX + gridVerticalNum * ROW * wave_line_width,
-                mOffsetY, mOffsetX + gridVerticalNum * ROW * wave_line_width, bottom, mLinePaint);
+        int i1 = mOffsetX + gridVerticalNum * ROW * wave_line_width;
+        canvas.drawLine(i1, mOffsetY, i1, bottom, mLinePaint);
         /** 绘制竖线*/
         for (int i = 0; i < gridVerticalNum; i++) {
             if (i == gridVerticalNum - 1 && offsetIndex == 0) {
@@ -367,7 +376,7 @@ public class MyEMGWaveView extends View {
             int offset = offsetIndex > 0 ? (offsetIndex % ROW * wave_line_width) : 0;
             startX = (i + 1) * mVerticalLineScale - offset;
             canvas.drawLine(startX + mOffsetX, mOffsetY,
-                    startX + mOffsetY, bottom, mLinePaint);
+                    startX + mOffsetX, bottom, mLinePaint);
         }
     }
 
@@ -393,6 +402,7 @@ public class MyEMGWaveView extends View {
         }
 
         int index = 0;
+
         for (int i = 0, l = mChannelStatus.length; i < l; i++) {
             boolean status = this.mChannelStatus[i];
             if (status) {
@@ -400,22 +410,29 @@ public class MyEMGWaveView extends View {
                 String desc = (i + 1) + "";
 
                 mTextPaint.getTextBounds(desc, 0, desc.length(), mTextRect);
-                int height = mTextRect.height() / 2 + mOffsetX + (2 * index + 1) * mHorizontalLineScale;
+                int height = mTextRect.height() / 2 + mOffsetY + (2 * index + 1) * mHorizontalLineScale;
                 int left = (mOffsetX - mTextRect.height()) / 2;
                 canvas.drawText(desc, left, height, mTextPaint);
                 // 绘制区间标志
-                mLinePaint.setTextSize(SizeUtils.dp2px(10));
-                String maxValue = String.valueOf(MAX_VALUE);
-                String minValue = String.valueOf(-MAX_VALUE);
-                mLinePaint.getTextBounds(maxValue, 0, maxValue.length(), mTextRect);
-                int scaleOneLeft = mOffsetX - mTextRect.width() - 8;
-                int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mTextRect.height() + 2;
-                canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mLinePaint);
 
-                mLinePaint.getTextBounds(minValue, 0, minValue.length(), mTextRect);
-                int scaleTwoLeft = mOffsetX - mTextRect.width() - 8;
+                String maxValue, minValue;
+                if (MAX_VALUE % 2 == 0) {
+                    maxValue = MAX_VALUE + "";
+                    minValue = -MAX_VALUE + "";
+                } else {
+                    maxValue = MAX_VALUE * 1.0f + "";
+                    minValue = -MAX_VALUE * 1.0f + "";
+                }
+                mScalePaint.getTextBounds(maxValue, 0, maxValue.length(), mScaleTextRect);
+                int scaleOneLeft = (mOffsetX - mScaleTextRect.width())/2;
+                int scaleOneTop = mOffsetY + (index * 2) * mHorizontalLineScale + mScaleTextRect.height() + 2;
+                canvas.drawText(maxValue, scaleOneLeft, scaleOneTop, mScalePaint);
+
+                mScalePaint.getTextBounds(minValue, 0, minValue.length(), mScaleTextRect);
+//                int scaleTwoLeft = mOffsetX - mScaleTextRect.width();
+                int scaleTwoLeft = (mOffsetX - mScaleTextRect.width())/2;
                 int scaleTwoTop = mOffsetY + (index + 1) * 2 * mHorizontalLineScale - 3;
-                canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mLinePaint);
+                canvas.drawText(minValue, scaleTwoLeft, scaleTwoTop, mScalePaint);
                 index++;
             }
         }
@@ -436,7 +453,7 @@ public class MyEMGWaveView extends View {
                 left = i * mVerticalLineScale + mOffsetX - mTextRect.width() / 2 - offset;
             }
             int bottom = mOscillographHeight + mOffsetY + mTextRect.height() + 2;
-            canvas.drawText(xScaleDesc, left, bottom, mLinePaint);
+            canvas.drawText(xScaleDesc, left, bottom, mScalePaint);
 
         }
     }
@@ -499,17 +516,6 @@ public class MyEMGWaveView extends View {
         postInvalidate();
     }
 
-//    /**
-//     * 循环模式绘制折线
-//     *
-//     * @param canvas
-//     */
-//    private void drawWaveLineLoop(Canvas canvas) {
-//        drawPathFromDatas(canvas, (row - 1) - draw_index > 8 ? 0 : 8 - ((row - 1) - draw_index), draw_index);
-//        drawPathFromDatas(canvas, Math.min(draw_index + 8, row - 1), row - 1);
-//    }
-
-
     /**
      * 取数组中的指定一段数据来绘制折线
      *
@@ -542,7 +548,7 @@ public class MyEMGWaveView extends View {
                 dataValue = -MAX_VALUE;
             }
 
-            float nowY = (float) (initOffsetY - dataValue * initOffsetY2*0.95);
+            float nowY = (float) (initOffsetY - dataValue * initOffsetY2 * 0.95);
             if (dataPosition == 0) {
                 LogUtils.d("line_data" + dataPosition + " index = " + i);
             }
@@ -581,17 +587,20 @@ public class MyEMGWaveView extends View {
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
+                LogUtils.d("totalRow=" + totalRow);
                 if (dataArray.size() == totalRow) {
-                    if (position == 0) {
-                        offsetIndex += totalRow;
-                        clearChannelData(false);
-                    }
+//                    if (position == 0) {
+//                        offsetIndex += totalRow;
+//                        clearChannelData(false);
+//                        postInvalidate();
+//                    }
+                    offsetIndex += totalRow;
+                    clearChannelData(false);
+                    postInvalidate();
                 }
-//                dataArray.addLast(line);
                 for (int i = 0; i < data.size(); i++) {
                     dataArray.addLast(data.get(i));
                 }
-//                dataArray.addAll(data);
                 break;
         }
     }
@@ -628,10 +637,15 @@ public class MyEMGWaveView extends View {
         }
     }
 
-    public void setMaxValue(int value) {
+    public void setMaxValue(double value) {
         this.MAX_VALUE = value;
         clearChannelData();
         initLineNum();
         updateWaveLine();
     }
+
+    public void resetStartTime() {
+        offsetIndex = 0;
+    }
+
 }

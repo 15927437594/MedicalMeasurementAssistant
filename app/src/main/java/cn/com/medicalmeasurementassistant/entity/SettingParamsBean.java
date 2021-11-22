@@ -10,6 +10,7 @@ public class SettingParamsBean {
     private final static SettingParamsBean mSettingBean = new SettingParamsBean();
 
     private List<SettingBean> settingBeans;
+    private GlobalBean mGlobalBean;
 
     public static SettingParamsBean getInstance() {
         return mSettingBean;
@@ -22,24 +23,31 @@ public class SettingParamsBean {
 
     private void initSettingBean() {
         settingBeans = new ArrayList<>();
-        GlobalBean globalBean = new GlobalBean();
-        settingBeans.add(globalBean);
+        mGlobalBean = new GlobalBean();
+        settingBeans.add(mGlobalBean);
 
         for (int i = 0; i < 8; i++) {
             ChannelBean channelBean = new ChannelBean();
             channelBean.setChannelName("通道" + (i + 1));
-            mChanelBeans.add(channelBean);
+            mChannelBeans.add(channelBean);
         }
-        settingBeans.addAll(mChanelBeans);
+        settingBeans.addAll(mChannelBeans);
         settingBeans.add(new ChannelBean());
     }
 
-    private final List<ChannelBean> mChanelBeans = new ArrayList<>();
+    private final List<ChannelBean> mChannelBeans = new ArrayList<>();
 
-    public List<ChannelBean> getChanelBeans() {
-        return mChanelBeans;
+    public List<ChannelBean> getChannelBeans() {
+        return mChannelBeans;
     }
 
+    public GlobalBean getmGlobalBean() {
+        return mGlobalBean;
+    }
+
+    public void setmGlobalBean(GlobalBean mGlobalBean) {
+        this.mGlobalBean = mGlobalBean;
+    }
 
     public List<SettingBean> getSettingBeans() {
         return settingBeans;
@@ -64,7 +72,7 @@ public class SettingParamsBean {
         // 高通虑波状态
         private boolean highPassFilterStatus = true;
         // 工频陷波状态
-        private boolean frequencyNotchStatus;
+        private boolean frequencyNotchStatus = false;
         // REF电极状态
         private boolean electrodeStatus;
         // 通道量程
