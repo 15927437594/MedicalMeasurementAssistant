@@ -436,16 +436,16 @@ public class MyCapWaveView extends View {
              */
             float nowX = i * wave_line_width;
             double dataValue = dataArray.get(i);
-            if (currentWaveType == ANGLE) {
-                dataValue -= MIN_VALUE;
-            }
+
             /** 判断数据为正数还是负数  超过最大值的数据按最大值来绘制*/
             if (dataValue < MIN_VALUE) {
-                dataValue = 0;
+                dataValue = MIN_VALUE;
             } else if (dataValue > MAX_VALUE) {
                 dataValue = MAX_VALUE;
             }
-
+            if (currentWaveType == ANGLE) {
+                dataValue -= MIN_VALUE;
+            }
 
             float nowY = (float) (mOffsetY + mOscillographHeight - dataValue * initOffsetY2);
 

@@ -235,11 +235,11 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 //                    countDownTimer = null;
 //                    return;
 //                }
-//                Random random = new Random();
+////                Random random = new Random();
 //                countDownTimer = new CountDownTimer(10_000, 50) {
 //                    @Override
 //                    public void onTick(long l) {
-//                        replyAngle(0);
+//                        replyAngle(55);
 //                    }
 //
 //                    @Override
