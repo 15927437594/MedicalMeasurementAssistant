@@ -93,22 +93,23 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         WaveManager.getInstance().addCallback(this);
         initEmgView();
         initCapacitanceView();
-        byte[] bytes = new byte[4];
-        bytes[0] = (byte) 0x41;
-        bytes[1] = (byte) 0xE1;
-        bytes[2] = (byte) 0x99;
-        bytes[3] = (byte) 0x9A;
-        float capacitance = CalculateUtils.getFloat(bytes, 0);
-        LogUtils.d("capacitance=" + capacitance);
-        double i = (double) (Math.round((28.12296541941 - Constant.DEFAULT_CAPACITANCE) * 100)) / 100;
-        LogUtils.d("capacitance=" + i);
 
-        long combine = CalculateUtils.threeLongCombine(0x04, 0x89, 0x62);
-        LogUtils.i("combine=" + combine);
-        float voltage = (float) combine * 400 / 0x7FFFFF;
-        LogUtils.i("voltage=" + voltage);
-        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0xFF, 0xA3, 0x48));
-        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0x04, 0x89, 0x62));
+//        byte[] bytes = new byte[4];
+//        bytes[0] = (byte) 0x41;
+//        bytes[1] = (byte) 0xE1;
+//        bytes[2] = (byte) 0x99;
+//        bytes[3] = (byte) 0x9A;
+//        float capacitance = CalculateUtils.getFloat(bytes, 0);
+//        LogUtils.d("capacitance=" + capacitance);
+//        double i = (double) (Math.round((28.12296541941 - Constant.DEFAULT_CAPACITANCE) * 100)) / 100;
+//        LogUtils.d("capacitance=" + i);
+//
+//        long combine = CalculateUtils.threeLongCombine(0x04, 0x89, 0x62);
+//        LogUtils.i("combine=" + combine);
+//        float voltage = (float) combine * 400 / 0x7FFFFF;
+//        LogUtils.i("voltage=" + voltage);
+//        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0xFF, 0xA3, 0x48));
+//        LogUtils.i("voltage=" + DeviceManager.getInstance().calculateVoltage(0x04, 0x89, 0x62));
 
 //        List<Double> readResult = new ArrayList<>();
 //        for (int a = 0; a < 40; a++) {
@@ -116,9 +117,38 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
 //            LogUtils.i("srcVoltage=" + srcVoltage);
 //            readResult.add(srcVoltage);
 //        }
-//        List<Double> highPassFilteredData = mDeviceManager.getHighPassFilteredData(0, readResult);
+
+//        double[] temp1 = { 1.4094830751419067, 1.4128209352493286, 1.420498013496399, 1.4195443391799927, 1.4171124696731567,
+//                1.4119149446487427, 1.4077187776565552, 1.3998032808303833, 1.3961316347122192, 1.3917447328567505,
+//                1.3915539979934692, 1.3865472078323364, 1.3694287538528442, 1.3534547090530396, 1.3447285890579224,
+//                1.3357640504837036, 1.3245583772659302, 1.3184548616409302, 1.3093949556350708, 1.2971402406692505,
+//                1.2947560548782349, 1.2948037385940552, 1.293563961982727, 1.2915135622024536, 1.2864114046096802,
+//                1.2867928743362427, 1.2899876832962036, 1.2927533388137817, 1.2975693941116333, 1.303625226020813,
+//                1.3031007051467896, 1.3096333742141724, 1.3215066194534302, 1.3450623750686646, 1.3655186891555786,
+//                1.3800145387649536, 1.3844491243362427, 1.3870717287063599, 1.387405514717102, 1.3948918581008911 };
+//
+//        double[] temp2 = { 1.3972760438919067, 1.3962270021438599, 1.3977528810501099, 1.4006139039993286, 1.4024258852005005,
+//                1.3995648622512817, 1.3979912996292114, 1.386165738105774, 1.3812543153762817, 1.382351040840149,
+//                1.3854981660842896, 1.3865948915481567, 1.3697148561477661, 1.3491631746292114, 1.3399602174758911,
+//                1.3312817811965942, 1.3253213167190552, 1.319503903388977, 1.314449429512024, 1.296615719795227,
+//                1.284408688545227, 1.2928487062454224, 1.2972832918167114, 1.2979985475540161, 1.296138882637024,
+//                1.293850064277649, 1.291275143623352, 1.2933732271194458, 1.299047589302063, 1.2979985475540161,
+//                1.3005257844924927, 1.3042927980422974, 1.3119221925735474, 1.3316155672073364, 1.3437272310256958,
+//                1.354742169380188, 1.3633252382278442, 1.3722420930862427, 1.3784886598587036, 1.3864041566848755 };
+//
+//        List<Double> list1= new ArrayList<>();
+//        for (double v : temp1) {
+//            list1.add(v);
+//        }
+//
+//        List<Double> list2= new ArrayList<>();
+//        for (double v : temp2) {
+//            list2.add(v);
+//        }
+
+//        List<Double> highPassFilteredData = mDeviceManager.getHighPassFilteredData(0, list1);
 //        LogUtils.i("highPassFilteredData=" + highPassFilteredData);
-//        List<Double> highPassFilteredData1 = mDeviceManager.getHighPassFilteredData(0, readResult);
+//        List<Double> highPassFilteredData1 = mDeviceManager.getHighPassFilteredData(0, list2);
 //        LogUtils.i("highPassFilteredData=" + highPassFilteredData1);
     }
 
@@ -129,10 +159,12 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             LogUtils.i("mSaveTime=" + mSaveTime);
             mHandler.postDelayed(this, 1000L);
             if (mSaveTime == mDeviceManager.getSaveTime()) {
-                mDeviceManager.setSaveDataState(false);
                 mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
                 stopDeviceCollect();
-                saveSampleData();
+                mHandler.postDelayed(() -> {
+                    saveSampleData();
+                    mDeviceManager.setSaveDataState(false);
+                }, 500L);
             }
         }
     };
@@ -227,29 +259,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 BaseKotlinActivity.Companion.launcherActivity(this, SettingParamsActivity.class);
                 break;
             case R.id.stv_collect_angle:
-//                calibrateSuccess();
-//
-//
-//                if (countDownTimer != null) {
-//                    countDownTimer.cancel();
-//                    countDownTimer = null;
-//                    return;
-//                }
-////                Random random = new Random();
-//                countDownTimer = new CountDownTimer(10_000, 50) {
-//                    @Override
-//                    public void onTick(long l) {
-//                        replyAngle(55);
-//                    }
-//
-//                    @Override
-//                    public void onFinish() {
-//
-//                    }
-//                };
-//                countDownTimer.start();
-//
-
                 // 角度校准
                 if (!mDeviceManager.isDeviceStart()) {
                     ToastHelper.showShort("请启动设备采集");
@@ -290,7 +299,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                     // 停止
                     stopDeviceCollect();
                 }
-                mCollectionStatus = !mCollectionStatus;
                 break;
             case R.id.srl_left_top:
                 if (mCollectionStatus) {
@@ -345,6 +353,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
         mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
         startRecordSampleData();
+        mCollectionStatus = !mCollectionStatus;
     }
 
     private void stopDeviceCollect() {
@@ -354,6 +363,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionTv.setText(getString(R.string.text_collect_start));
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
         mSaveDataSwitch.setEnabled(true);
+        mCollectionStatus = !mCollectionStatus;
     }
 
     /**
@@ -394,7 +404,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         }
         mEmgWaveView.addData(channel, filterData);
         if (channel == Constant.DEFAULT_CHANNEL - 1) {
-            mEmgWaveView.updateWaveLine();
+            runOnUiThread(() -> mEmgWaveView.updateWaveLine());
         }
     }
 
@@ -466,7 +476,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView = new MyCapWaveView(getActivity());
         mCapacitanceWaveView.setxAxisDesc("时间/s");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
-        mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
         mCapacitanceWaveFrameLayout.addView(mCapacitanceWaveView, layoutParams);
     }
 
@@ -476,10 +485,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.setyAxisDesc("角度/度");
         mTvSettingCapScaleRangeTip.setText("角度刻度范围");
         mTvSettingCapUnit.setText("度");
-        mCapacitanceWaveView.setWaveType(MyCapWaveView.ANGLE);
         mTvSettingCapScaleRange.setText(String.valueOf(90));
         mCapacitanceWaveView.setMinValue(-20);
         mCapacitanceWaveView.setMaxValue(90);
+        mCapacitanceWaveView.setWaveType(MyCapWaveView.ANGLE);
     }
 
     @Override
@@ -488,8 +497,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mTvSettingCapScaleRangeTip.setText(getString(R.string.cap_scale_range));
         mTvSettingCapUnit.setText(getString(R.string.pf));
-        mTvSettingCapScaleRange.setText(String.valueOf(90));
+        mTvSettingCapScaleRange.setText(String.valueOf(60));
         mCapacitanceWaveView.setMinValue(0);
         mCapacitanceWaveView.setMaxValue(60);
+        mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
     }
 }

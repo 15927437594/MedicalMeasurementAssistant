@@ -22,7 +22,7 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
     private val tvCalibrateAuto by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_auto) }
     private val tvCalibrateNext by lazy { findViewById<ShapeTextView>(R.id.tv_calibrate_next) }
     private var stepOneExecuted = false
-    var handler: Handler = Handler(Looper.getMainLooper())
+    private var handler: Handler = Handler(Looper.getMainLooper())
 
 
     override fun getLayoutId(): Int {

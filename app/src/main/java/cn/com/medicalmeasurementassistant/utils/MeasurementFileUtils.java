@@ -35,7 +35,7 @@ public class MeasurementFileUtils {
         if (filteredData.size() > 0) {
             String filterFileName = fileName + "-FilteredData.csv";
             File filterFile = new File(storePath, filterFileName);
-            String filterDataNumber = "Number of data: " + rawData.size() + "\n";
+            String filterDataNumber = "Number of data: " + filteredData.size() + "\n";
             String filterContent = filteredData.toString().replace("[", "").replace("]", "").replace(" ", "")
                     .replace("\n,", "\n");
             String filterContentWrite = saveTime + sampleFrequency + channels + filterDataNumber + unit + title + filterContent;

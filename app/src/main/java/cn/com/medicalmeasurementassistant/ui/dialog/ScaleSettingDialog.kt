@@ -42,7 +42,7 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
         }
         Constant.SETTING_TYPE_RECORD_CAPTURE_TIME -> {
             tvTitle.text = "记录采样数据/s"
-            etContent.hint = "输入范围(1~1000)"
+            etContent.hint = "输入范围(0~1000)"
             etContent.maxEms = 3
         }
     }
@@ -128,8 +128,8 @@ fun showTimeScaleDialog(activity: Activity, settingType: Int, listen: SettingDia
                 }
             }
             Constant.SETTING_TYPE_RECORD_CAPTURE_TIME -> {
-                if (settingValue < 1 || settingValue > 1000) {
-                    ToastHelper.showShort("输入范围(1~1000)")
+                if (settingValue < 0 || settingValue > 1000) {
+                    ToastHelper.showShort("输入范围(0~1000)")
                     return@setOnClickListener
                 }
             }
