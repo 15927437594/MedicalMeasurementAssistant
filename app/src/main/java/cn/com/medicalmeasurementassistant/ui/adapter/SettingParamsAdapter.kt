@@ -17,7 +17,7 @@ import com.hjq.shape.view.ShapeTextView
 
 class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.SettingBean>() {
     private val channelStatus =
-            Constant.getDefaultChannelStatus()
+        Constant.getDefaultChannelStatus()
     private var allChannelStatus = true
 
     init {
@@ -56,7 +56,7 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 // 通道开启
                 val channelSwitch = holder.getView<Switch>(R.id.switch_channel_status)
                 // 高通滤波
-                val highPassFilter = holder.getView<Switch>(R.id.switch_filtering_status)
+                val highpassFilter = holder.getView<Switch>(R.id.switch_filtering_status)
                 // 工频陷波
                 val frequencySwitch = holder.getView<Switch>(R.id.switch_frequency_status)
 
@@ -76,10 +76,11 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                     }
                 }
 
-                highPassFilter.isChecked = globalBean.highPassFilterStatus
-                highPassFilter.setOnCheckedChangeListener { _, isChecked ->
-                    globalBean.highPassFilterStatus = isChecked
-                    DeviceManager.getInstance().highPassFilterState = isChecked
+                highpassFilter.isChecked = globalBean.highpassFilterStatus
+                highpassFilter.setOnCheckedChangeListener { _, isChecked ->
+                    globalBean.highpassFilterStatus = isChecked
+                    DeviceManager.getInstance().highpassFilterState = isChecked
+                    DeviceManager.getInstance().filterModeChanged()
                 }
 
 
@@ -87,6 +88,7 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 frequencySwitch.setOnCheckedChangeListener { _, isChecked ->
                     globalBean.frequencyNotchStatus = isChecked
                     DeviceManager.getInstance().notchFilterState = isChecked
+                    DeviceManager.getInstance().filterModeChanged()
                 }
 
                 holder.setText(R.id.tv_angle_value, globalBean.angle)
@@ -97,12 +99,12 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
 
                 // 电极状态View样式设置
                 val solidColor =
-                        if (globalBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
+                    if (globalBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
                 shapeTextView.solidColor = ContextCompat.getColor(holder.context, solidColor)
                 shapeTextView.solidPressedColor = shapeTextView.solidColor
 
                 val textColor =
-                        if (globalBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
+                    if (globalBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
                 electrodeStatusTip.setTextColor(ContextCompat.getColor(holder.context, textColor))
                 electrodeStatusTv.setTextColor(ContextCompat.getColor(holder.context, textColor))
 
@@ -143,11 +145,11 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
                 val shapeTextView = holder.getView<ShapeTextView>(R.id.tv_status_desc)
                 // 电极状态View样式设置
                 val solidColor =
-                        if (channelBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
+                    if (channelBean.electrodeStatus) R.color.electrode_bg_color_on else R.color.electrode_bg_color_off
                 shapeTextView.solidColor = ContextCompat.getColor(holder.context, solidColor)
                 shapeTextView.solidPressedColor = shapeTextView.solidColor
                 val textColor =
-                        if (channelBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
+                    if (channelBean.electrodeStatus) R.color.electrode_text_color_on else R.color.electrode_text_color_off
                 shapeTextView.setTextColor(ContextCompat.getColor(holder.context, textColor))
 //                val electrodeStatus = if (channelBean.electrodeStatus) R.string.text_electrode_on else R.string.text_electrode_off
 //                shapeTextView.text = holder.context.getString(electrodeStatus)
@@ -164,6 +166,5 @@ class SettingParamsAdapter : BaseSimpleRecyclerAdapter<SettingParamsBean.Setting
             }
         }
     }
-
 
 }

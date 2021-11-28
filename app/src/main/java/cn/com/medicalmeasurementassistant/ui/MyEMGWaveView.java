@@ -22,7 +22,6 @@ import java.util.List;
 import cn.com.medicalmeasurementassistant.R;
 import cn.com.medicalmeasurementassistant.entity.Constant;
 import cn.com.medicalmeasurementassistant.entity.SettingParamsBean;
-import cn.com.medicalmeasurementassistant.utils.LogUtils;
 import cn.com.medicalmeasurementassistant.utils.StringUtils;
 
 public class MyEMGWaveView extends View {
@@ -73,7 +72,7 @@ public class MyEMGWaveView extends View {
     /**
      * 保存已绘制的数据坐标
      */
-    private final List<LinkedList<Double>> totalDataArray = new ArrayList<>();
+    private final List<LinkedList<Float>> totalDataArray = new ArrayList<>();
 
     /**
      * 数据最大值，默认-0.5~0.5之间
@@ -100,7 +99,7 @@ public class MyEMGWaveView extends View {
     /**
      * 线条粗细
      */
-    private static float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
+    private static final float WAVE_LINE_STROKE_WIDTH = GRID_LINE_WIDTH;
 
     private final boolean[] mChannelStatus = Constant.getDefaultChannelStatus();
 
@@ -248,7 +247,7 @@ public class MyEMGWaveView extends View {
         resetView();
     }
 
-    public void resetView(){
+    public void resetView() {
         initLineNum();
         updateWaveLine();
     }
@@ -475,7 +474,7 @@ public class MyEMGWaveView extends View {
         if (clearIndex) {
             offsetIndex = 0;
         }
-        for (LinkedList<Double> linkedList : totalDataArray) {
+        for (LinkedList<Float> linkedList : totalDataArray) {
             linkedList.clear();
         }
     }
@@ -496,7 +495,7 @@ public class MyEMGWaveView extends View {
         int index = 0;
         for (int i = 0; i < mChannelStatus.length; i++) {
             if (mChannelStatus[i]) {
-                LinkedList<Double> floats = totalDataArray.get(i);
+                LinkedList<Float> floats = totalDataArray.get(i);
                 if (floats.isEmpty()) {
                     index++;
                     continue;
@@ -526,7 +525,7 @@ public class MyEMGWaveView extends View {
             canvas.restore();
         }
         mPath.reset();
-        LinkedList<Double> dataArray = totalDataArray.get(dataPosition);
+        LinkedList<Float> dataArray = totalDataArray.get(dataPosition);
         int initOffsetY = mOffsetY + (2 * index + 1) * mHorizontalLineScale + GRID_LINE_WIDTH / 2;
         double initOffsetY2 = (mHorizontalLineScale) * 1.0f / (MAX_VALUE);
 
@@ -566,11 +565,11 @@ public class MyEMGWaveView extends View {
     /**
      * 添加新的数据
      */
-    public void addData(int position, List<Double> data) {
+    public void addData(int position, List<Float> data) {
         if (isDrawWaveLine) {
             return;
         }
-        LinkedList<Double> dataArray = totalDataArray.get(position);
+        LinkedList<Float> dataArray = totalDataArray.get(position);
         switch (drawMode) {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位
@@ -584,7 +583,6 @@ public class MyEMGWaveView extends View {
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
-                LogUtils.d("totalRow=" + totalRow);
                 if (dataArray.size() == totalRow) {
 //                    if (position == 0) {
 //                        offsetIndex += totalRow;
@@ -605,11 +603,11 @@ public class MyEMGWaveView extends View {
     /**
      * 添加新的数据
      */
-    public void addData(int position, double data) {
+    public void addData(int position, float data) {
         if (isDrawWaveLine) {
             return;
         }
-        LinkedList<Double> dataArray = totalDataArray.get(position);
+        LinkedList<Float> dataArray = totalDataArray.get(position);
         switch (drawMode) {
             case NORMAL_MODE:
                 // 常规模式数据添加至最后一位

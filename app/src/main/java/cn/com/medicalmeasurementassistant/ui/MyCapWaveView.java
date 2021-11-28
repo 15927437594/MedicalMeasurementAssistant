@@ -17,10 +17,10 @@ import com.blankj.utilcode.util.SizeUtils;
 import java.util.LinkedList;
 
 import cn.com.medicalmeasurementassistant.R;
+import cn.com.medicalmeasurementassistant.manager.DeviceManager;
 import cn.com.medicalmeasurementassistant.utils.StringUtils;
 
 public class MyCapWaveView extends View {
-    private final String NAMESPACE = "http://schemas.android.com/apk/res-auto";
     // 示波器宽度
     private int mOscillographWidth;
     // 示波器高度
@@ -41,6 +41,7 @@ public class MyCapWaveView extends View {
      * 绘制模式
      */
     private final int drawMode = LOOP_MODE;
+    private float capacitance = 0;
 
     /**
      * 网格画笔
@@ -48,6 +49,7 @@ public class MyCapWaveView extends View {
     private Paint mLinePaint;
 
     private Paint mTextPaint;
+    private Paint mCapacitanceTextPaint;
     private Paint mScalePaint;
 
     /**
@@ -64,7 +66,7 @@ public class MyCapWaveView extends View {
     /**
      * 保存已绘制的数据坐标
      */
-    private final LinkedList<Double> dataArray = new LinkedList<>();
+    private final LinkedList<Float> dataArray = new LinkedList<>();
 
     /**
      * 数据最小值
@@ -84,7 +86,7 @@ public class MyCapWaveView extends View {
     /**
      * 每秒点数
      */
-    private final static int ROW = 20;
+    private final static int ROW = 50;
     /**
      * 点的总数量
      */
@@ -180,6 +182,11 @@ public class MyCapWaveView extends View {
         mTextPaint.setColor(getResources().getColor(R.color.theme_color));
         mTextPaint.setTextSize(SizeUtils.dp2px(12));
 
+        mCapacitanceTextPaint = new Paint();
+        mCapacitanceTextPaint.setAntiAlias(true);
+        mCapacitanceTextPaint.setColor(getResources().getColor(R.color.theme_color));
+        mCapacitanceTextPaint.setTextSize(SizeUtils.dp2px(15));
+
         mScalePaint = new Paint();
         mScalePaint.setAntiAlias(true);
         mScalePaint.setColor(getResources().getColor(R.color.theme_color));
@@ -195,7 +202,7 @@ public class MyCapWaveView extends View {
         resetView();
     }
 
-    public void resetView(){
+    public void resetView() {
         initLineNum();
         updateWaveLine();
     }
@@ -247,20 +254,15 @@ public class MyCapWaveView extends View {
 
     private final Rect mTextRect = new Rect();
     private final Rect mScaleTextRect = new Rect();
+    private final Rect mCapacitanceTextRect = new Rect();
 
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        Log.i("MyWaveView---", "  onDraw  w = " + getWidth() + " hei = " + getHeight());
-
-        /** 绘制网格*/
         drawGrid(canvas);
-        /**
-         *  绘制刻度
-         */
         drawScale(canvas);
-
         drawWaveLineNormal(canvas);
+        drawCapacitance(canvas);
     }
 
     /**
@@ -357,7 +359,6 @@ public class MyCapWaveView extends View {
             }
             int bottom = mOscillographHeight + mOffsetY + mTextRect.height() + 2;
             canvas.drawText(textStr, left, bottom, mScalePaint);
-
         }
     }
 
@@ -382,13 +383,13 @@ public class MyCapWaveView extends View {
         dataArray.clear();
     }
 
+    private boolean isDrawWaveLine;
+
     /**
      * 常规模式绘制折线
      *
      * @param canvas
      */
-    private boolean isDrawWaveLine;
-
     private void drawWaveLineNormal(Canvas canvas) {
         if (dataArray.size() == 0) {
             return;
@@ -399,23 +400,30 @@ public class MyCapWaveView extends View {
         isDrawWaveLine = false;
     }
 
+    public void drawCapacitance(Canvas canvas) {
+        if (DeviceManager.getInstance().isDeviceOpen()){
+            mCapacitanceTextPaint.setColor(getResources().getColor(R.color.black));
+            String capacitanceText;
+            if (DeviceManager.getInstance().getCalibrateState()) {
+                capacitanceText = capacitance + "度";
+            } else {
+                capacitanceText = capacitance + "pF";
+            }
+
+            if (!StringUtils.isEmpty(capacitanceText)) {
+                mCapacitanceTextPaint.getTextBounds(capacitanceText, 0, capacitanceText.length(), mCapacitanceTextRect);
+                int yDescLeft = 80;
+                canvas.drawText(capacitanceText, yDescLeft, mCapacitanceTextRect.height() + 100, mCapacitanceTextPaint);
+            }
+        }
+    }
+
     public void updateWaveLine() {
         if (isDrawWaveLine) {
             return;
         }
         postInvalidate();
     }
-
-//    /**
-//     * 循环模式绘制折线
-//     *
-//     * @param canvas
-//     */
-//    private void drawWaveLineLoop(Canvas canvas) {
-//        drawPathFromDatas(canvas, (row - 1) - draw_index > 8 ? 0 : 8 - ((row - 1) - draw_index), draw_index);
-//        drawPathFromDatas(canvas, Math.min(draw_index + 8, row - 1), row - 1);
-//    }
-
 
     /**
      * 取数组中的指定一段数据来绘制折线
@@ -463,11 +471,11 @@ public class MyCapWaveView extends View {
 
     private int offsetIndex;
 
-
     /**
      * 添加新的数据
      */
-    public void addData(double data) {
+    public void addData(float capacitance) {
+        this.capacitance = capacitance;
         if (isDrawWaveLine) {
             return;
         }
@@ -478,7 +486,7 @@ public class MyCapWaveView extends View {
                     offsetIndex++;
                     dataArray.removeFirst();
                 }
-                dataArray.addLast(data);
+                dataArray.addLast(capacitance);
                 break;
             case LOOP_MODE:
                 // 循环模式数据添加至当前绘制的位
@@ -486,25 +494,18 @@ public class MyCapWaveView extends View {
                     offsetIndex += totalRow;
                     clearChannelData(false);
                 }
-                dataArray.addLast(data);
+                dataArray.addLast(capacitance);
                 break;
         }
     }
 
     public void setMinValue(int value) {
         this.MIN_VALUE = value;
-        clearChannelData();
-        resetView();
+        clearChannelData(false);
     }
 
     public void setMaxValue(int value) {
         this.MAX_VALUE = value;
-        clearChannelData();
-        resetView();
+        clearChannelData(false);
     }
-
-    public void resetStartTime() {
-        offsetIndex = 0;
-    }
-
 }
