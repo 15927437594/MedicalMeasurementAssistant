@@ -192,7 +192,10 @@ public class MyCapWaveView extends View {
 
     public void setShowTimeLength(int mShowTimeLength) {
         this.mShowTimeLength = mShowTimeLength;
+        resetView();
+    }
 
+    public void resetView(){
         initLineNum();
         updateWaveLine();
     }
@@ -491,15 +494,13 @@ public class MyCapWaveView extends View {
     public void setMinValue(int value) {
         this.MIN_VALUE = value;
         clearChannelData();
-        initLineNum();
-        updateWaveLine();
+        resetView();
     }
 
     public void setMaxValue(int value) {
         this.MAX_VALUE = value;
         clearChannelData();
-        initLineNum();
-        updateWaveLine();
+        resetView();
     }
 
     public void resetStartTime() {
