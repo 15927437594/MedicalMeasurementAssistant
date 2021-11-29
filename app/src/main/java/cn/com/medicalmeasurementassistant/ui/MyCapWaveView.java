@@ -76,7 +76,7 @@ public class MyCapWaveView extends View {
     /**
      * 数据最大值
      */
-    private int MAX_VALUE = 60;
+    private int MAX_VALUE = 200;
 
     /**
      * 线条的长度，可用于控制横坐标
@@ -401,7 +401,7 @@ public class MyCapWaveView extends View {
     }
 
     public void drawCapacitance(Canvas canvas) {
-        if (DeviceManager.getInstance().isDeviceOpen()){
+        if (DeviceManager.getInstance().isDeviceOpen() && DeviceManager.getInstance().isDeviceStart()){
             mCapacitanceTextPaint.setColor(getResources().getColor(R.color.black));
             String capacitanceText;
             if (DeviceManager.getInstance().getCalibrateState()) {

@@ -341,7 +341,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@id/tv_cap_scale_range_tip"
                     android:layout_marginTop="15dp"
-                    android:text="60"
+                    android:text="200"
                     android:textColor="@color/theme_color"
                     android:textSize="20sp"
                     android:textStyle="bold" />

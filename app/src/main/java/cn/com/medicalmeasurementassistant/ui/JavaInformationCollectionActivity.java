@@ -15,6 +15,8 @@ import android.widget.TextView;
 import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
 
+import com.hjq.shape.view.ShapeRadioButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,6 +63,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mTvSettingCapScaleRangeTip;
     private TextView mTvSettingCapUnit;
     private TextView mTvSaveTime;
+    private ShapeRadioButton rbOptionTwo;
     private Handler mHandler;
     private int mSaveTime = 0;
 
@@ -87,6 +90,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mTvSettingCapUnit = findViewById(R.id.tv_cap_unit);
         mTvSettingCapScaleRange = findViewById(R.id.tv_cap_scale_range);
         mTvSaveTime = findViewById(R.id.tv_save_time);
+        rbOptionTwo = findViewById(R.id.rb_option_two);
 
         WaveManager.getInstance().addCallback(this);
         initEmgView();
@@ -277,6 +281,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private void startDeviceCollect() {
         ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
         mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
+        mCollectionTv.setText(getString(R.string.text_collect_stop));
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
         mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
         mDeviceManager.setCurrentCapacitance(0);
@@ -298,7 +303,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyHandshake(List<Integer> data) {
         mDeviceManager.setDeviceOpen(true);
-        mDeviceManager.resetParams();
         runOnUiThread(() -> ToastHelper.showShort("设备打开成功"));
     }
 
@@ -312,6 +316,9 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         runOnUiThread(() -> ToastHelper.showShort("设备开始采集数据"));
         mSaveDataSwitch.setEnabled(false);
         startRecordSampleData();
+        mDeviceManager.resetParams();
+        mEmgWaveView.resetView();
+        mCapacitanceWaveView.resetView();
     }
 
     /**
@@ -428,12 +435,13 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void calibrateSuccess() {
         LogUtils.i("calibrateSuccess");
+        rbOptionTwo.setText("角度");
         mCapacitanceWaveView.setyAxisDesc("角度/度");
         mTvSettingCapScaleRangeTip.setText("角度刻度范围");
         mTvSettingCapUnit.setText("度");
-        mTvSettingCapScaleRange.setText(String.valueOf(90));
+        mTvSettingCapScaleRange.setText(String.valueOf(160));
         mCapacitanceWaveView.setMinValue(-20);
-        mCapacitanceWaveView.setMaxValue(90);
+        mCapacitanceWaveView.setMaxValue(160);
         mCapacitanceWaveView.setWaveType(MyCapWaveView.ANGLE);
         mCapacitanceWaveView.resetView();
         mEmgWaveView.resetView();
@@ -442,12 +450,13 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void calibrateFail() {
         LogUtils.i("calibrateFail");
+        rbOptionTwo.setText("电容");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mTvSettingCapScaleRangeTip.setText(getString(R.string.cap_scale_range));
         mTvSettingCapUnit.setText(getString(R.string.pf));
         mTvSettingCapScaleRange.setText(String.valueOf(60));
         mCapacitanceWaveView.setMinValue(0);
-        mCapacitanceWaveView.setMaxValue(60);
+        mCapacitanceWaveView.setMaxValue(200);
         mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
         mCapacitanceWaveView.resetView();
         mEmgWaveView.resetView();
