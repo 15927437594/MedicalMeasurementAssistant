@@ -455,7 +455,7 @@ public class InformationCollectionActivity extends BaseKotlinActivity implements
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mTvSettingCapScaleRangeTip.setText(getString(R.string.cap_scale_range));
         mTvSettingCapUnit.setText(getString(R.string.pf));
-        mTvSettingCapScaleRange.setText(String.valueOf(60));
+        mTvSettingCapScaleRange.setText(String.valueOf(200));
         mCapacitanceWaveView.setMinValue(0);
         mCapacitanceWaveView.setMaxValue(200);
         mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
