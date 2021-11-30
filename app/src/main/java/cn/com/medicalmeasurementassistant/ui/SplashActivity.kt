@@ -14,7 +14,7 @@ class SplashActivity : BaseKotlinActivity() {
     override fun initView() {
         val handler = Handler()
         handler.postDelayed({
-            val intent = Intent(getActivity(), JavaInformationCollectionActivity::class.java)
+            val intent = Intent(getActivity(), InformationCollectionActivity::class.java)
             startActivity(intent)
             finish()
         }, 1000)

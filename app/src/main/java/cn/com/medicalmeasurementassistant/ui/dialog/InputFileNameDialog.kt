@@ -36,7 +36,7 @@ interface FileNameDialogListener {
     fun sure(fileName: String)
 }
 
-fun setFullScreenDialog( dialog: Dialog) {
+fun setFullScreenDialog(dialog: Dialog) {
     val window = dialog.window
     val p = window!!.attributes // 获取对话框当前的参数值
     p.height = ScreenUtils.getScreenHeight()

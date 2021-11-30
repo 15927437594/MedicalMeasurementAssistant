@@ -39,7 +39,7 @@ import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 import cn.com.medicalmeasurementassistant.utils.ToastHelper;
 
-public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, CalibrateListener, OnWaveCountChangeListener {
+public class InformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, CalibrateListener, OnWaveCountChangeListener {
     // 右上角链接按钮
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch mConnectionSwitch;
@@ -295,6 +295,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
         mSaveDataSwitch.setEnabled(true);
         mCollectionStatus = !mCollectionStatus;
+        mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
     }
 
     /**
@@ -394,7 +395,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
             mCollectionStatus = false;
             mCollectionIv.setImageResource(R.drawable.icon_collect_start);
             mCollectionTv.setText(getString(R.string.text_collect_start));
-            mCollectionTv.setTextColor(ContextCompat.getColor(JavaInformationCollectionActivity.this, R.color.theme_color));
+            mCollectionTv.setTextColor(ContextCompat.getColor(InformationCollectionActivity.this, R.color.theme_color));
         });
         mHandler.postDelayed(() -> runOnUiThread(() -> {
             mEmgWaveView.resetView();
