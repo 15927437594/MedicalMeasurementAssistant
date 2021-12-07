@@ -1,6 +1,7 @@
 package cn.com.medicalmeasurementassistant.ui;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.View;
@@ -13,6 +14,8 @@ import android.widget.TextView;
 
 import androidx.annotation.IdRes;
 import androidx.core.content.ContextCompat;
+
+import com.hjq.shape.view.ShapeRadioButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +39,7 @@ import cn.com.medicalmeasurementassistant.utils.MeasurementFileUtils;
 import cn.com.medicalmeasurementassistant.utils.SocketUtils;
 import cn.com.medicalmeasurementassistant.utils.ToastHelper;
 
-public class JavaInformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, CalibrateListener, OnWaveCountChangeListener {
+public class InformationCollectionActivity extends BaseKotlinActivity implements View.OnClickListener, DeviceInfoListener, CalibrateListener, OnWaveCountChangeListener {
     // 右上角链接按钮
     @SuppressLint("UseSwitchCompatOrMaterialCode")
     private Switch mConnectionSwitch;
@@ -60,6 +63,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private TextView mTvSettingCapScaleRangeTip;
     private TextView mTvSettingCapUnit;
     private TextView mTvSaveTime;
+    private ShapeRadioButton rbOptionTwo;
     private Handler mHandler;
     private int mSaveTime = 0;
 
@@ -86,6 +90,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mTvSettingCapUnit = findViewById(R.id.tv_cap_unit);
         mTvSettingCapScaleRange = findViewById(R.id.tv_cap_scale_range);
         mTvSaveTime = findViewById(R.id.tv_save_time);
+        rbOptionTwo = findViewById(R.id.rb_option_two);
 
         WaveManager.getInstance().addCallback(this);
         initEmgView();
@@ -165,6 +170,12 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
                 mEmgWaveFrameLayout.setVisibility(View.INVISIBLE);
             }
         });
+
+
+        mCapacitanceWaveFrameLayout.setVisibility(View.VISIBLE);
+        mEmgWaveFrameLayout.setVisibility(View.INVISIBLE);
+        mCapacitanceWaveFrameLayout.setVisibility(View.INVISIBLE);
+        mEmgWaveFrameLayout.setVisibility(View.VISIBLE);
     }
 
     private void setClick(@IdRes int id) {
@@ -270,10 +281,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     private void startDeviceCollect() {
         ServerManager.getInstance().sendData(new SendStartDataCollect().pack());
         mCollectionIv.setImageResource(R.drawable.icon_collect_stop);
+        mCollectionTv.setText(getString(R.string.text_collect_stop));
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.electrode_text_color_on));
         mDeviceManager.setSaveDataState(mSaveDataSwitch.isChecked());
         mDeviceManager.setCurrentCapacitance(0);
-        startRecordSampleData();
         mCollectionStatus = !mCollectionStatus;
     }
 
@@ -284,6 +295,7 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mCollectionTv.setTextColor(ContextCompat.getColor(this, R.color.theme_color));
         mSaveDataSwitch.setEnabled(true);
         mCollectionStatus = !mCollectionStatus;
+        mHandler.removeCallbacks(mUpdateSaveTimeRunnable);
     }
 
     /**
@@ -292,7 +304,6 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void replyHandshake(List<Integer> data) {
         mDeviceManager.setDeviceOpen(true);
-        mDeviceManager.resetParams();
         runOnUiThread(() -> ToastHelper.showShort("设备打开成功"));
     }
 
@@ -305,6 +316,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
         mDeviceManager.setDeviceStart(true);
         runOnUiThread(() -> ToastHelper.showShort("设备开始采集数据"));
         mSaveDataSwitch.setEnabled(false);
+        startRecordSampleData();
+        mDeviceManager.resetParams();
+        mEmgWaveView.resetView();
+        mCapacitanceWaveView.resetView();
     }
 
     /**
@@ -314,11 +329,10 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
      * @param data    电压数据
      */
     @Override
-    public void replyVoltage(int channel, List<Double> data) {
-        LogUtils.d(String.format("channel=%s, point=%s", channel, data));
-        List<Double> filterData = new ArrayList<>();
+    public void replyVoltage(int channel, List<Float> data) {
+        List<Float> filterData = new ArrayList<>();
         for (int i = 0; i < data.size(); i++) {
-            if (i % 8 == 0) {
+            if (i % 20 == 0) {
                 filterData.add(data.get(i));
             }
         }
@@ -346,8 +360,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
      * @param capacitance 电容值
      */
     @Override
-    public void replyCapacitance(double capacitance) {
-        LogUtils.i("replyCapacitance capacitance=" + capacitance);
+    public void replyCapacitance(float capacitance) {
+        LogUtils.d("replyCapacitance capacitance=" + capacitance);
         runOnUiThread(() -> {
             mCapacitanceWaveView.addData(capacitance);
             mCapacitanceWaveView.updateWaveLine();
@@ -360,8 +374,8 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
      * @param angle 角度值
      */
     @Override
-    public void replyAngle(double angle) {
-        LogUtils.i("replyAngle angle=" + angle);
+    public void replyAngle(float angle) {
+        LogUtils.d("replyAngle angle=" + angle);
         runOnUiThread(() -> {
             mCapacitanceWaveView.addData(angle);
             mCapacitanceWaveView.updateWaveLine();
@@ -375,17 +389,25 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     public void replyDeviceStopped() {
         LogUtils.i("replyDeviceStopped");
         runOnUiThread(() -> {
+            mSaveDataSwitch.setEnabled(true);
             mConnectionSwitch.setChecked(false);
             mDeviceManager.setDeviceOpen(false);
             mCollectionStatus = false;
             mCollectionIv.setImageResource(R.drawable.icon_collect_start);
             mCollectionTv.setText(getString(R.string.text_collect_start));
-            mCollectionTv.setTextColor(ContextCompat.getColor(JavaInformationCollectionActivity.this, R.color.theme_color));
+            mCollectionTv.setTextColor(ContextCompat.getColor(InformationCollectionActivity.this, R.color.theme_color));
         });
         mHandler.postDelayed(() -> runOnUiThread(() -> {
             mEmgWaveView.resetView();
             mCapacitanceWaveView.resetView();
-        }),500L);
+        }), 200L);
+    }
+
+    @Override
+    public void filterModeChanged() {
+        LogUtils.i("filterModeChanged");
+        mEmgWaveView.resetView();
+        mCapacitanceWaveView.resetView();
     }
 
     @Override
@@ -414,24 +436,38 @@ public class JavaInformationCollectionActivity extends BaseKotlinActivity implem
     @Override
     public void calibrateSuccess() {
         LogUtils.i("calibrateSuccess");
+        rbOptionTwo.setText("角度");
         mCapacitanceWaveView.setyAxisDesc("角度/度");
         mTvSettingCapScaleRangeTip.setText("角度刻度范围");
         mTvSettingCapUnit.setText("度");
-        mTvSettingCapScaleRange.setText(String.valueOf(90));
+        mTvSettingCapScaleRange.setText(String.valueOf(160));
         mCapacitanceWaveView.setMinValue(-20);
-        mCapacitanceWaveView.setMaxValue(90);
+        mCapacitanceWaveView.setMaxValue(160);
         mCapacitanceWaveView.setWaveType(MyCapWaveView.ANGLE);
+        mCapacitanceWaveView.resetView();
+        mEmgWaveView.resetView();
     }
 
     @Override
     public void calibrateFail() {
         LogUtils.i("calibrateFail");
+        rbOptionTwo.setText("电容");
         mCapacitanceWaveView.setyAxisDesc("电容/pF");
         mTvSettingCapScaleRangeTip.setText(getString(R.string.cap_scale_range));
         mTvSettingCapUnit.setText(getString(R.string.pf));
-        mTvSettingCapScaleRange.setText(String.valueOf(60));
+        mTvSettingCapScaleRange.setText(String.valueOf(200));
         mCapacitanceWaveView.setMinValue(0);
-        mCapacitanceWaveView.setMaxValue(60);
+        mCapacitanceWaveView.setMaxValue(200);
         mCapacitanceWaveView.setWaveType(MyCapWaveView.CAP);
+        mCapacitanceWaveView.resetView();
+        mEmgWaveView.resetView();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        startActivity(intent);
     }
 }

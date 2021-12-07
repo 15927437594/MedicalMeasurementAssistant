@@ -73,7 +73,7 @@ public class SettingParamsBean {
         // 通道状态
         private boolean channelStatus = true;
         // 高通虑波状态
-        private boolean highPassFilterStatus = true;
+        private boolean highpassFilterStatus = true;
         // 工频陷波状态
         private boolean frequencyNotchStatus = false;
         // REF电极状态
@@ -97,12 +97,12 @@ public class SettingParamsBean {
             this.channelStatus = channelStatus;
         }
 
-        public boolean getHighPassFilterStatus() {
-            return highPassFilterStatus;
+        public boolean getHighpassFilterStatus() {
+            return highpassFilterStatus;
         }
 
-        public void setHighPassFilterStatus(boolean highPassFilterStatus) {
-            this.highPassFilterStatus = highPassFilterStatus;
+        public void setHighpassFilterStatus(boolean highpassFilterStatus) {
+            this.highpassFilterStatus = highpassFilterStatus;
         }
 
         public boolean getFrequencyNotchStatus() {
@@ -174,12 +174,10 @@ public class SettingParamsBean {
             this.electrodeStatus = electrodeStatus;
         }
 
-
         @Override
         public int getType() {
             return CHANNEL_SETTING;
         }
     }
-
 
 }
