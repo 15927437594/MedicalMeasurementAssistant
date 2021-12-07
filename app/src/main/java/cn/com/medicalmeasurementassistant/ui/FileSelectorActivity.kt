@@ -8,7 +8,6 @@ import cn.com.medicalmeasurementassistant.R
 import cn.com.medicalmeasurementassistant.base.BaseKotlinActivity
 import cn.com.medicalmeasurementassistant.ui.adapter.FileListAdapter
 import cn.com.medicalmeasurementassistant.utils.PathUtils
-import cn.com.medicalmeasurementassistant.utils.TestUtil
 import cn.com.medicalmeasurementassistant.utils.spaces_item_decoration.RecyclerViewUtils
 import com.blankj.utilcode.util.FileUtils
 import java.io.File
@@ -31,7 +30,11 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
     override fun initView() {
         mTvMore.visibility = View.VISIBLE
         mTvMore.setBackgroundResource(R.drawable.icon_search)
-        RecyclerViewUtils.setRecyclerViewDivider(mRecyclerView, this, R.drawable.divider_tran_shape_8dp)
+        RecyclerViewUtils.setRecyclerViewDivider(
+            mRecyclerView,
+            this,
+            R.drawable.divider_tran_shape_8dp
+        )
         mRecyclerView.adapter = fileListAdapter
         updateDirectory(null)
 
@@ -56,7 +59,7 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
                 if (o1.lastModified() > o2.lastModified()) {
                     -1
                 } else {
-                   1
+                    1
                 }
 //                o1.lastModified().compareTo(o2.lastModified())
             }

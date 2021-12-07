@@ -37,7 +37,6 @@ public class ServerManager {
     private ServerManager() {
         mThreadPool = Executors.newCachedThreadPool();
         mHandler = new Handler();
-//        MessageHandler.getInstance().createHandler();
     }
 
     private void createServerSocket() {
@@ -128,6 +127,8 @@ public class ServerManager {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                LogUtils.e("DeviceClient exception: " + e.getMessage());
+                DeviceManager.getInstance().replyDeviceStopped();
             }
         }
     }

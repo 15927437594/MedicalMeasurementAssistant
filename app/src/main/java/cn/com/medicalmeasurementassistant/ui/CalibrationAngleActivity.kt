@@ -65,8 +65,8 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
     private fun executeCalibrate() {
         LogUtils.i("executeCalibrate")
         if (!stepOneExecuted) {
-            val angle = etRealAngle.text.toString().toDouble()
-            val capacitance = etRealCapacitance.text.toString().toDouble()
+            val angle = etRealAngle.text.toString().toFloat()
+            val capacitance = etRealCapacitance.text.toString().toFloat()
             LogUtils.i("angle=$angle, capacitance=$capacitance")
             DeviceManager.getInstance().angle1 = angle
             DeviceManager.getInstance().p1 = capacitance
@@ -79,8 +79,8 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
             tvCalibrateNext.text = getString(R.string.text_complete)
             stepOneExecuted = true
         } else {
-            val angle = etRealAngle.text.toString().toDouble()
-            val capacitance = etRealCapacitance.text.toString().toDouble()
+            val angle = etRealAngle.text.toString().toFloat()
+            val capacitance = etRealCapacitance.text.toString().toFloat()
             LogUtils.i("angle=$angle, capacitance=$capacitance")
             DeviceManager.getInstance().angle2 = angle
             DeviceManager.getInstance().p2 = capacitance
@@ -89,7 +89,7 @@ class CalibrationAngleActivity : BaseKotlinActivity(), View.OnClickListener {
                 DeviceManager.getInstance().calibrateState = false
                 DeviceManager.getInstance().calibrateFail()
                 ToastHelper.showShort("两次测得的电容值过于接近, 校准失败")
-                handler.postDelayed({ onBackPressed() }, 2000L)
+                handler.postDelayed({ onBackPressed() }, 1500L)
                 DeviceManager.getInstance().resetCalibrate()
             } else {
                 DeviceManager.getInstance().calibrateState = true
