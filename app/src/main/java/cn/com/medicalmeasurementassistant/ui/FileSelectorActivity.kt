@@ -50,7 +50,7 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
             directoryName = file.path
         }
         val listFilesInDir = FileUtils.listFilesInDir(directoryName)
-        listFilesInDir.sortWith(Comparator { o1, o2 ->
+        listFilesInDir.sortWith { o1, o2 ->
             if (o1.isDirectory && o2.isFile) {
                 -1
             } else if (o1.isFile && o2.isDirectory) {
@@ -63,7 +63,7 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
                 }
 //                o1.lastModified().compareTo(o2.lastModified())
             }
-        })
+        }
 //        if (isCanUpdateList)
 //            fileListAdapter.datas = listFilesInDir
     }
@@ -110,6 +110,5 @@ class FileSelectorActivity : BaseKotlinActivity(), View.OnClickListener {
             }
         }
     }
-
 
 }

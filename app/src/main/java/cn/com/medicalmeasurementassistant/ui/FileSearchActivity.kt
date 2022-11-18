@@ -78,18 +78,18 @@ class FileSearchActivity : BaseKotlinActivity(), View.OnClickListener {
     private fun updateDirectory(searchKey: String) {
         val listFilesInDir =
             FileUtils.listFilesInDirWithFilter(mParentDirectoryName, getFileFilter(searchKey), true)
-        val listFiles = sss(listFilesInDir)
+        val listFiles = updateFileList(listFilesInDir)
 
-        listFiles.sortWith(Comparator { o1, o2 ->
+        listFiles.sortWith { o1, o2 ->
             o2.file.lastModified().compareTo(o1.file.lastModified())
-        })
+        }
         if (isCanUpdateList) {
             fileListAdapter.mSearchKey = searchKey
             fileListAdapter.datas = listFiles
         }
     }
 
-    private fun sss(fileList: List<File>): ArrayList<FileItemBean> {
+    private fun updateFileList(fileList: List<File>): ArrayList<FileItemBean> {
         val mutableList = ArrayList<FileItemBean>()
         for (file in fileList) {
             val fileItemBean = FileItemBean()
