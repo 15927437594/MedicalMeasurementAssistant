@@ -8,7 +8,7 @@ public class GlobalBean  {
     // 通道状态
     private int channelStatus;
     // 高通虑波状态
-    private int highPassFilterStatus;
+    private int highpassFilterStatus;
     // 工频陷波状态
     private int frequencyNotchStatus;
     // REF电极状态
@@ -22,12 +22,12 @@ public class GlobalBean  {
         this.channelStatus = channelStatus;
     }
 
-    public int getHighPassFilterStatus() {
-        return highPassFilterStatus;
+    public int getHighpassFilterStatus() {
+        return highpassFilterStatus;
     }
 
-    public void setHighPassFilterStatus(int highPassFilterStatus) {
-        this.highPassFilterStatus = highPassFilterStatus;
+    public void setHighpassFilterStatus(int highpassFilterStatus) {
+        this.highpassFilterStatus = highpassFilterStatus;
     }
 
     public int getFrequencyNotchStatus() {

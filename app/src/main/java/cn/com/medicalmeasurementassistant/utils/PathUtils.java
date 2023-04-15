@@ -66,7 +66,7 @@ public class PathUtils {
             if (!file.exists()) {
                 boolean mkdirs = file.mkdirs();
                 if (mkdirs) {
-                    LogUtils.i("ssfsf");
+                    LogUtils.i("mkDirs");
 
                 }
             }

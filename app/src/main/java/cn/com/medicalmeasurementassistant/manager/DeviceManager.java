@@ -1,7 +1,5 @@
 package cn.com.medicalmeasurementassistant.manager;
 
-import android.annotation.SuppressLint;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,103 +24,177 @@ public class DeviceManager {
     private boolean isDeviceOpen = false;
     private boolean isDeviceStart = false;
     private boolean mSaveDataState = false;
-    private boolean mHighPassFilterState = true;
+    private boolean mHighpassFilterState = true;
     private boolean mNotchFilterState = false;
     private List<String> mOriginalData;
     private List<String> mFilterData;
-    private static final double highPassFilterA0 = 1.0;
-    private static final double highPassFilterA1 = -2.937170728449890;
-    private static final double highPassFilterA2 = 2.876299723479331;
-    private static final double highPassFilterA3 = -0.939098940325283;
-    private static final double highPassFilterB0 = 0.969071174031813;
-    private static final double highPassFilterB1 = -2.907213522095439;
-    private static final double highPassFilterB2 = 2.907213522095439;
-    private static final double highPassFilterB3 = -0.969071174031813;
+    private static final double highpassFilterA0 = 1.0;
+    private static final double highpassFilterA1 = -2.937170728449890;
+    private static final double highpassFilterA2 = 2.876299723479331;
+    private static final double highpassFilterA3 = -0.939098940325283;
+    private static final double highpassFilterB0 = 0.969071174031813;
+    private static final double highpassFilterB1 = -2.907213522095439;
+    private static final double highpassFilterB2 = 2.907213522095439;
+    private static final double highpassFilterB3 = -0.969071174031813;
     private static final double notchFilterA0 = 1.0;
     private static final double notchFilterA1 = -1.970651249848974;
     private static final double notchFilterA2 = 0.995215665562626;
     private static final double notchFilterB0 = 0.997607832781313;
     private static final double notchFilterB1 = -1.970651249848974;
     private static final double notchFilterB2 = 0.997607832781313;
-    private static final int orderOfHighPassFilter = 3;
+    private static final int orderOfHighpassFilter = 3;
     private static final int orderOfNotchFilter = 2;
-    private final Map<Integer, Boolean> mHighPassFilteredMap;
-    private final Map<Integer, Boolean> mNotchFilteredMap;
-    private final Map<Integer, List<Double>> lastFilteredDataMap;
-    private final Map<Integer, List<Double>> lastFilteringDataMap;
-    private double angle1 = 0;
-    private double angle2 = 0;
-    private double p1 = 0;
-    private double p2 = 0;
-    private double mCurrentCapacitance = 0;
+    private boolean highpassChannel1Filtered = false;
+    private boolean highpassChannel2Filtered = false;
+    private boolean highpassChannel3Filtered = false;
+    private boolean highpassChannel4Filtered = false;
+    private boolean highpassChannel5Filtered = false;
+    private boolean highpassChannel6Filtered = false;
+    private boolean highpassChannel7Filtered = false;
+    private boolean highpassChannel8Filtered = false;
+    private final List<Float> highpassChannel1LastFilteredData;
+    private final List<Float> highpassChannel1LastFilteringData;
+    private final List<Float> highpassChannel2LastFilteredData;
+    private final List<Float> highpassChannel2LastFilteringData;
+    private final List<Float> highpassChannel3LastFilteredData;
+    private final List<Float> highpassChannel3LastFilteringData;
+    private final List<Float> highpassChannel4LastFilteredData;
+    private final List<Float> highpassChannel4LastFilteringData;
+    private final List<Float> highpassChannel5LastFilteredData;
+    private final List<Float> highpassChannel5LastFilteringData;
+    private final List<Float> highpassChannel6LastFilteredData;
+    private final List<Float> highpassChannel6LastFilteringData;
+    private final List<Float> highpassChannel7LastFilteredData;
+    private final List<Float> highpassChannel7LastFilteringData;
+    private final List<Float> highpassChannel8LastFilteredData;
+    private final List<Float> highpassChannel8LastFilteringData;
+    private boolean notchChannel1Filtered = false;
+    private boolean notchChannel2Filtered = false;
+    private boolean notchChannel3Filtered = false;
+    private boolean notchChannel4Filtered = false;
+    private boolean notchChannel5Filtered = false;
+    private boolean notchChannel6Filtered = false;
+    private boolean notchChannel7Filtered = false;
+    private boolean notchChannel8Filtered = false;
+    private final List<Float> notchChannel1LastFilteredData;
+    private final List<Float> notchChannel1LastFilteringData;
+    private final List<Float> notchChannel2LastFilteredData;
+    private final List<Float> notchChannel2LastFilteringData;
+    private final List<Float> notchChannel3LastFilteredData;
+    private final List<Float> notchChannel3LastFilteringData;
+    private final List<Float> notchChannel4LastFilteredData;
+    private final List<Float> notchChannel4LastFilteringData;
+    private final List<Float> notchChannel5LastFilteredData;
+    private final List<Float> notchChannel5LastFilteringData;
+    private final List<Float> notchChannel6LastFilteredData;
+    private final List<Float> notchChannel6LastFilteringData;
+    private final List<Float> notchChannel7LastFilteredData;
+    private final List<Float> notchChannel7LastFilteringData;
+    private final List<Float> notchChannel8LastFilteredData;
+    private final List<Float> notchChannel8LastFilteringData;
+    private float angle1 = 0;
+    private float angle2 = 0;
+    private float p1 = 0;
+    private float p2 = 0;
+    private float mCurrentCapacitance = 0;
     private boolean mCalibrateState = false;
-    private final Map<Integer, List<Double>> mChannelDataMap;
-    private static final long EMG_UPDATE_INTERVAL = 200L;
-    private static final long CAP_UPDATE_INTERVAL = 50L;
-    private final Map<Integer, Long> mUpdateTimeMap;
+    private final Map<Integer, List<Float>> mChannelDataMap;
     private int mSaveTime = 0;
 
     public void resetParams() {
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            mHighPassFilteredMap.put(i, false);
-        }
-
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            mNotchFilteredMap.put(i, false);
-        }
-
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            List<Double> doubles = lastFilteredDataMap.get(i);
-            if (doubles != null) {
-                doubles.clear();
-            }
-        }
-
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            List<Double> doubles = lastFilteringDataMap.get(i);
-            if (doubles != null) {
-                doubles.clear();
-            }
-        }
-
         mOriginalData.clear();
         mFilterData.clear();
+        highpassChannel1Filtered = false;
+        highpassChannel2Filtered = false;
+        highpassChannel3Filtered = false;
+        highpassChannel4Filtered = false;
+        highpassChannel5Filtered = false;
+        highpassChannel6Filtered = false;
+        highpassChannel7Filtered = false;
+        highpassChannel8Filtered = false;
+        highpassChannel1LastFilteredData.clear();
+        highpassChannel1LastFilteringData.clear();
+        highpassChannel2LastFilteredData.clear();
+        highpassChannel2LastFilteringData.clear();
+        highpassChannel3LastFilteredData.clear();
+        highpassChannel3LastFilteringData.clear();
+        highpassChannel4LastFilteredData.clear();
+        highpassChannel4LastFilteringData.clear();
+        highpassChannel5LastFilteredData.clear();
+        highpassChannel5LastFilteringData.clear();
+        highpassChannel6LastFilteredData.clear();
+        highpassChannel6LastFilteringData.clear();
+        highpassChannel7LastFilteredData.clear();
+        highpassChannel7LastFilteringData.clear();
+        highpassChannel8LastFilteredData.clear();
+        highpassChannel8LastFilteringData.clear();
+        notchChannel1Filtered = false;
+        notchChannel2Filtered = false;
+        notchChannel3Filtered = false;
+        notchChannel4Filtered = false;
+        notchChannel5Filtered = false;
+        notchChannel6Filtered = false;
+        notchChannel7Filtered = false;
+        notchChannel8Filtered = false;
+        notchChannel1LastFilteredData.clear();
+        notchChannel1LastFilteringData.clear();
+        notchChannel2LastFilteredData.clear();
+        notchChannel2LastFilteringData.clear();
+        notchChannel3LastFilteredData.clear();
+        notchChannel3LastFilteringData.clear();
+        notchChannel4LastFilteredData.clear();
+        notchChannel4LastFilteringData.clear();
+        notchChannel5LastFilteredData.clear();
+        notchChannel5LastFilteringData.clear();
+        notchChannel6LastFilteredData.clear();
+        notchChannel6LastFilteringData.clear();
+        notchChannel7LastFilteredData.clear();
+        notchChannel7LastFilteringData.clear();
+        notchChannel8LastFilteredData.clear();
+        notchChannel8LastFilteringData.clear();
     }
 
     private DeviceManager() {
-        mHighPassFilteredMap = new HashMap<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            mHighPassFilteredMap.put(i, false);
-        }
-        mNotchFilteredMap = new HashMap<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            mNotchFilteredMap.put(i, false);
-        }
-
-        List<Double> lastFilteredData = new ArrayList<>();
-        lastFilteredDataMap = new HashMap<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            lastFilteredDataMap.put(i, lastFilteredData);
-        }
-
-        List<Double> lastFilteringData = new ArrayList<>();
-        lastFilteringDataMap = new HashMap<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            lastFilteringDataMap.put(i, lastFilteringData);
-        }
-
         mChannelDataMap = new HashMap<>();
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
             mChannelDataMap.put(i, new ArrayList<>());
         }
+        highpassChannel1LastFilteredData = new ArrayList<>();
+        highpassChannel1LastFilteringData = new ArrayList<>();
+        highpassChannel2LastFilteredData = new ArrayList<>();
+        highpassChannel2LastFilteringData = new ArrayList<>();
+        highpassChannel3LastFilteredData = new ArrayList<>();
+        highpassChannel3LastFilteringData = new ArrayList<>();
+        highpassChannel4LastFilteredData = new ArrayList<>();
+        highpassChannel4LastFilteringData = new ArrayList<>();
+        highpassChannel5LastFilteredData = new ArrayList<>();
+        highpassChannel5LastFilteringData = new ArrayList<>();
+        highpassChannel6LastFilteredData = new ArrayList<>();
+        highpassChannel6LastFilteringData = new ArrayList<>();
+        highpassChannel7LastFilteredData = new ArrayList<>();
+        highpassChannel7LastFilteringData = new ArrayList<>();
+        highpassChannel8LastFilteredData = new ArrayList<>();
+        highpassChannel8LastFilteringData = new ArrayList<>();
+
+        notchChannel1LastFilteredData = new ArrayList<>();
+        notchChannel1LastFilteringData = new ArrayList<>();
+        notchChannel2LastFilteredData = new ArrayList<>();
+        notchChannel2LastFilteringData = new ArrayList<>();
+        notchChannel3LastFilteredData = new ArrayList<>();
+        notchChannel3LastFilteringData = new ArrayList<>();
+        notchChannel4LastFilteredData = new ArrayList<>();
+        notchChannel4LastFilteringData = new ArrayList<>();
+        notchChannel5LastFilteredData = new ArrayList<>();
+        notchChannel5LastFilteringData = new ArrayList<>();
+        notchChannel6LastFilteredData = new ArrayList<>();
+        notchChannel6LastFilteringData = new ArrayList<>();
+        notchChannel7LastFilteredData = new ArrayList<>();
+        notchChannel7LastFilteringData = new ArrayList<>();
+        notchChannel8LastFilteredData = new ArrayList<>();
+        notchChannel8LastFilteringData = new ArrayList<>();
 
         mOriginalData = new ArrayList<>();
         mFilterData = new ArrayList<>();
-
-        mUpdateTimeMap = new HashMap<>();
-        for (int i = 0; i < Constant.DEFAULT_CHANNEL + 1; i++) {
-            mUpdateTimeMap.put(i, 0L);
-        }
     }
 
     public static DeviceManager getInstance() {
@@ -157,7 +229,6 @@ public class DeviceManager {
     }
 
     public void replyHandshake(List<Integer> data) {
-        LogUtils.d("replyStartDataCollect data=" + CalculateUtils.getHexStringList(data));
         if (mDeviceInfoListener != null) {
             mDeviceInfoListener.replyHandshake(data);
         }
@@ -177,203 +248,1134 @@ public class DeviceManager {
         }
     }
 
-    // 获取高通滤波数据
-    public List<Double> getHighPassFilteredData(int channel, List<Double> srcData) {
-        List<Double> filteredData;
-        LogUtils.d("getHighPassFilteredData srcDataSize=" + srcData.size());
-        // 获取channel的过滤状态
-        boolean filtered = false;
-        Boolean highPassFiltered = mHighPassFilteredMap.get(channel);
-        if (highPassFiltered != null) {
-            filtered = highPassFiltered;
+    public void filterModeChanged() {
+        LogUtils.i("filterModeChanged");
+        if (mDeviceInfoListener != null) {
+            mDeviceInfoListener.filterModeChanged();
         }
-        List<Double> lastFilteredData = lastFilteredDataMap.get(channel);
-        if (lastFilteredData == null) {
-            return null;
-        }
-        List<Double> lastFilteringData = lastFilteringDataMap.get(channel);
-        LogUtils.i("lastFilteringData=" + lastFilteringData);
-        if (lastFilteringData == null) {
-            return null;
-        }
-        if (filtered) {
-            List<Double> channelFilteredData = new ArrayList<>(lastFilteredData);
-            List<Double> channelFilteringData = new ArrayList<>(lastFilteringData);
-            LogUtils.i("channelFilteredData=" + channelFilteredData);
-            LogUtils.i("channelFilteringData=" + channelFilteringData);
+    }
+
+    public List<Float> getChannel1HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel1Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel1LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel1LastFilteringData);
             // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
-            lastFilteredData.clear();
-            lastFilteringData.clear();
+            highpassChannel1LastFilteredData.clear();
+            highpassChannel1LastFilteringData.clear();
             // 初始化channel的已过滤数据
             for (int i = 0; i < srcData.size(); i++) {
-                channelFilteredData.add(0.0);
+                channelFilteredData.add(0.0F);
             }
             // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
             channelFilteringData.addAll(srcData);
-            if (channel == 0) {
-                LogUtils.i("channelFilteredData=" + channelFilteredData);
-                LogUtils.i("channelFilteringData=" + channelFilteringData);
-            }
-            LogUtils.d("getFilterData channelFilteredDataSize=" + channelFilteredData.size());
-            LogUtils.d("getFilterData channelFilteringDataSize=" + channelFilteringData.size());
-            for (int i = orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
                 if (channelFilteringData.get(i) == 0.0) {
                     //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
+                    channelFilteredData.set(i, 0.0F);
                 } else {
-                    double filteredPointChannelB = highPassFilterB0 * channelFilteringData.get(i) + highPassFilterB1 * channelFilteringData.get(i - 1) + highPassFilterB2 * channelFilteringData.get(i - 2) + highPassFilterB3 * channelFilteringData.get(i - 3);
-                    double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                    LogUtils.i("getHighPassFilteredData filteredPointChannel=" + filteredPointChannel);
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
             // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
-            for (int i = channelFilteredData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
-                lastFilteredData.add(channelFilteredData.get(i));
-                lastFilteringData.add(channelFilteringData.get(i));
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel1LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel1LastFilteringData.add(channelFilteringData.get(i));
             }
             //此次实际的已过滤数据为第四位到最后一位
-            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighPassFilter, channelFilteredData.size()));
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
         } else {
-            List<Double> channelFilteredData = new ArrayList<>();
+            List<Float> channelFilteredData = new ArrayList<>();
             for (int i = 0; i < srcData.size(); i++) {
-                channelFilteredData.add(0.0);
+                channelFilteredData.add(0.0F);
             }
 
-            if (channel == 0) {
-                LogUtils.i("channelFilteringData=" + srcData);
-            }
-
-            for (int i = orderOfHighPassFilter; i < srcData.size(); i++) {
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
                 if (srcData.get(i) == 0.0) {
                     //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
+                    channelFilteredData.set(i, 0.0F);
                 } else {
                     // 没有保存的过滤数据,高通滤波从第四个数据开始计算
-                    double filteredPointChannelB = highPassFilterB0 * srcData.get(i) + highPassFilterB1 * srcData.get(i - 1) + highPassFilterB2 * srcData.get(i - 2) + highPassFilterB3 * srcData.get(i - 3);
-                    LogUtils.i("getHighPassFilteredData filteredPointChannelB=" + filteredPointChannelB);
-                    double filteredPointChannelA = highPassFilterA1 * channelFilteredData.get(i - 1) + highPassFilterA2 * channelFilteredData.get(i - 2) + highPassFilterA3 * channelFilteredData.get(i - 3);
-                    LogUtils.i("getHighPassFilteredData filteredPointChannelA=" + filteredPointChannelA);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
-                    LogUtils.i("getHighPassFilteredData filteredPointChannel=" + filteredPointChannel);
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
 
-            lastFilteredData.clear();
-            lastFilteringData.clear();
+            highpassChannel1LastFilteredData.clear();
+            highpassChannel1LastFilteringData.clear();
 
             // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
-            for (int i = srcData.size() - orderOfHighPassFilter; i < channelFilteredData.size(); i++) {
-                lastFilteredData.add(channelFilteredData.get(i));
-                lastFilteringData.add(srcData.get(i));
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel1LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel1LastFilteringData.add(srcData.get(i));
             }
-
             // 设置channel的过滤状态为true
-            mHighPassFilteredMap.put(channel, true);
+            highpassChannel1Filtered = true;
             filteredData = new ArrayList<>(channelFilteredData);
-            LogUtils.i("getHighPassFilteredData filteredData=" + filteredData);
         }
         return filteredData;
     }
 
-    // 获取工频陷波数据(计算逻辑和高通滤波一致,区别为参数不同)
-    public List<Double> getNotchFilteredData(int channel, List<Double> srcData) {
-        List<Double> filteredData;
-        LogUtils.d("getNotchFilteredData srcDataSize=" + srcData.size());
-        boolean filtered = false;
-        Boolean notchFiltered = mNotchFilteredMap.get(channel);
-        if (notchFiltered != null) {
-            filtered = notchFiltered;
-        }
-        List<Double> lastFilteredData = lastFilteredDataMap.get(channel);
-        if (lastFilteredData == null) {
-            return null;
-        }
-        List<Double> lastFilteringData = lastFilteringDataMap.get(channel);
-        if (lastFilteringData == null) {
-            return null;
-        }
-        if (filtered) {
-            List<Double> channelFilteredData = new ArrayList<>(lastFilteredData);
-            List<Double> channelFilteringData = new ArrayList<>(lastFilteringData);
-            lastFilteredData.clear();
-            lastFilteringData.clear();
+    public List<Float> getChannel2HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel2Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel2LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel2LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel2LastFilteredData.clear();
+            highpassChannel2LastFilteringData.clear();
+            // 初始化channel的已过滤数据
             for (int i = 0; i < srcData.size(); i++) {
-                channelFilteredData.add(0.0);
+                channelFilteredData.add(0.0F);
             }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
             channelFilteringData.addAll(srcData);
-            LogUtils.d("getFilterData channelFilteredDataSize=" + channelFilteredData.size());
-            LogUtils.d("getFilterData channelFilteringData=" + channelFilteringData.size());
-            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
                 if (channelFilteringData.get(i) == 0.0) {
                     //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
+                    channelFilteredData.set(i, 0.0F);
                 } else {
-                    double filteredPointChannelB = notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2);
-                    double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel2LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel2LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
 
-            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
-                lastFilteredData.add(channelFilteredData.get(i));
-                lastFilteringData.add(channelFilteringData.get(i));
+            highpassChannel2LastFilteredData.clear();
+            highpassChannel2LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel2LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel2LastFilteringData.add(srcData.get(i));
             }
+            // 设置channel的过滤状态为true
+            highpassChannel2Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel3HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel3Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel3LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel3LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel3LastFilteredData.clear();
+            highpassChannel3LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel3LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel3LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            highpassChannel3LastFilteredData.clear();
+            highpassChannel3LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel3LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel3LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel3Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel4HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel4Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel4LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel4LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel4LastFilteredData.clear();
+            highpassChannel4LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel4LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel4LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            highpassChannel4LastFilteredData.clear();
+            highpassChannel4LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel4LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel4LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel4Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel5HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel5Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel5LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel5LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel5LastFilteredData.clear();
+            highpassChannel5LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel5LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel5LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            highpassChannel5LastFilteredData.clear();
+            highpassChannel5LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel5LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel5LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel5Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel6HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel6Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel6LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel6LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel6LastFilteredData.clear();
+            highpassChannel6LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel6LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel6LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            highpassChannel6LastFilteredData.clear();
+            highpassChannel6LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel6LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel6LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel6Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel7HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel7Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel7LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel7LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel7LastFilteredData.clear();
+            highpassChannel7LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel7LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel7LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredPointChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredPointChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            highpassChannel7LastFilteredData.clear();
+            highpassChannel7LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel7LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel7LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel7Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel8HighPassFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (highpassChannel8Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(highpassChannel8LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(highpassChannel8LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            highpassChannel8LastFilteredData.clear();
+            highpassChannel8LastFilteringData.clear();
+            // 初始化channel的已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据3 + 此次待过滤数据40 = 43
+            channelFilteringData.addAll(srcData);
+            for (int i = orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (highpassFilterB0 * channelFilteringData.get(i) + highpassFilterB1 * channelFilteringData.get(i - 1) + highpassFilterB2 * channelFilteringData.get(i - 2) + highpassFilterB3 * channelFilteringData.get(i - 3));
+                    float filteredChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel8LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel8LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第四位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfHighpassFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfHighpassFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    //通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    // 没有保存的过滤数据,高通滤波从第四个数据开始计算
+                    float filteredChannelB = (float) (highpassFilterB0 * srcData.get(i) + highpassFilterB1 * srcData.get(i - 1) + highpassFilterB2 * srcData.get(i - 2) + highpassFilterB3 * srcData.get(i - 3));
+                    float filteredChannelA = (float) (highpassFilterA1 * channelFilteredData.get(i - 1) + highpassFilterA2 * channelFilteredData.get(i - 2) + highpassFilterA3 * channelFilteredData.get(i - 3));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+
+            highpassChannel8LastFilteredData.clear();
+            highpassChannel8LastFilteringData.clear();
+
+            // 保存最后三个已过滤的数据和最后三个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfHighpassFilter; i < channelFilteredData.size(); i++) {
+                highpassChannel8LastFilteredData.add(channelFilteredData.get(i));
+                highpassChannel8LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel的过滤状态为true
+            highpassChannel8Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel1NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel1Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel1LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel1LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel1LastFilteredData.clear();
+            notchChannel1LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel1LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel1LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
             filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
         } else {
-            List<Double> channelFilteredData = new ArrayList<>();
+            List<Float> channelFilteredData = new ArrayList<>();
             for (int i = 0; i < srcData.size(); i++) {
-                channelFilteredData.add(0.0);
+                channelFilteredData.add(0.0F);
             }
 
             for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
                 if (srcData.get(i) == 0.0) {
-                    //通道数据为0的情况
-                    channelFilteredData.set(i, 0.0);
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
                 } else {
-                    double filteredPointChannelB = notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2);
-                    double filteredPointChannelA = notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2);
-                    double filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
                     channelFilteredData.set(i, filteredPointChannel);
                 }
             }
+
+            notchChannel1LastFilteredData.clear();
+            notchChannel1LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
             for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
-                lastFilteredData.add(channelFilteredData.get(i));
-                lastFilteringData.add(srcData.get(i));
+                notchChannel1LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel1LastFilteringData.add(srcData.get(i));
             }
-            mNotchFilteredMap.put(channel, true);
+            // 设置channel1的过滤状态为true
+            notchChannel1Filtered = true;
             filteredData = new ArrayList<>(channelFilteredData);
         }
         return filteredData;
     }
 
-//    @SuppressLint("DefaultLocale")
+    public List<Float> getChannel2NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel2Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel2LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel2LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel2LastFilteredData.clear();
+            notchChannel2LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel2LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel2LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel2LastFilteredData.clear();
+            notchChannel2LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel2LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel2LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel2的过滤状态为true
+            notchChannel2Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel3NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel3Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel3LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel3LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel3LastFilteredData.clear();
+            notchChannel3LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel3LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel3LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel3LastFilteredData.clear();
+            notchChannel3LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel3LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel3LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel3的过滤状态为true
+            notchChannel3Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel4NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel4Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel4LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel4LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel4LastFilteredData.clear();
+            notchChannel4LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel4LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel4LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel4LastFilteredData.clear();
+            notchChannel4LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel4LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel4LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel4的过滤状态为true
+            notchChannel4Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel5NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel5Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel5LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel5LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel5LastFilteredData.clear();
+            notchChannel5LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel5LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel5LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel5LastFilteredData.clear();
+            notchChannel5LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel5LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel5LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel5的过滤状态为true
+            notchChannel5Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel6NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel6Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel6LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel6LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel6LastFilteredData.clear();
+            notchChannel6LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel6LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel6LastFilteringData.add(channelFilteringData.get(i));
+            }
+            //此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel6LastFilteredData.clear();
+            notchChannel6LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel6LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel6LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel6的过滤状态为true
+            notchChannel6Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel7NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel7Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel7LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel7LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel7LastFilteredData.clear();
+            notchChannel7LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel7LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel7LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel7LastFilteredData.clear();
+            notchChannel7LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel7LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel7LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel7的过滤状态为true
+            notchChannel7Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getChannel8NotchFilteredData(List<Float> srcData) {
+        List<Float> filteredData;
+        if (notchChannel8Filtered) {
+            List<Float> channelFilteredData = new ArrayList<>(notchChannel8LastFilteredData);
+            List<Float> channelFilteringData = new ArrayList<>(notchChannel8LastFilteringData);
+            // 每次取完上一次的已过滤数据和待过滤数据,将容器清空,用于下一次更新已过滤数据和待过滤数据
+            notchChannel8LastFilteredData.clear();
+            notchChannel8LastFilteringData.clear();
+            // 初始化已过滤数据
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+            // 更新待过滤数据,此时待过滤数据长度为上一次保存的待过滤数据2 + 此次待过滤数据40 = 42
+            channelFilteringData.addAll(srcData);
+
+            for (int i = orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                if (channelFilteringData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredChannelB = (float) (notchFilterB0 * channelFilteringData.get(i) + notchFilterB1 * channelFilteringData.get(i - 1) + notchFilterB2 * channelFilteringData.get(i - 2));
+                    float filteredChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredChannel = filteredChannelB - filteredChannelA;
+                    channelFilteredData.set(i, filteredChannel);
+                }
+            }
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = channelFilteredData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel8LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel8LastFilteringData.add(channelFilteringData.get(i));
+            }
+            // 此次实际的已过滤数据为第三位到最后一位
+            filteredData = new ArrayList<>(channelFilteredData.subList(orderOfNotchFilter, channelFilteredData.size()));
+        } else {
+            List<Float> channelFilteredData = new ArrayList<>();
+            for (int i = 0; i < srcData.size(); i++) {
+                channelFilteredData.add(0.0F);
+            }
+
+            for (int i = orderOfNotchFilter; i < srcData.size(); i++) {
+                if (srcData.get(i) == 0.0) {
+                    // 通道数据为0的情况
+                    channelFilteredData.set(i, 0.0F);
+                } else {
+                    float filteredPointChannelB = (float) (notchFilterB0 * srcData.get(i) + notchFilterB1 * srcData.get(i - 1) + notchFilterB2 * srcData.get(i - 2));
+                    float filteredPointChannelA = (float) (notchFilterA1 * channelFilteredData.get(i - 1) + notchFilterA2 * channelFilteredData.get(i - 2));
+                    float filteredPointChannel = filteredPointChannelB - filteredPointChannelA;
+                    channelFilteredData.set(i, filteredPointChannel);
+                }
+            }
+
+            notchChannel8LastFilteredData.clear();
+            notchChannel8LastFilteringData.clear();
+
+            // 保存最后两个已过滤的数据和最后两个待过滤的数据,用作下一次过滤计算的参数
+            for (int i = srcData.size() - orderOfNotchFilter; i < channelFilteredData.size(); i++) {
+                notchChannel8LastFilteredData.add(channelFilteredData.get(i));
+                notchChannel8LastFilteringData.add(srcData.get(i));
+            }
+            // 设置channel8的过滤状态为true
+            notchChannel8Filtered = true;
+            filteredData = new ArrayList<>(channelFilteredData);
+        }
+        return filteredData;
+    }
+
+    public List<Float> getHighPassFilteredData(int channel, List<Float> data) {
+        List<Float> highPassFilteredData = new ArrayList<>();
+        if (channel == 0) {
+            highPassFilteredData = getChannel1HighPassFilteredData(data);
+        } else if (channel == 1) {
+            highPassFilteredData = getChannel2HighPassFilteredData(data);
+        } else if (channel == 2) {
+            highPassFilteredData = getChannel3HighPassFilteredData(data);
+        } else if (channel == 3) {
+            highPassFilteredData = getChannel4HighPassFilteredData(data);
+        } else if (channel == 4) {
+            highPassFilteredData = getChannel5HighPassFilteredData(data);
+        } else if (channel == 5) {
+            highPassFilteredData = getChannel6HighPassFilteredData(data);
+        } else if (channel == 6) {
+            highPassFilteredData = getChannel7HighPassFilteredData(data);
+        } else if (channel == 7) {
+            highPassFilteredData = getChannel8HighPassFilteredData(data);
+        }
+        return highPassFilteredData;
+    }
+
+    public List<Float> getNotchFilteredData(int channel, List<Float> data) {
+        List<Float> notchFilteredData = new ArrayList<>();
+        if (channel == 0) {
+            notchFilteredData = getChannel1NotchFilteredData(data);
+        } else if (channel == 1) {
+            notchFilteredData = getChannel2NotchFilteredData(data);
+        } else if (channel == 2) {
+            notchFilteredData = getChannel3NotchFilteredData(data);
+        } else if (channel == 3) {
+            notchFilteredData = getChannel4NotchFilteredData(data);
+        } else if (channel == 4) {
+            notchFilteredData = getChannel5NotchFilteredData(data);
+        } else if (channel == 5) {
+            notchFilteredData = getChannel6NotchFilteredData(data);
+        } else if (channel == 6) {
+            notchFilteredData = getChannel7NotchFilteredData(data);
+        } else if (channel == 7) {
+            notchFilteredData = getChannel8NotchFilteredData(data);
+        }
+        return notchFilteredData;
+    }
+
     public void replySampledData(List<Integer> data) {
-        LogUtils.d("replySampledData startTime=" + System.currentTimeMillis());
         List<Integer> capacitanceData = new ArrayList<>(data.subList(960, 964));
         replyCapacitanceData(CalculateUtils.integerListToBytes(capacitanceData));
 
         // 清空mChannelDataMap容器中保存的数据
         for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-            List<Double> channelData = mChannelDataMap.get(i);
+            List<Float> channelData = mChannelDataMap.get(i);
             if (channelData != null) {
                 channelData.clear();
             }
         }
 
-        LogUtils.d("replySampledData data=" + CalculateUtils.getHexStringList(data));
         // defaultChannelSize: 默认8个通道数据所占用字节的长度
         int defaultChannelsSize = 3 * Constant.DEFAULT_CHANNEL;
         for (int i = 0; i < data.size() - defaultChannelsSize; i += defaultChannelsSize) {
             for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
-                double voltage = calculateVoltage(data.get(j * 3 + i), data.get(j * 3 + i + 1), data.get(j * 3 + i + 2));
+                float voltage = calculateVoltage(data.get(j * 3 + i), data.get(j * 3 + i + 1), data.get(j * 3 + i + 2));
                 if (getSaveDataState()) {
                     mOriginalData.add(String.valueOf(voltage));
                 }
-                List<Double> channelData = mChannelDataMap.get(j);
+                List<Float> channelData = mChannelDataMap.get(j);
                 if (channelData != null) {
                     channelData.add(voltage);
                 }
@@ -384,26 +1386,17 @@ public class DeviceManager {
             }
         }
 
-        if (getHighPassFilterState() && !getNotchFilterState()) {
-            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
+        if (getHighpassFilterState() && !getNotchFilterState()) {
+            Map<Integer, List<Float>> filteredDataMap = new HashMap<>();
             // 高通滤波开启
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = mChannelDataMap.get(i);
-                LogUtils.i(String.format("i=%d, channelData=%s", i, channelData));
+                List<Float> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
-                    LogUtils.i(String.format("i=%d, channelData=%s", i, channelData.size()));
-                    List<Double> filteredData = getHighPassFilteredData(i, channelData);
-                    filteredDataMap.put(i, filteredData);
-
-                    Long updateTime = mUpdateTimeMap.get(i);
-                    if (updateTime != null) {
-                        if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
-                            mUpdateTimeMap.put(i, System.currentTimeMillis());
-                            if (mDeviceInfoListener != null) {
-                                mDeviceInfoListener.replyVoltage(i, filteredData);
-                            }
-                        }
+                    List<Float> filteredData = getHighPassFilteredData(i, channelData);
+                    if (mDeviceInfoListener != null) {
+                        mDeviceInfoListener.replyVoltage(i, filteredData);
                     }
+                    filteredDataMap.put(i, filteredData);
                 }
             }
 
@@ -412,7 +1405,7 @@ public class DeviceManager {
                 int channelsCount = data.size() / defaultChannelsSize;
                 for (int i = 0; i < channelsCount; i++) {
                     for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
-                        List<Double> doubles = filteredDataMap.get(j);
+                        List<Float> doubles = filteredDataMap.get(j);
                         if (doubles != null) {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
@@ -421,24 +1414,17 @@ public class DeviceManager {
                     mFilterData.add("\n");
                 }
             }
-        } else if (getNotchFilterState() && !getHighPassFilterState()) {
-            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
+        } else if (getNotchFilterState() && !getHighpassFilterState()) {
+            Map<Integer, List<Float>> filteredDataMap = new HashMap<>();
             // 工频陷波开启
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = mChannelDataMap.get(i);
+                List<Float> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
-                    List<Double> filteredData = getNotchFilteredData(i, channelData);
-                    filteredDataMap.put(i, filteredData);
-
-                    Long updateTime = mUpdateTimeMap.get(i);
-                    if (updateTime != null) {
-                        if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
-                            mUpdateTimeMap.put(i, System.currentTimeMillis());
-                            if (mDeviceInfoListener != null) {
-                                mDeviceInfoListener.replyVoltage(i, filteredData);
-                            }
-                        }
+                    List<Float> filteredData = getNotchFilteredData(i, channelData);
+                    if (mDeviceInfoListener != null) {
+                        mDeviceInfoListener.replyVoltage(i, filteredData);
                     }
+                    filteredDataMap.put(i, filteredData);
                 }
             }
 
@@ -447,7 +1433,7 @@ public class DeviceManager {
                 int channelsCount = data.size() / defaultChannelsSize;
                 for (int i = 0; i < channelsCount; i++) {
                     for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
-                        List<Double> doubles = filteredDataMap.get(j);
+                        List<Float> doubles = filteredDataMap.get(j);
                         if (doubles != null) {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
@@ -456,26 +1442,19 @@ public class DeviceManager {
                     mFilterData.add("\n");
                 }
             }
-        } else if (getHighPassFilterState() && getNotchFilterState()) {
-            Map<Integer, List<Double>> filteredDataMap = new HashMap<>();
-            // 高通滤波和工频陷波同时开启,先计算高通滤波,再讲高通滤波过滤后的数据用来做工频陷波
+        } else if (getHighpassFilterState() && getNotchFilterState()) {
+            Map<Integer, List<Float>> filteredDataMap = new HashMap<>();
+            // 高通滤波和工频陷波同时开启,先计算高通滤波,再将高通滤波过滤后的数据用来做工频陷波
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = mChannelDataMap.get(i);
+                List<Float> channelData = mChannelDataMap.get(i);
                 if (channelData != null) {
-                    List<Double> highPassFilteredData = getHighPassFilteredData(i, channelData);
+                    List<Float> highPassFilteredData = getHighPassFilteredData(i, channelData);
                     if (highPassFilteredData != null) {
-                        List<Double> filteredData = getNotchFilteredData(i, highPassFilteredData);
-                        filteredDataMap.put(i, filteredData);
-
-                        Long updateTime = mUpdateTimeMap.get(i);
-                        if (updateTime != null) {
-                            if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
-                                mUpdateTimeMap.put(i, System.currentTimeMillis());
-                                if (mDeviceInfoListener != null) {
-                                    mDeviceInfoListener.replyVoltage(i, filteredData);
-                                }
-                            }
+                        List<Float> filteredData = getNotchFilteredData(i, highPassFilteredData);
+                        if (mDeviceInfoListener != null) {
+                            mDeviceInfoListener.replyVoltage(i, filteredData);
                         }
+                        filteredDataMap.put(i, filteredData);
                     }
                 }
             }
@@ -485,7 +1464,7 @@ public class DeviceManager {
                 int channelsCount = data.size() / defaultChannelsSize;
                 for (int i = 0; i < channelsCount; i++) {
                     for (int j = 0; j < Constant.DEFAULT_CHANNEL; j++) {
-                        List<Double> doubles = filteredDataMap.get(j);
+                        List<Float> doubles = filteredDataMap.get(j);
                         if (doubles != null) {
                             mFilterData.add(String.valueOf(doubles.get(i)));
                         }
@@ -497,58 +1476,35 @@ public class DeviceManager {
         } else {
             // 不做任何滤波操作
             for (int i = 0; i < Constant.DEFAULT_CHANNEL; i++) {
-                List<Double> channelData = mChannelDataMap.get(i);
-                Long updateTime = mUpdateTimeMap.get(i);
-                if (updateTime != null && channelData != null) {
-                    if (Math.abs(System.currentTimeMillis() - updateTime) > EMG_UPDATE_INTERVAL) {
-                        mUpdateTimeMap.put(i, System.currentTimeMillis());
-                        if (mDeviceInfoListener != null) {
-                            mDeviceInfoListener.replyVoltage(i, channelData);
-                        }
-                    }
+                List<Float> channelData = mChannelDataMap.get(i);
+                if (mDeviceInfoListener != null) {
+                    mDeviceInfoListener.replyVoltage(i, channelData);
                 }
             }
         }
-
-        LogUtils.d("replySampledData startTime=" + System.currentTimeMillis());
     }
 
     public void replyCapacitanceData(byte[] data) {
-        double capacitance = (double) (Math.round((CalculateUtils.getFloat(data, 0) - Constant.DEFAULT_CAPACITANCE) * 100)) / 100;
-        LogUtils.d("replyCapacitanceData capacitance=" + capacitance);
+        float capacitance = (float) (Math.round((CalculateUtils.getFloat(data, 0) - Constant.DEFAULT_CAPACITANCE) * 10)) / 10;
         if (capacitance < 0) {
             capacitance = 0;
         }
         mCurrentCapacitance = capacitance;
-
-        Long updateTime = mUpdateTimeMap.get(Constant.DEFAULT_CHANNEL);
-        if (updateTime != null) {
-            if (Math.abs(System.currentTimeMillis() - updateTime) > CAP_UPDATE_INTERVAL) {
-                mUpdateTimeMap.put(Constant.DEFAULT_CHANNEL, System.currentTimeMillis());
-                if (getCalibrateState()) {
-                    double angle = convertCapacitanceToAngle(capacitance);
-                    if (mDeviceInfoListener != null) {
-                        mDeviceInfoListener.replyAngle(angle);
-                    }
-                } else {
-                    if (mDeviceInfoListener != null) {
-                        mDeviceInfoListener.replyCapacitance(capacitance);
-                    }
-                }
+        if (getCalibrateState()) {
+            float angle = convertCapacitanceToAngle(capacitance);
+            if (mDeviceInfoListener != null) {
+                mDeviceInfoListener.replyAngle(angle);
+            }
+        } else {
+            if (mDeviceInfoListener != null) {
+                mDeviceInfoListener.replyCapacitance(capacitance);
             }
         }
     }
 
     public void replyStopDataCollect(List<Integer> data) {
-        LogUtils.d("replyStopDataCollect data=" + CalculateUtils.getHexStringList(data));
         if (mDeviceInfoListener != null) {
             mDeviceInfoListener.replyStopDataCollect(data);
-        }
-    }
-
-    public void replyChannelVoltage(int channel, List<Double> data) {
-        if (mDeviceInfoListener != null) {
-            mDeviceInfoListener.replyVoltage(channel, data);
         }
     }
 
@@ -610,12 +1566,12 @@ public class DeviceManager {
         isDeviceOpen = deviceOpen;
     }
 
-    public boolean getHighPassFilterState() {
-        return mHighPassFilterState;
+    public boolean getHighpassFilterState() {
+        return mHighpassFilterState;
     }
 
-    public void setHighPassFilterState(boolean state) {
-        this.mHighPassFilterState = state;
+    public void setHighpassFilterState(boolean state) {
+        this.mHighpassFilterState = state;
     }
 
     public boolean getNotchFilterState() {
@@ -626,48 +1582,48 @@ public class DeviceManager {
         this.mNotchFilterState = state;
     }
 
-    public double convertCapacitanceToAngle(double capacitance) {
-        double srcAngle = (angle1 - angle2) / (p1 - p2) * capacitance + angle1 - p1 * (angle1 - angle2) / (p1 - p2);
-        return (double) (Math.round((srcAngle) * 100)) / 100;
+    public float convertCapacitanceToAngle(float capacitance) {
+        float srcAngle = (angle1 - angle2) / (p1 - p2) * capacitance + angle1 - p1 * (angle1 - angle2) / (p1 - p2);
+        return (float) (Math.round((srcAngle) * 10)) / 10;
     }
 
-    public double getP1() {
+    public float getP1() {
         return this.p1;
     }
 
-    public void setP1(double p) {
+    public void setP1(float p) {
         this.p1 = p;
     }
 
-    public double getP2() {
+    public float getP2() {
         return this.p2;
     }
 
-    public void setP2(double p) {
+    public void setP2(float p) {
         this.p2 = p;
     }
 
-    public double getAngle1() {
+    public float getAngle1() {
         return this.angle1;
     }
 
-    public void setAngle1(double angle) {
+    public void setAngle1(float angle) {
         this.angle1 = angle;
     }
 
-    public double getAngle2() {
+    public float getAngle2() {
         return this.angle2;
     }
 
-    public void setAngle2(double angle) {
+    public void setAngle2(float angle) {
         this.angle2 = angle;
     }
 
-    public double getCurrentCapacitance() {
+    public float getCurrentCapacitance() {
         return this.mCurrentCapacitance;
     }
 
-    public void setCurrentCapacitance(double value) {
+    public void setCurrentCapacitance(float value) {
         this.mCurrentCapacitance = value;
     }
 
@@ -695,7 +1651,7 @@ public class DeviceManager {
     }
 
     public boolean getFilterState() {
-        return this.mHighPassFilterState || this.mNotchFilterState;
+        return this.mHighpassFilterState || this.mNotchFilterState;
     }
 
 }

@@ -1,66 +1,67 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:tools="http://schemas.android.com/tools"
-  package="cn.com.medicalmeasurementassistant">
+    xmlns:tools="http://schemas.android.com/tools"
+    package="cn.com.medicalmeasurementassistant">
 
-  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-  <uses-permission
-    android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-    tools:ignore="ScopedStorage" />
-  <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- 使用网络 -->
-  <uses-permission android:name="android.permission.INTERNET" /> <!-- 改变网络状态 -->
-  <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" /> <!-- 网络状态 -->
-  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- wifi状态权限 -->
-  <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 位置信息 -->
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 如果是安卓10.0，需要后台获取连接的wifi名称则添加进程获取位置信息权限 -->
-  <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- android 10.0使用wifi api新添加的权限 -->
-  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
-      tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" /> <!-- 使用网络 -->
+    <uses-permission android:name="android.permission.INTERNET" /> <!-- 改变网络状态 -->
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" /> <!-- 网络状态 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" /> <!-- wifi状态权限 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" /> <!-- 位置信息 -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" /> <!-- 如果是安卓10.0，需要后台获取连接的wifi名称则添加进程获取位置信息权限 -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" /> <!-- android 10.0使用wifi api新添加的权限 -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
 
-  <application
-    android:name=".app.ProjectApplication"
-    android:allowBackup="false"
-    android:icon="@mipmap/ic_launcher"
-    android:label="@string/app_name"
-    android:roundIcon="@mipmap/ic_launcher"
-    android:supportsRtl="true"
-    android:theme="@style/Theme.MedicalMeasurementAssistant">
-    <activity android:name=".ui.CalibrationAngleActivity" />
-    <activity android:name=".ui.SettingParamsActivity" />
-    <activity android:name=".ui.InformationCollectionActivity" />
-    <activity android:name=".ui.SplashActivity"
-        android:exported="true">
-      <intent-filter>
-        <action android:name="android.intent.action.MAIN" />
+    <application
+        android:name=".app.ProjectApplication"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MedicalMeasurementAssistant">
+        <activity android:name=".ui.CalibrationAngleActivity" />
+        <activity android:name=".ui.SettingParamsActivity" />
+        <activity
+            android:name=".ui.SplashActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
 
-        <category android:name="android.intent.category.LAUNCHER" />
-      </intent-filter>
-    </activity>
-    <activity android:name=".ui.FileSelectorActivity" />
-    <activity
-      android:name=".MainActivity"
-      android:exported="true">
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.FileSelectorActivity" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
 
-      <!-- <intent-filter> -->
-      <!-- <action android:name="android.intent.action.MAIN" /> -->
+            <!-- <intent-filter> -->
+            <!-- <action android:name="android.intent.action.MAIN" /> -->
 
 
-      <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
-      <!-- </intent-filter> -->
-    </activity>
-    <activity android:name=".ui.FileSearchActivity" />
-      <activity android:name=".ui.JavaInformationCollectionActivity" />
+            <!-- <category android:name="android.intent.category.LAUNCHER" /> -->
+            <!-- </intent-filter> -->
+        </activity>
+        <activity android:name=".ui.FileSearchActivity" />
+        <activity android:name=".ui.InformationCollectionActivity" />
 
-      <provider
-      android:name=".utils.pro.MeasurementFileProvider"
-      android:authorities="${applicationId}.MeasurementFileProvider"
-      android:exported="false"
-      android:grantUriPermissions="true">
-      <meta-data
-        android:name="android.support.FILE_PROVIDER_PATHS"
-        android:resource="@xml/file_paths" />
-    </provider>
-  </application>
+        <provider
+            android:name=".utils.pro.MeasurementFileProvider"
+            android:authorities="${applicationId}.MeasurementFileProvider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
 
 </manifest>

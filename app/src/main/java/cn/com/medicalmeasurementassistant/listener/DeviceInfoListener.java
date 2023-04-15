@@ -13,13 +13,15 @@ public interface DeviceInfoListener {
 
     void replyStartDataCollect(List<Integer> data);
 
-    void replyVoltage(int channel, List<Double> data);
+    void replyVoltage(int channel, List<Float> data);
 
     void replyStopDataCollect(List<Integer> data);
 
-    void replyCapacitance(double capacitance);
+    void replyCapacitance(float capacitance);
 
-    void replyAngle(double angle);
+    void replyAngle(float angle);
 
     void replyDeviceStopped();
+
+    void filterModeChanged();
 }

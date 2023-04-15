@@ -2,7 +2,7 @@
   <string name="app_name">EMGAndAngleMeasuring</string>
   <string name="emg_angle_measuring"><![CDATA[EMG&Angle Measuring]]></string>
   <string name="text_collect_start">启动</string>
-  <string name="text_collect_stop">启动</string>
+  <string name="text_collect_stop">停止</string>
   <string name="setting_params">设置参数</string>
   <string name="collect_angle">校准角度</string>
   <string name="show_time_length">显示时间长度</string>
